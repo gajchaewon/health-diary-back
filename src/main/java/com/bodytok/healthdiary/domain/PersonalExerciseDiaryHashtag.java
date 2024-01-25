@@ -4,9 +4,6 @@ package com.bodytok.healthdiary.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
-
-import java.util.Objects;
 
 
 @Getter
@@ -14,41 +11,33 @@ import java.util.Objects;
 @Entity
 public class PersonalExerciseDiaryHashtag {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "diary_hashtag_id")
-    private Long id;
+    @EmbeddedId // 복합키로 embedded 된 하나의 id
+    private PersonalExerciseDiaryHashtagId id;
 
+    @MapsId("diaryId")
     @Setter
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "diary_id")
+    @ManyToOne(cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "diary_id", referencedColumnName = "diary_id")
     private PersonalExerciseDiary personalExerciseDiary;
 
+
+    @MapsId("hashtagId")
     @Setter
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hashtag_id")
+    @ManyToOne(cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "hashtag_id", referencedColumnName = "hashtag_id")
     private Hashtag hashtag;
 
     protected PersonalExerciseDiaryHashtag() {}
 
-    private PersonalExerciseDiaryHashtag(PersonalExerciseDiary personalExerciseDiary, Hashtag hashtag) {
-        this.personalExerciseDiary = personalExerciseDiary;
+    private PersonalExerciseDiaryHashtag(PersonalExerciseDiary diary, Hashtag hashtag) {
+        this.personalExerciseDiary = diary;
         this.hashtag = hashtag;
+        this.id = PersonalExerciseDiaryHashtagId.of(diary.getId(), hashtag.getId());
     }
 
-    public static PersonalExerciseDiaryHashtag of(PersonalExerciseDiary personalExerciseDiary, Hashtag hashtag) {
-        return new PersonalExerciseDiaryHashtag(personalExerciseDiary,hashtag);
+    public static PersonalExerciseDiaryHashtag of(PersonalExerciseDiary diary, Hashtag hashtag){
+        return new PersonalExerciseDiaryHashtag(diary,hashtag);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!( o instanceof PersonalExerciseDiaryHashtag that)) return false;
-        return Objects.equals(id, that.id);
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
 }
