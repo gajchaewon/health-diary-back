@@ -17,3 +17,16 @@ VALUES (1, 1, 'title1', 'content1', 30, true, 'youtubeUrl1', NOW(), NOW()),
        (8, 2, 'title8', 'content8', 210, false, 'youtubeUrl8', NOW(), NOW()),
        (9, 2, 'title9', 'content9', 240, true, 'youtubeUrl9', NOW(), NOW()),
        (10, 2, 'title10', 'content10', 270, false, 'youtubeUrl10', NOW(), NOW());
+
+INSERT INTO hashtag(hashtag_id, hashtag) VALUES (1, 'test1');
+INSERT INTO hashtag(hashtag_id, hashtag) VALUES (2, 'test2');
+INSERT INTO hashtag(hashtag_id, hashtag) VALUES (3, 'test3');
+INSERT INTO hashtag(hashtag_id, hashtag) VALUES (4, 'test4');
+INSERT INTO personal_exercise_diary_hashtag(diary_id, hashtag_id)
+VALUES (1,1);
+INSERT INTO personal_exercise_diary_hashtag(diary_id, hashtag_id)
+VALUES (2,2);
+INSERT INTO personal_exercise_diary_hashtag(diary_id, hashtag_id)
+VALUES (3,3);
+INSERT INTO personal_exercise_diary_hashtag(diary_id, hashtag_id)
+VALUES (4,4);
