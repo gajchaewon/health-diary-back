@@ -40,16 +40,15 @@ public class UserAccount extends AuditingFields {
 
     protected UserAccount() {}
 
-    private UserAccount(Long id,String email,String nickname, String userPassword, Byte[] profileImage) {
-        this.id = id;
+    private UserAccount(String email,String nickname, String userPassword, Byte[] profileImage) {
         this.email = email;
         this.nickname = nickname;
         this.userPassword = userPassword;
         this.profileImage = profileImage;
     }
 
-    public static UserAccount of(Long id,String email,String nickname, String userPassword, Byte[] profileImage) {
-        return new UserAccount(id,email,nickname,userPassword,profileImage);
+    public static UserAccount of(String email,String nickname, String userPassword, Byte[] profileImage) {
+        return new UserAccount(email,nickname,userPassword,null);
     }
 
     @Override

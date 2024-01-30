@@ -19,8 +19,8 @@ public record UserAccountDto(
 
 ) {
 
-    public static UserAccountDto of(String userPassword, String email, String nickname, Byte[] profileImage) {
-        return new UserAccountDto(null, userPassword, email, nickname, profileImage, null, null);
+    public static UserAccountDto of(String email, String nickname, String userPassword, Byte[] profileImage) {
+        return new UserAccountDto(null, email, nickname, userPassword, profileImage, null, null);
     }
 
     public static UserAccountDto from(UserAccount entity) {
@@ -37,10 +37,9 @@ public record UserAccountDto(
 
     public UserAccount toEntity() {
         return UserAccount.of(
-                id,
                 email,
-                userPassword,
                 nickname,
+                userPassword,
                 profileImage
         );
     }
