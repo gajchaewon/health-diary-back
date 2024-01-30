@@ -48,7 +48,7 @@ public class UserAccount extends AuditingFields {
     }
 
     public static UserAccount of(String email,String nickname, String userPassword, Byte[] profileImage) {
-        return new UserAccount(email,nickname,userPassword,null);
+        return new UserAccount(email,nickname,userPassword,profileImage);
     }
 
     @Override
