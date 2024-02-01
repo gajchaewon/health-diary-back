@@ -35,9 +35,10 @@ public class PersonalExerciseDiaryService {
     }
 
 
-    public void saveDiary(PersonalExerciseDiaryDto dto) {
+    public PersonalExerciseDiaryDto saveDiary(PersonalExerciseDiaryDto dto) {
         UserAccount userAccount = userAccountRepository.getReferenceById(dto.userAccountDto().id());
-        diaryRepository.save(dto.toEntity(userAccount));
+        PersonalExerciseDiary diary = diaryRepository.save(dto.toEntity(userAccount));
+        return PersonalExerciseDiaryDto.from(diary);
     }
 
     public void updateDiary(PersonalExerciseDiaryDto dto) {
