@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 public record UserAccountDto(
         Long id,
         String email,
+        String nickname,
         String userPassword,
 
-        String nickname,
         Byte[] profileImage,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt
@@ -26,9 +26,9 @@ public record UserAccountDto(
     public static UserAccountDto from(UserAccount entity) {
         return new UserAccountDto(
                 entity.getId(),
-                entity.getUserPassword(),
                 entity.getEmail(),
                 entity.getNickname(),
+                entity.getUserPassword(),
                 entity.getProfileImage(),
                 entity.getCreatedAt(),
                 entity.getModifiedAt()
