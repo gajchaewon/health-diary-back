@@ -57,6 +57,15 @@ public class CustomUserDetails implements UserDetails {
                 userDetails.getProfileImage()
         );
     }
+    public UserAccountDto toDto() {
+        return UserAccountDto.of(
+                email,
+                nickname,
+                userPassword,
+                profileImage
+        );
+    }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
