@@ -3,13 +3,5 @@ package com.bodytok.healthdiary.dto.auth.request;
 import lombok.*;
 
 
-@Getter
-@Setter
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class AuthenticationRequest {
-
-    private String email;
-    String password;
+public record AuthenticationRequest(String email, String password) {
 }
