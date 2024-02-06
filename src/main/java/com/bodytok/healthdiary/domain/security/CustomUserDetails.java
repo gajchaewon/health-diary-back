@@ -19,19 +19,19 @@ import java.util.stream.Collectors;
 public class CustomUserDetails implements UserDetails {
 
     private String email;
-    private String userPassword;
     private String nickname;
+    private String userPassword;
     private Byte[] profileImage;
 
     private Collection<? extends GrantedAuthority> authorities;
 
 
-    public static CustomUserDetails of(String email, String userPassword, String nickname, Byte[] profileImage) {
+    public static CustomUserDetails of(String email,String nickname, String userPassword,  Byte[] profileImage) {
         Set<RoleType> roleTypes = Set.of(RoleType.USER);
         return new CustomUserDetails(
                 email,
-                userPassword,
                 nickname,
+                userPassword,
                 profileImage,
                 roleTypes.stream()
                         .map(RoleType::getName)
@@ -43,8 +43,8 @@ public class CustomUserDetails implements UserDetails {
     public static CustomUserDetails from(UserAccountDto dto) {
         return CustomUserDetails.of(
                 dto.email(),
-                dto.userPassword(),
                 dto.nickname(),
+                dto.userPassword(),
                 dto.profileImage()
         );
     }
@@ -52,8 +52,8 @@ public class CustomUserDetails implements UserDetails {
     public static UserAccount toUserEntity(CustomUserDetails userDetails){
         return UserAccount.of(
                 userDetails.getEmail(),
-                userDetails.getUserPassword(),
                 userDetails.getNickname(),
+                userDetails.getUserPassword(),
                 userDetails.getProfileImage()
         );
     }
