@@ -3,7 +3,8 @@ package com.bodytok.healthdiary.service;
 
 import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.domain.UserAccount;
-import com.bodytok.healthdiary.dto.PersonalExerciseDiaryDto;
+import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryDto;
+import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryWithCommentDto;
 import com.bodytok.healthdiary.repository.PersonalExerciseDiaryRepository;
 import com.bodytok.healthdiary.repository.UserAccountRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,6 +32,13 @@ public class PersonalExerciseDiaryService {
     public PersonalExerciseDiaryDto getDiary(Long diaryId) {
         return diaryRepository.findById(diaryId)
                 .map(PersonalExerciseDiaryDto::from)
+                .orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : "+ diaryId));
+    }
+
+    @Transactional(readOnly = true)
+    public PersonalExerciseDiaryWithCommentDto getDiaryWithComments(Long diaryId) {
+        return diaryRepository.findById(diaryId)
+                .map(PersonalExerciseDiaryWithCommentDto::from)
                 .orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : "+ diaryId));
     }
 

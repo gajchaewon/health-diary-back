@@ -1,44 +1,27 @@
 package com.bodytok.healthdiary.controller;
 
 import com.bodytok.healthdiary.config.TestSecurityConfig;
-import com.bodytok.healthdiary.dto.PersonalExerciseDiaryDto;
+import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryDto;
 import com.bodytok.healthdiary.dto.UserAccountDto;
-import com.bodytok.healthdiary.dto.diary.DiaryRequest;
-import com.bodytok.healthdiary.filter.jwt.JwtAuthenticationFilter;
 import com.bodytok.healthdiary.service.PersonalExerciseDiaryService;
 import com.bodytok.healthdiary.service.jwt.JwtService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 
 
 @DisplayName("컨트롤러 - 다이어리")

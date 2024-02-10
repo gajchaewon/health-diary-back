@@ -1,6 +1,6 @@
-package com.bodytok.healthdiary.dto.diary;
+package com.bodytok.healthdiary.dto.diary.response;
 
-import com.bodytok.healthdiary.dto.PersonalExerciseDiaryDto;
+import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryDto;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +12,6 @@ public record DiaryResponse(
         Integer totalExTime,
         String youtubeUrl,
         LocalDateTime createAt,
-
         String email,
         String nickname
 
@@ -38,7 +37,7 @@ public record DiaryResponse(
                 dto.youtubeUrl(),
                 dto.createdAt(),
                 dto.userAccountDto().email(),
-                dto.userAccountDto().nickname()
+                nickname
         );
     }
 }
