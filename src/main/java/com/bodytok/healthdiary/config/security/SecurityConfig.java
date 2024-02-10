@@ -42,7 +42,7 @@ public class SecurityConfig {
                         auth -> auth
                                 .requestMatchers("auth/login/**").permitAll()
                                 .requestMatchers("auth/sign-up/**").permitAll()
-                                .requestMatchers(HttpMethod.GET,"diaries").permitAll()
+                                .requestMatchers(HttpMethod.GET,"diaries/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 //Authentication Entry Point -> Exception Handler
