@@ -18,6 +18,15 @@ VALUES (1, 1, 'title1', 'content1', 30, true, 'youtubeUrl1', NOW(), NOW()),
        (9, 2, 'title9', 'content9', 240, true, 'youtubeUrl9', NOW(), NOW()),
        (10, 2, 'title10', 'content10', 270, false, 'youtubeUrl10', NOW(), NOW());
 
+INSERT INTO comment (comment_id, created_at, diary_id, modified_at, user_id, content)
+VALUES (1, NOW(), 1, NOW(), 1, '유저 test1 의 테스트 댓글 - title1'),
+       (2, NOW(), 1, NOW(), 1, '유저 test1 의 테스트 댓글 - title1'),
+       (3, NOW(), 1, NOW(), 1, '유저 test1 의 테스트 댓글 - title1'),
+       (4, NOW(), 3, NOW(), 1, '유저 test1 의 테스트 댓글 - title3'),
+       (5, NOW(), 7, NOW(), 1, '유저 test1 의 테스트 댓글 - title7');
+
+
+
 INSERT INTO hashtag(hashtag_id, hashtag) VALUES (1, 'test1');
 INSERT INTO hashtag(hashtag_id, hashtag) VALUES (2, 'test2');
 INSERT INTO hashtag(hashtag_id, hashtag) VALUES (3, 'test3');
