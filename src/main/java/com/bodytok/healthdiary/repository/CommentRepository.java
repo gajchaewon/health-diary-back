@@ -21,7 +21,7 @@ public interface CommentRepository extends
 
     List<Comment> findByPersonalExerciseDiary_Id(Long diaryId);
 
-
+    void deleteByIdAndUserAccount_Id(Long commentId, Long userId);
 
     @Override
     default void customize(QuerydslBindings bindings, QComment root) {
