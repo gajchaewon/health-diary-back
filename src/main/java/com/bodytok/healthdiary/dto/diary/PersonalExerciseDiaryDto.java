@@ -1,7 +1,8 @@
-package com.bodytok.healthdiary.dto;
+package com.bodytok.healthdiary.dto.diary;
 
 import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.domain.UserAccount;
+import com.bodytok.healthdiary.dto.UserAccountDto;
 
 import java.time.LocalDateTime;
 

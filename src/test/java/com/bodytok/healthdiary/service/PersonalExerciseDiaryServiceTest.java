@@ -2,7 +2,7 @@ package com.bodytok.healthdiary.service;
 
 import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.domain.UserAccount;
-import com.bodytok.healthdiary.dto.PersonalExerciseDiaryDto;
+import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryDto;
 import com.bodytok.healthdiary.dto.UserAccountDto;
 import com.bodytok.healthdiary.repository.PersonalExerciseDiaryRepository;
 import com.bodytok.healthdiary.repository.UserAccountRepository;

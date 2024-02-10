@@ -1,9 +1,7 @@
-package com.bodytok.healthdiary.dto.diary;
+package com.bodytok.healthdiary.dto.diary.request;
 
-import com.bodytok.healthdiary.dto.PersonalExerciseDiaryDto;
 import com.bodytok.healthdiary.dto.UserAccountDto;
-
-import java.time.LocalDateTime;
+import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryDto;
 
 public record DiaryRequest(
         String title,
@@ -18,7 +16,7 @@ public record DiaryRequest(
 
     }
 
-    public  PersonalExerciseDiaryDto toDto(UserAccountDto userAccountDto) {
+    public PersonalExerciseDiaryDto toDto(UserAccountDto userAccountDto) {
 
         return PersonalExerciseDiaryDto.of(
                 userAccountDto,
