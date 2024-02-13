@@ -1,8 +1,8 @@
 
 -- UserAccount 테이블에 대한 테스트 데이터
 INSERT INTO user_account (user_id, email, user_password, nickname, created_at, modified_at)
-VALUES (1,'test1@gmail.com', 'password1', 'nickname1', NOW(), NOW()),
-       (2,'test2@gmail.com', 'password2', 'nickname2', NOW(), NOW());
+VALUES (1,'john@gmail.com', '$2a$12$K20J0MRQCGDodS9lQLcKSe8C0nypzDqhoab3mJ95gBRSYbRVlkazO', 'John', NOW(), NOW()),
+       (2,'kevin@gmail.com', '$2a$12$rp2n26LK9YOY22aFN9F50.smMa3oJVxR9tLwmNAT1s4eqkTDGofqK', 'Kevin', NOW(), NOW());
 
 -- PersonalExerciseDiary 테이블에 대한 테스트 데이터
 INSERT INTO personal_exercise_diary (diary_id, user_id, title, content, total_ex_time, is_public, youtube_url, created_at,
@@ -19,18 +19,18 @@ VALUES (1, 1, 'title1', 'content1', 30, true, 'youtubeUrl1', NOW(), NOW()),
        (10, 2, 'title10', 'content10', 270, false, 'youtubeUrl10', NOW(), NOW());
 
 INSERT INTO comment (comment_id, created_at, diary_id, modified_at, user_id, content)
-VALUES (1, NOW(), 1, NOW(), 1, '유저 test1 의 테스트 댓글 - title1'),
-       (2, NOW(), 1, NOW(), 1, '유저 test1 의 테스트 댓글 - title1'),
-       (3, NOW(), 1, NOW(), 1, '유저 test1 의 테스트 댓글 - title1'),
-       (4, NOW(), 3, NOW(), 1, '유저 test1 의 테스트 댓글 - title3'),
-       (5, NOW(), 7, NOW(), 1, '유저 test1 의 테스트 댓글 - title7');
+VALUES (1, NOW(), 1, NOW(), 1, '유저 John 의 테스트 댓글 - title1'),
+       (2, NOW(), 1, NOW(), 1, '유저 John 의 테스트 댓글 - title1'),
+       (3, NOW(), 1, NOW(), 1, '유저 John 의 테스트 댓글 - title1'),
+       (4, NOW(), 3, NOW(), 1, '유저 John 의 테스트 댓글 - title3'),
+       (5, NOW(), 7, NOW(), 1, '유저 John 의 테스트 댓글 - title7');
 
 
 
-INSERT INTO hashtag(hashtag_id, hashtag) VALUES (1, 'test1');
-INSERT INTO hashtag(hashtag_id, hashtag) VALUES (2, 'test2');
-INSERT INTO hashtag(hashtag_id, hashtag) VALUES (3, 'test3');
-INSERT INTO hashtag(hashtag_id, hashtag) VALUES (4, 'test4');
+INSERT INTO hashtag(hashtag_id, hashtag) VALUES (1, 'first');
+INSERT INTO hashtag(hashtag_id, hashtag) VALUES (2, 'new');
+INSERT INTO hashtag(hashtag_id, hashtag) VALUES (3, 'unique');
+INSERT INTO hashtag(hashtag_id, hashtag) VALUES (4, 'want some coffee');
 INSERT INTO personal_exercise_diary_hashtag(diary_id, hashtag_id)
 VALUES (1,1);
 INSERT INTO personal_exercise_diary_hashtag(diary_id, hashtag_id)
