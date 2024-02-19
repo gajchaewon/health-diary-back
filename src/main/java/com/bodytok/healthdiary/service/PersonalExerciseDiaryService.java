@@ -1,10 +1,13 @@
 package com.bodytok.healthdiary.service;
 
 
-import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
-import com.bodytok.healthdiary.domain.UserAccount;
+import com.bodytok.healthdiary.domain.*;
 import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryDto;
 import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryWithCommentDto;
+import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
+import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
+import com.bodytok.healthdiary.repository.HashtagRepository;
+import com.bodytok.healthdiary.repository.PersonalExerciseDiaryHashtagRepository;
 import com.bodytok.healthdiary.repository.PersonalExerciseDiaryRepository;
 import com.bodytok.healthdiary.repository.UserAccountRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -15,6 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
@@ -22,10 +29,25 @@ import lombok.extern.slf4j.Slf4j;
 public class PersonalExerciseDiaryService {
 
     private final PersonalExerciseDiaryRepository diaryRepository;
+    private final HashtagRepository hashtagRepository;
+    private final PersonalExerciseDiaryHashtagRepository diaryHashtagRepository;
     private final UserAccountRepository userAccountRepository;
+
+    //다이어리에 해시태그들을 추가하는 메소드
+    private DiaryResponse convertToDtoWithHashtags(PersonalExerciseDiary diary) {
+        Set<Hashtag> hashtags = diaryHashtagRepository.findByDiaryId(diary.getId())
+                .stream()
+                .map(PersonalExerciseDiaryHashtag::getHashtag)
+                .collect(Collectors.toUnmodifiableSet());
+
+        PersonalExerciseDiaryDto diaryDto = PersonalExerciseDiaryDto.from(diary);
+        return DiaryResponse.from(diaryDto, hashtags.stream().map(HashtagDto::from).collect(Collectors.toUnmodifiableSet()));
+    }
+
     @Transactional(readOnly = true)
-    public Page<PersonalExerciseDiaryDto> getAllDiaries(Pageable pageable) {
-        return diaryRepository.findAll(pageable).map(PersonalExerciseDiaryDto::from);
+    public Page<DiaryResponse> getAllDiaries(Pageable pageable) {
+        Page<PersonalExerciseDiary> diaries = diaryRepository.findAll(pageable);
+        return diaries.map(this::convertToDtoWithHashtags);
     }
 
     @Transactional(readOnly = true)
@@ -43,10 +65,32 @@ public class PersonalExerciseDiaryService {
     }
 
 
-    public PersonalExerciseDiaryDto saveDiary(PersonalExerciseDiaryDto dto) {
+    public DiaryResponse saveDiaryWithHashtags(PersonalExerciseDiaryDto dto, Set<HashtagDto> hashtagDtoSet) {
+        // Convert DTOs to entities
         UserAccount userAccount = userAccountRepository.getReferenceById(dto.userAccountDto().id());
-        PersonalExerciseDiary diary = diaryRepository.save(dto.toEntity(userAccount));
-        return PersonalExerciseDiaryDto.from(diary);
+        PersonalExerciseDiary diary = dto.toEntity(userAccount);
+        Set<Hashtag> hashtags = hashtagDtoSet.stream()
+                .map(HashtagDto::toEntity)
+                .collect(Collectors.toUnmodifiableSet());
+        // Save diary and hashtags
+        diary = diaryRepository.save(diary);
+        hashtags = hashtags.stream().map(hashtagRepository::save).collect(Collectors.toUnmodifiableSet());
+
+        // Create and save DiaryHashtag entities
+        for (Hashtag hashtag : hashtags) {
+            var diaryHashtagId = PersonalExerciseDiaryHashtagId.of(diary.getId(), hashtag.getId());
+            var diaryHashtag = PersonalExerciseDiaryHashtag.of(
+                    diaryHashtagId,
+                    diary,
+                    hashtag
+            );
+            diaryHashtagRepository.save(diaryHashtag);
+        }
+
+        return DiaryResponse.from(
+                PersonalExerciseDiaryDto.from(diary),
+                hashtags.stream().map(HashtagDto::from).collect(Collectors.toUnmodifiableSet())
+        );
     }
 
     public void updateDiary(PersonalExerciseDiaryDto dto) {
