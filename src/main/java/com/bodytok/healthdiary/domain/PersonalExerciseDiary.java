@@ -58,12 +58,6 @@ public class PersonalExerciseDiary extends AuditingFields {
     @OneToMany(mappedBy = "personalExerciseDiary", cascade = CascadeType.ALL)
     private final Set<Comment> comments  = new LinkedHashSet<>();
 
-    //해시태그 또한 다이어리에서 많이 조회하므로 양방향 연결
-    @ToString.Exclude
-    @OrderBy("hashtag DESC")
-    @OneToMany(mappedBy = "personalExerciseDiary",  cascade = CascadeType.ALL)
-    private final Set<PersonalExerciseDiaryHashtag> diaryHashtags = new LinkedHashSet<>();
-
     protected PersonalExerciseDiary() {
     }
 
