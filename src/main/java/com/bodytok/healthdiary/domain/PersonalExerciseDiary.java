@@ -48,10 +48,6 @@ public class PersonalExerciseDiary extends AuditingFields {
     @Column(nullable = false)
     private Boolean isPublic;
 
-    @Setter
-    @Column()
-    private String youtubeUrl;
-
     //diary 에서 댓글 불러올 일이 많으므로 양방향 연결함
     @ToString.Exclude /*-> circular referential 발생 방지*/
     @OrderBy("createdAt DESC")
@@ -61,17 +57,16 @@ public class PersonalExerciseDiary extends AuditingFields {
     protected PersonalExerciseDiary() {
     }
 
-    private PersonalExerciseDiary(UserAccount userAccount, String title, String content, Integer totalExTime, Boolean isPublic, String youtubeUrl) {
+    private PersonalExerciseDiary(UserAccount userAccount, String title, String content, Integer totalExTime, Boolean isPublic) {
         this.userAccount = userAccount;
         this.title = title;
         this.content = content;
         this.totalExTime = totalExTime;
         this.isPublic = isPublic;
-        this.youtubeUrl = youtubeUrl;
     }
 
-    public  static PersonalExerciseDiary of(UserAccount userAccount, String title, String content, Integer totalExTime, Boolean isPublic, String youtubeUrl) {
-        return new PersonalExerciseDiary(userAccount, title, content, totalExTime, isPublic, youtubeUrl);
+    public  static PersonalExerciseDiary of(UserAccount userAccount, String title, String content, Integer totalExTime, Boolean isPublic) {
+        return new PersonalExerciseDiary(userAccount, title, content, totalExTime, isPublic);
     }
 
     @Override

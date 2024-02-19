@@ -14,7 +14,6 @@ public record DiaryWithCommentResponse(
         String content,
         Boolean isPublic,
         Integer totalExTime,
-        String youtubeUrl,
         LocalDateTime createAt,
         Long userId,
         String email,
@@ -22,8 +21,8 @@ public record DiaryWithCommentResponse(
         Set<CommentResponse> commentResponses
 ) {
 
-    public static DiaryWithCommentResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, String youtubeUrl, LocalDateTime createAt,Long userId, String email, String nickname, Set<CommentResponse> commentResponses){
-        return new DiaryWithCommentResponse(id, title, content, isPublic, totalExTime, youtubeUrl, createAt, userId, email, nickname, commentResponses);
+    public static DiaryWithCommentResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<CommentResponse> commentResponses){
+        return new DiaryWithCommentResponse(id, title, content, isPublic, totalExTime, createAt, userId, email, nickname, commentResponses);
 
     }
 
@@ -39,7 +38,6 @@ public record DiaryWithCommentResponse(
                 dto.content(),
                 dto.isPublic(),
                 dto.totalExTime(),
-                dto.youtubeUrl(),
                 dto.createdAt(),
                 dto.userAccountDto().id(),
                 dto.userAccountDto().email(),

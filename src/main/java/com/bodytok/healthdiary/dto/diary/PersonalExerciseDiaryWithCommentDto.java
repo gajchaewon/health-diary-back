@@ -17,13 +17,12 @@ public record PersonalExerciseDiaryWithCommentDto(
         String content,
         Integer totalExTime,
         Boolean isPublic,
-        String youtubeUrl,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt
 ) {
 
-    public static PersonalExerciseDiaryWithCommentDto of(Long id, UserAccountDto userAccountDto, Set<CommentDto> commentDtoSet, String title, String content, Integer totalExTime,  Boolean isPublic, String youtubeUrl, LocalDateTime createdAt, LocalDateTime modifiedAt) {
-        return new PersonalExerciseDiaryWithCommentDto(id, userAccountDto, commentDtoSet, title, content, totalExTime, isPublic, youtubeUrl, createdAt, modifiedAt);
+    public static PersonalExerciseDiaryWithCommentDto of(Long id, UserAccountDto userAccountDto, Set<CommentDto> commentDtoSet, String title, String content, Integer totalExTime,  Boolean isPublic, LocalDateTime createdAt, LocalDateTime modifiedAt) {
+        return new PersonalExerciseDiaryWithCommentDto(id, userAccountDto, commentDtoSet, title, content, totalExTime, isPublic, createdAt, modifiedAt);
     }
 
     public static PersonalExerciseDiaryWithCommentDto from(PersonalExerciseDiary entity) {
@@ -37,7 +36,6 @@ public record PersonalExerciseDiaryWithCommentDto(
                 entity.getContent(),
                 entity.getTotalExTime(),
                 entity.getIsPublic(),
-                entity.getYoutubeUrl(),
                 entity.getCreatedAt(),
                 entity.getModifiedAt()
         );
