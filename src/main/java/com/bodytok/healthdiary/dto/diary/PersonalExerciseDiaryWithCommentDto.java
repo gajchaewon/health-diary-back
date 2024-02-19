@@ -9,9 +9,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * DTO for {@link PersonalExerciseDiary}
- */
 public record PersonalExerciseDiaryWithCommentDto(
         Long id,
         UserAccountDto userAccountDto,
