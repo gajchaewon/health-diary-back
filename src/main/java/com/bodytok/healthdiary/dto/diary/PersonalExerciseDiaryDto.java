@@ -1,10 +1,13 @@
 package com.bodytok.healthdiary.dto.diary;
 
+import com.bodytok.healthdiary.domain.Hashtag;
 import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.dto.UserAccountDto;
+import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
  * DTO for {@link PersonalExerciseDiary}
@@ -16,13 +19,13 @@ public record PersonalExerciseDiaryDto(
         String content,
         Integer totalExTime,
         Boolean isPublic,
-        String youtubeUrl,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt
+
 ) {
 
-    public static PersonalExerciseDiaryDto of(UserAccountDto userAccountDto, String title, String content, Boolean isPublic, String youtubeUrl) {
-        return new PersonalExerciseDiaryDto(null, userAccountDto, title, content, 0, isPublic, youtubeUrl, null, null);
+    public static PersonalExerciseDiaryDto of(UserAccountDto userAccountDto, String title, String content, Boolean isPublic) {
+        return new PersonalExerciseDiaryDto(null, userAccountDto, title, content, 0, isPublic, null, null);
     }
 
     public static PersonalExerciseDiaryDto from(PersonalExerciseDiary entity) {
@@ -33,7 +36,6 @@ public record PersonalExerciseDiaryDto(
                 entity.getContent(),
                 entity.getTotalExTime(),
                 entity.getIsPublic(),
-                entity.getYoutubeUrl(),
                 entity.getCreatedAt(),
                 entity.getModifiedAt()
         );
@@ -45,8 +47,7 @@ public record PersonalExerciseDiaryDto(
                 title,
                 content,
                 totalExTime,
-                isPublic,
-                youtubeUrl
+                isPublic
         );
     }
 }

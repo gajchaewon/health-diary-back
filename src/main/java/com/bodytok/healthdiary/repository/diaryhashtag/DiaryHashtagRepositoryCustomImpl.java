@@ -3,15 +3,13 @@ package com.bodytok.healthdiary.repository.diaryhashtag;
 import com.bodytok.healthdiary.domain.PersonalExerciseDiaryHashtag;
 import com.bodytok.healthdiary.domain.QPersonalExerciseDiaryHashtag;
 import com.querydsl.jpa.JPQLQuery;
-import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class DiaryHashtagRepositoryCustomImpl extends QuerydslRepositorySupport implements DiaryHashtagRepositoryCustom {
 
@@ -33,5 +31,14 @@ public class DiaryHashtagRepositoryCustomImpl extends QuerydslRepositorySupport 
         long total = query.fetchCount();
 
         return new PageImpl<>(diaries, pageable, total);
+    }
+
+    @Override
+    public Set<PersonalExerciseDiaryHashtag> findByDiaryId(Long diaryId) {
+        QPersonalExerciseDiaryHashtag diaryHashtag = QPersonalExerciseDiaryHashtag.personalExerciseDiaryHashtag;
+        JPQLQuery<PersonalExerciseDiaryHashtag> query = from(diaryHashtag)
+                .where(diaryHashtag.personalExerciseDiary.id.eq(diaryId));
+
+        return new LinkedHashSet<>(query.fetch());
     }
 }

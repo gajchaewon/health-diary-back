@@ -29,12 +29,14 @@ public class PersonalExerciseDiaryHashtag {
 
     protected PersonalExerciseDiaryHashtag() {}
 
-    private PersonalExerciseDiaryHashtag(PersonalExerciseDiaryHashtagId diaryHashtagId) {
+    private PersonalExerciseDiaryHashtag(PersonalExerciseDiaryHashtagId diaryHashtagId, PersonalExerciseDiary diary, Hashtag hashtag) {
         this.id = diaryHashtagId;
+        this.personalExerciseDiary = diary;
+        this.hashtag = hashtag;
     }
 
-    public static PersonalExerciseDiaryHashtag of(PersonalExerciseDiaryHashtagId diaryHashtagId){
-        return new PersonalExerciseDiaryHashtag(diaryHashtagId);
+    public static PersonalExerciseDiaryHashtag of(PersonalExerciseDiaryHashtagId diaryHashtagId, PersonalExerciseDiary diary, Hashtag hashtag){
+        return new PersonalExerciseDiaryHashtag(diaryHashtagId, diary, hashtag);
     }
 
 

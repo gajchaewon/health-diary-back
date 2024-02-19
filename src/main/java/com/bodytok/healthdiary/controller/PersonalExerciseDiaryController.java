@@ -7,6 +7,7 @@ import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryWithCommentDto;
 import com.bodytok.healthdiary.dto.diary.request.DiaryRequest;
 import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
 import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
+import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import com.bodytok.healthdiary.service.PersonalExerciseDiaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 
 @RequiredArgsConstructor
@@ -28,7 +31,7 @@ public class PersonalExerciseDiaryController {
     public ResponseEntity<Page<DiaryResponse>> getAllDiaries(
             @PageableDefault() Pageable pageable
     ) {
-        Page<DiaryResponse> diaries = diaryService.getAllDiaries(pageable).map(DiaryResponse::from);
+        Page<DiaryResponse> diaries = diaryService.getAllDiaries(pageable);
 
         return ResponseEntity.ok(diaries);
     }
@@ -38,8 +41,10 @@ public class PersonalExerciseDiaryController {
             @RequestBody DiaryRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        PersonalExerciseDiaryDto diary = diaryService.saveDiary(request.toDto(userDetails.toDto()));
-        return ResponseEntity.ok(DiaryResponse.from(diary));
+        DiaryResponse diary = diaryService.saveDiaryWithHashtags(
+                request.toDto(userDetails.toDto()), request.hashtagDtoSet()
+        );
+        return ResponseEntity.ok(diary);
     }
 
     @GetMapping("/{diaryId}")
