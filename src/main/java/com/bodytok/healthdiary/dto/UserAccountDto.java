@@ -22,6 +22,9 @@ public record UserAccountDto(
     public static UserAccountDto of(String email, String nickname, String userPassword, Byte[] profileImage) {
         return new UserAccountDto(null, email, nickname, userPassword, profileImage, null, null);
     }
+    public static UserAccountDto of(Long id,String email, String nickname, String userPassword, Byte[] profileImage) {
+        return new UserAccountDto(id, email, nickname, userPassword, profileImage, null, null);
+    }
 
     public static UserAccountDto from(UserAccount entity) {
         return new UserAccountDto(

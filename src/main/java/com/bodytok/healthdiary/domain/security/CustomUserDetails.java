@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
 
+    private Long id;
     private String email;
     private String nickname;
     private String userPassword;
@@ -26,9 +27,25 @@ public class CustomUserDetails implements UserDetails {
     private Collection<? extends GrantedAuthority> authorities;
 
 
+    private static final Set<RoleType> roleTypes = Set.of(RoleType.USER);
+
     public static CustomUserDetails of(String email,String nickname, String userPassword,  Byte[] profileImage) {
-        Set<RoleType> roleTypes = Set.of(RoleType.USER);
         return new CustomUserDetails(
+                null,
+                email,
+                nickname,
+                userPassword,
+                profileImage,
+                roleTypes.stream()
+                        .map(RoleType::getName)
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toUnmodifiableSet())
+        );
+    }
+
+    public static CustomUserDetails of(Long id, String email,String nickname, String userPassword,  Byte[] profileImage) {
+        return new CustomUserDetails(
+                id,
                 email,
                 nickname,
                 userPassword,
@@ -42,6 +59,7 @@ public class CustomUserDetails implements UserDetails {
 
     public static CustomUserDetails from(UserAccountDto dto) {
         return CustomUserDetails.of(
+                dto.id(),
                 dto.email(),
                 dto.nickname(),
                 dto.userPassword(),
@@ -59,6 +77,7 @@ public class CustomUserDetails implements UserDetails {
     }
     public UserAccountDto toDto() {
         return UserAccountDto.of(
+                id,
                 email,
                 nickname,
                 userPassword,

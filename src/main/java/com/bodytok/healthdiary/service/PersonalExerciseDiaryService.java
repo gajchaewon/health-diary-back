@@ -67,11 +67,16 @@ public class PersonalExerciseDiaryService {
 
     public DiaryResponse saveDiaryWithHashtags(PersonalExerciseDiaryDto dto, Set<HashtagDto> hashtagDtoSet) {
         // Convert DTOs to entities
+
+        log.info("user id : {}", dto.userAccountDto().id());
+        log.info("hashtags set : {}", hashtagDtoSet);
         UserAccount userAccount = userAccountRepository.getReferenceById(dto.userAccountDto().id());
         PersonalExerciseDiary diary = dto.toEntity(userAccount);
         Set<Hashtag> hashtags = hashtagDtoSet.stream()
                 .map(HashtagDto::toEntity)
                 .collect(Collectors.toUnmodifiableSet());
+
+        log.info("hashtags after of() : {}", hashtags);
         // Save diary and hashtags
         diary = diaryRepository.save(diary);
         hashtags = hashtags.stream().map(hashtagRepository::save).collect(Collectors.toUnmodifiableSet());

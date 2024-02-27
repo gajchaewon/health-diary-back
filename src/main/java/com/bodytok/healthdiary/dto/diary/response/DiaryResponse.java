@@ -15,14 +15,15 @@ public record DiaryResponse(
         Boolean isPublic,
         Integer totalExTime,
         LocalDateTime createAt,
+        Long userId,
         String email,
         String nickname,
-        Set<HashtagDto> hashtagDtoSet
+        Set<HashtagDto> hashtags
 
 ) {
 
-    public static DiaryResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt, String email, String nickname, Set<HashtagDto> hashtagDtoSet){
-        return new DiaryResponse(id, title, content, isPublic, totalExTime, createAt, email, nickname, hashtagDtoSet);
+    public static DiaryResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<HashtagDto> hashtags){
+        return new DiaryResponse(id, title, content, isPublic, totalExTime, createAt,userId, email, nickname, hashtags);
 
     }
 
@@ -39,6 +40,7 @@ public record DiaryResponse(
                 dto.isPublic(),
                 dto.totalExTime(),
                 dto.createdAt(),
+                dto.userAccountDto().id(),
                 dto.userAccountDto().email(),
                 nickname,
                 hashtags
