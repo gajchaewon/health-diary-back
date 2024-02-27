@@ -1,8 +1,8 @@
 
 -- UserAccount 테이블에 대한 테스트 데이터
 INSERT INTO user_account (user_id, email, user_password, nickname, created_at, modified_at)
-VALUES (1,'john@gmail.com', '$2a$12$K20J0MRQCGDodS9lQLcKSe8C0nypzDqhoab3mJ95gBRSYbRVlkazO', 'John', NOW(), NOW()),
-       (2,'kevin@gmail.com', '$2a$12$rp2n26LK9YOY22aFN9F50.smMa3oJVxR9tLwmNAT1s4eqkTDGofqK', 'Kevin', NOW(), NOW());
+VALUES (1,'john@gmail.com', '$2a$12$G179D7EuGHoAfPpGnniPAOxmFf2fZibmtwFmug/izNQ8m5OsOByiG', 'John', NOW(), NOW()),
+       (2,'kevin@gmail.com', '$2a$12$qWOzxiK.ORc5.6JBu6v..ujS0UUeY6Uj2u.boStofRmkxLov4wPEa', 'Kevin', NOW(), NOW());
 
 -- PersonalExerciseDiary 테이블에 대한 테스트 데이터
 INSERT INTO personal_exercise_diary (diary_id, user_id, title, content, total_ex_time, is_public, created_at,
