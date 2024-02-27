@@ -8,19 +8,21 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public record DiaryRequest(
-    PersonalExerciseDiaryDto diaryDto,
-    Set<HashtagDto> hashtagDtoSet
+    String title,
+    String content,
+    Boolean isPublic,
+    Set<String> hashtags
 ) {
-    public static DiaryRequest of(PersonalExerciseDiaryDto diaryDto, Set<HashtagDto> hashtagDtoSet) {
-        return new DiaryRequest(diaryDto, hashtagDtoSet);
+    public static DiaryRequest of(String title, String content, Boolean isPublic, Set<String> hashtags) {
+        return new DiaryRequest(title,content,isPublic, hashtags);
     }
 
     public PersonalExerciseDiaryDto toDto(UserAccountDto userAccountDto) {
         return PersonalExerciseDiaryDto.of(
                 userAccountDto,
-                diaryDto.title(),
-                diaryDto.content(),
-                diaryDto.isPublic()
+                title(),
+                content(),
+                isPublic()
         );
     }
 }

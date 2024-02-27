@@ -36,13 +36,15 @@ public class Hashtag {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Hashtag hashtag = (Hashtag) o;
-        return Objects.equals(id, hashtag.id);
+        if (!(o instanceof Hashtag)) return false;
+        Hashtag that = (Hashtag) o;
+        // id가 null이면 hashtag 필드를 기준으로 비교, 아니면 id 필드를 기준으로 비교
+        return (id == null) ? Objects.equals(hashtag, that.hashtag) : Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        // id가 null이면 hashtag 필드로 해시 코드 생성, 아니면 id 필드로 해시 코드 생성
+        return (id == null) ? Objects.hash(hashtag) : Objects.hash(id);
     }
 }

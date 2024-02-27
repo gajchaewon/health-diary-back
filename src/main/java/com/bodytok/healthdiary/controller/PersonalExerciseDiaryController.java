@@ -18,6 +18,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor
@@ -42,8 +43,9 @@ public class PersonalExerciseDiaryController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         DiaryResponse diary = diaryService.saveDiaryWithHashtags(
-                request.toDto(userDetails.toDto()), request.hashtagDtoSet()
-        );
+                request.toDto(userDetails.toDto()),
+                request.hashtags().stream()
+                        .map(HashtagDto::of).collect(Collectors.toUnmodifiableSet()));
         return ResponseEntity.ok(diary);
     }
 
