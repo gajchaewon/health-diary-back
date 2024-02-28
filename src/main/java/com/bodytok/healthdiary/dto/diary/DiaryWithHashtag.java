@@ -17,12 +17,12 @@ public record DiaryWithHashtag(
     }
 
     public static DiaryResponse toDiaryResponse(DiaryWithHashtag diaryWithHashtag){
-        return DiaryResponse.from(PersonalExerciseDiaryDto.from(diaryWithHashtag.diary),diaryWithHashtag.hashtags());
+        return DiaryResponse.from(DiaryDto.from(diaryWithHashtag.diary),diaryWithHashtag.hashtags());
     }
 
     public static DiaryWithCommentResponse toDiaryWithCommentResponse(DiaryWithHashtag diaryWithHashtag){
         return DiaryWithCommentResponse.from(
-                PersonalExerciseDiaryWithCommentDto.from(diaryWithHashtag.diary)
+                DiaryWithCommentDto.from(diaryWithHashtag.diary)
                 ,diaryWithHashtag.hashtags()
         );
     }

@@ -2,14 +2,8 @@ package com.bodytok.healthdiary.service;
 
 
 import com.bodytok.healthdiary.domain.*;
-<<<<<<< Updated upstream
-import com.bodytok.healthdiary.dto.diary.DiaryWithHashtag;
-import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryDto;
-import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryWithCommentDto;
-=======
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
-import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
->>>>>>> Stashed changes
+import com.bodytok.healthdiary.dto.diary.DiaryWithHashtag;
 import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
 import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
@@ -46,12 +40,7 @@ public class PersonalExerciseDiaryService {
                 .map(PersonalExerciseDiaryHashtag::getHashtag)
                 .collect(Collectors.toUnmodifiableSet());
 
-<<<<<<< Updated upstream
         return DiaryWithHashtag.of(diary, hashtags.stream().map(HashtagDto::from).collect(Collectors.toUnmodifiableSet()));
-=======
-        DiaryDto diaryDto = DiaryDto.from(diary);
-        return DiaryResponse.from(diaryDto, hashtags.stream().map(HashtagDto::from).collect(Collectors.toUnmodifiableSet()));
->>>>>>> Stashed changes
     }
 
     @Transactional(readOnly = true)
@@ -63,30 +52,18 @@ public class PersonalExerciseDiaryService {
     }
 
     @Transactional(readOnly = true)
-<<<<<<< Updated upstream
     public DiaryResponse getDiary(Long diaryId) {
         var diary = diaryRepository.findById(diaryId);
         return diary.map(this::convertToDtoWithHashtags)
                 .map(DiaryWithHashtag::toDiaryResponse)
-=======
-    public DiaryDto getDiary(Long diaryId) {
-        return diaryRepository.findById(diaryId)
-                .map(DiaryDto::from)
->>>>>>> Stashed changes
                 .orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : "+ diaryId));
     }
 
     @Transactional(readOnly = true)
-<<<<<<< Updated upstream
     public DiaryWithCommentResponse getDiaryWithComments(Long diaryId) {
         var diary = diaryRepository.findById(diaryId);
         return diary.map(this::convertToDtoWithHashtags)
                 .map(DiaryWithHashtag::toDiaryWithCommentResponse)
-=======
-    public DiaryWithCommentDto getDiaryWithComments(Long diaryId) {
-        return diaryRepository.findById(diaryId)
-                .map(DiaryWithCommentDto::from)
->>>>>>> Stashed changes
                 .orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : "+ diaryId));
     }
 
