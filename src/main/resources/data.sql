@@ -19,11 +19,11 @@ VALUES (1, 1, 'title1', 'content1', 30, true,  NOW(), NOW()),
        (10, 2, 'title10', 'content10', 270, false,  NOW(), NOW());
 
 INSERT INTO comment (comment_id, created_at, diary_id, modified_at, user_id, content)
-VALUES (1, NOW(), 1, NOW(), 1, '유저 John 의 테스트 댓글 - title1'),
-       (2, NOW(), 1, NOW(), 1, '유저 John 의 테스트 댓글 - title1'),
-       (3, NOW(), 1, NOW(), 1, '유저 John 의 테스트 댓글 - title1'),
-       (4, NOW(), 3, NOW(), 1, '유저 John 의 테스트 댓글 - title3'),
-       (5, NOW(), 7, NOW(), 1, '유저 John 의 테스트 댓글 - title7');
+VALUES (1, NOW(), 1, NOW(), 1, 'This is John. test comments'),
+       (2, NOW(), 1, NOW(), 1, 'Hi, This is me'),
+       (3, NOW(), 1, NOW(), 1, 'I like coffee'),
+       (4, NOW(), 3, NOW(), 1, 'Baby'),
+       (5, NOW(), 7, NOW(), 1, 'Good!');
 
 
 
