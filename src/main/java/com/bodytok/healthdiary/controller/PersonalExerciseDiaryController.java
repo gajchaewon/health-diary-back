@@ -2,8 +2,6 @@ package com.bodytok.healthdiary.controller;
 
 
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
-import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryDto;
-import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryWithCommentDto;
 import com.bodytok.healthdiary.dto.diary.request.DiaryRequest;
 import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
 import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
@@ -17,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
 import java.util.stream.Collectors;
 
 

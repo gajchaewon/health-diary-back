@@ -2,9 +2,14 @@ package com.bodytok.healthdiary.service;
 
 
 import com.bodytok.healthdiary.domain.*;
+<<<<<<< Updated upstream
 import com.bodytok.healthdiary.dto.diary.DiaryWithHashtag;
 import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryDto;
 import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryWithCommentDto;
+=======
+import com.bodytok.healthdiary.dto.diary.DiaryDto;
+import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
+>>>>>>> Stashed changes
 import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
 import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
@@ -20,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -42,7 +46,12 @@ public class PersonalExerciseDiaryService {
                 .map(PersonalExerciseDiaryHashtag::getHashtag)
                 .collect(Collectors.toUnmodifiableSet());
 
+<<<<<<< Updated upstream
         return DiaryWithHashtag.of(diary, hashtags.stream().map(HashtagDto::from).collect(Collectors.toUnmodifiableSet()));
+=======
+        DiaryDto diaryDto = DiaryDto.from(diary);
+        return DiaryResponse.from(diaryDto, hashtags.stream().map(HashtagDto::from).collect(Collectors.toUnmodifiableSet()));
+>>>>>>> Stashed changes
     }
 
     @Transactional(readOnly = true)
@@ -54,23 +63,35 @@ public class PersonalExerciseDiaryService {
     }
 
     @Transactional(readOnly = true)
+<<<<<<< Updated upstream
     public DiaryResponse getDiary(Long diaryId) {
         var diary = diaryRepository.findById(diaryId);
         return diary.map(this::convertToDtoWithHashtags)
                 .map(DiaryWithHashtag::toDiaryResponse)
+=======
+    public DiaryDto getDiary(Long diaryId) {
+        return diaryRepository.findById(diaryId)
+                .map(DiaryDto::from)
+>>>>>>> Stashed changes
                 .orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : "+ diaryId));
     }
 
     @Transactional(readOnly = true)
+<<<<<<< Updated upstream
     public DiaryWithCommentResponse getDiaryWithComments(Long diaryId) {
         var diary = diaryRepository.findById(diaryId);
         return diary.map(this::convertToDtoWithHashtags)
                 .map(DiaryWithHashtag::toDiaryWithCommentResponse)
+=======
+    public DiaryWithCommentDto getDiaryWithComments(Long diaryId) {
+        return diaryRepository.findById(diaryId)
+                .map(DiaryWithCommentDto::from)
+>>>>>>> Stashed changes
                 .orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : "+ diaryId));
     }
 
 
-    public DiaryResponse saveDiaryWithHashtags(PersonalExerciseDiaryDto dto, Set<HashtagDto> hashtagDtoSet) {
+    public DiaryResponse saveDiaryWithHashtags(DiaryDto dto, Set<HashtagDto> hashtagDtoSet) {
         // Convert DTOs to entities
         UserAccount userAccount = userAccountRepository.getReferenceById(dto.userAccountDto().id());
         PersonalExerciseDiary diary = dto.toEntity(userAccount);
@@ -93,12 +114,12 @@ public class PersonalExerciseDiaryService {
         }
 
         return DiaryResponse.from(
-                PersonalExerciseDiaryDto.from(diary),
+                DiaryDto.from(diary),
                 hashtags.stream().map(HashtagDto::from).collect(Collectors.toUnmodifiableSet())
         );
     }
 
-    public void updateDiary(PersonalExerciseDiaryDto dto) {
+    public void updateDiary(DiaryDto dto) {
         try {
             PersonalExerciseDiary diary = diaryRepository.getReferenceById(dto.id());
             if (dto.title() != null) { diary.setTitle(dto.title()); }

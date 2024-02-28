@@ -9,7 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public record PersonalExerciseDiaryWithCommentDto(
+public record DiaryWithCommentDto(
         Long id,
         UserAccountDto userAccountDto,
         Set<CommentDto> commentDtoSet,
@@ -21,12 +21,12 @@ public record PersonalExerciseDiaryWithCommentDto(
         LocalDateTime modifiedAt
 ) {
 
-    public static PersonalExerciseDiaryWithCommentDto of(Long id, UserAccountDto userAccountDto, Set<CommentDto> commentDtoSet, String title, String content, Integer totalExTime,  Boolean isPublic, LocalDateTime createdAt, LocalDateTime modifiedAt) {
-        return new PersonalExerciseDiaryWithCommentDto(id, userAccountDto, commentDtoSet, title, content, totalExTime, isPublic, createdAt, modifiedAt);
+    public static DiaryWithCommentDto of(Long id, UserAccountDto userAccountDto, Set<CommentDto> commentDtoSet, String title, String content, Integer totalExTime, Boolean isPublic, LocalDateTime createdAt, LocalDateTime modifiedAt) {
+        return new DiaryWithCommentDto(id, userAccountDto, commentDtoSet, title, content, totalExTime, isPublic, createdAt, modifiedAt);
     }
 
-    public static PersonalExerciseDiaryWithCommentDto from(PersonalExerciseDiary entity) {
-        return new PersonalExerciseDiaryWithCommentDto(
+    public static DiaryWithCommentDto from(PersonalExerciseDiary entity) {
+        return new DiaryWithCommentDto(
                 entity.getId(),
                 UserAccountDto.from(entity.getUserAccount()),
                 entity.getComments().stream()

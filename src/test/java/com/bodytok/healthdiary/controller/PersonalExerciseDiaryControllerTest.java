@@ -1,7 +1,7 @@
 package com.bodytok.healthdiary.controller;
 
 import com.bodytok.healthdiary.config.TestSecurityConfig;
-import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryDto;
+import com.bodytok.healthdiary.dto.diary.DiaryDto;
 import com.bodytok.healthdiary.dto.UserAccountDto;
 import com.bodytok.healthdiary.service.PersonalExerciseDiaryService;
 import com.bodytok.healthdiary.service.jwt.JwtService;
@@ -124,8 +124,8 @@ class PersonalExerciseDiaryControllerTest {
 
 
 
-    private PersonalExerciseDiaryDto createDiaryDto() {
-        return PersonalExerciseDiaryDto.of(
+    private DiaryDto createDiaryDto() {
+        return DiaryDto.of(
                 createUserAccountDto(),
                 "title",
                 "content",

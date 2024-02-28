@@ -1,10 +1,8 @@
 package com.bodytok.healthdiary.dto.diary.request;
 
 import com.bodytok.healthdiary.dto.UserAccountDto;
-import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryDto;
-import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
+import com.bodytok.healthdiary.dto.diary.DiaryDto;
 
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 public record DiaryRequest(
@@ -17,8 +15,8 @@ public record DiaryRequest(
         return new DiaryRequest(title,content,isPublic, hashtags);
     }
 
-    public PersonalExerciseDiaryDto toDto(UserAccountDto userAccountDto) {
-        return PersonalExerciseDiaryDto.of(
+    public DiaryDto toDto(UserAccountDto userAccountDto) {
+        return DiaryDto.of(
                 userAccountDto,
                 title(),
                 content(),

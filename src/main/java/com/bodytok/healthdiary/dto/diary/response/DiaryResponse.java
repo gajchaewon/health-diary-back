@@ -1,12 +1,10 @@
 package com.bodytok.healthdiary.dto.diary.response;
 
-import com.bodytok.healthdiary.domain.Hashtag;
-import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryDto;
+import com.bodytok.healthdiary.dto.diary.DiaryDto;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public record DiaryResponse(
         Long id,
@@ -27,7 +25,7 @@ public record DiaryResponse(
 
     }
 
-    public static DiaryResponse from(PersonalExerciseDiaryDto dto, Set<HashtagDto> hashtags) {
+    public static DiaryResponse from(DiaryDto dto, Set<HashtagDto> hashtags) {
         String nickname = dto.userAccountDto().nickname();
         if (nickname == null || nickname.isBlank()) {
             nickname = dto.userAccountDto().email();

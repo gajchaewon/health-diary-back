@@ -1,8 +1,12 @@
 package com.bodytok.healthdiary.dto.diary.response;
 
 import com.bodytok.healthdiary.dto.comment.CommentResponse;
+<<<<<<< Updated upstream
 import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryWithCommentDto;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
+=======
+import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
+>>>>>>> Stashed changes
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
@@ -28,7 +32,11 @@ public record DiaryWithCommentResponse(
 
     }
 
+<<<<<<< Updated upstream
     public static DiaryWithCommentResponse from(PersonalExerciseDiaryWithCommentDto dto, Set<HashtagDto> hashtags) {
+=======
+    public static DiaryWithCommentResponse from(DiaryWithCommentDto dto) {
+>>>>>>> Stashed changes
         String nickname = dto.userAccountDto().nickname();
         if (nickname == null || nickname.isBlank()) {
             nickname = dto.userAccountDto().email();
