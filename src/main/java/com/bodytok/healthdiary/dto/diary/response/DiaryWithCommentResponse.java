@@ -2,6 +2,7 @@ package com.bodytok.healthdiary.dto.diary.response;
 
 import com.bodytok.healthdiary.dto.comment.CommentResponse;
 import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryWithCommentDto;
+import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
@@ -18,15 +19,16 @@ public record DiaryWithCommentResponse(
         Long userId,
         String email,
         String nickname,
+        Set<HashtagDto> hashtags,
         Set<CommentResponse> commentResponses
 ) {
 
-    public static DiaryWithCommentResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<CommentResponse> commentResponses){
-        return new DiaryWithCommentResponse(id, title, content, isPublic, totalExTime, createAt, userId, email, nickname, commentResponses);
+    public static DiaryWithCommentResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<HashtagDto> hashtags, Set<CommentResponse> commentResponses){
+        return new DiaryWithCommentResponse(id, title, content, isPublic, totalExTime, createAt, userId, email, nickname, hashtags, commentResponses);
 
     }
 
-    public static DiaryWithCommentResponse from(PersonalExerciseDiaryWithCommentDto dto) {
+    public static DiaryWithCommentResponse from(PersonalExerciseDiaryWithCommentDto dto, Set<HashtagDto> hashtags) {
         String nickname = dto.userAccountDto().nickname();
         if (nickname == null || nickname.isBlank()) {
             nickname = dto.userAccountDto().email();
@@ -42,6 +44,7 @@ public record DiaryWithCommentResponse(
                 dto.userAccountDto().id(),
                 dto.userAccountDto().email(),
                 nickname,
+                hashtags,
                 dto.commentDtoSet().stream()
                         .map(CommentResponse::from)
                         .collect(Collectors.toCollection(LinkedHashSet::new))
