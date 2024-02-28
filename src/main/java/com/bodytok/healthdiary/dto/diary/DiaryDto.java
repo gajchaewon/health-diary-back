@@ -1,18 +1,15 @@
 package com.bodytok.healthdiary.dto.diary;
 
-import com.bodytok.healthdiary.domain.Hashtag;
 import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.dto.UserAccountDto;
-import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 
 /**
  * DTO for {@link PersonalExerciseDiary}
  */
-public record PersonalExerciseDiaryDto(
+public record DiaryDto(
         Long id,
         UserAccountDto userAccountDto,
         String title,
@@ -24,12 +21,12 @@ public record PersonalExerciseDiaryDto(
 
 ) {
 
-    public static PersonalExerciseDiaryDto of(UserAccountDto userAccountDto, String title, String content, Boolean isPublic) {
-        return new PersonalExerciseDiaryDto(null, userAccountDto, title, content, 0, isPublic, null, null);
+    public static DiaryDto of(UserAccountDto userAccountDto, String title, String content, Boolean isPublic) {
+        return new DiaryDto(null, userAccountDto, title, content, 0, isPublic, null, null);
     }
 
-    public static PersonalExerciseDiaryDto from(PersonalExerciseDiary entity) {
-        return new PersonalExerciseDiaryDto(
+    public static DiaryDto from(PersonalExerciseDiary entity) {
+        return new DiaryDto(
                 entity.getId(),
                 UserAccountDto.from(entity.getUserAccount()),
                 entity.getTitle(),

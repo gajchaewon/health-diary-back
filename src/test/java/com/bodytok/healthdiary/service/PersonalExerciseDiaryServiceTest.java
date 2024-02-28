@@ -2,7 +2,7 @@ package com.bodytok.healthdiary.service;
 
 import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.domain.UserAccount;
-import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryDto;
+import com.bodytok.healthdiary.dto.diary.DiaryDto;
 import com.bodytok.healthdiary.dto.UserAccountDto;
 import com.bodytok.healthdiary.repository.PersonalExerciseDiaryRepository;
 import com.bodytok.healthdiary.repository.UserAccountRepository;
@@ -42,7 +42,7 @@ class PersonalExerciseDiaryServiceTest {
         Pageable pageable = Pageable.ofSize(20);
         given(diaryRepository.findAll(pageable)).willReturn(Page.empty());
         //When
-        Page<PersonalExerciseDiaryDto> diaries = sut.getAllDiaries(pageable);
+        Page<DiaryDto> diaries = sut.getAllDiaries(pageable);
         //Then
 
         assertThat(diaries).isNotNull();
@@ -57,7 +57,7 @@ class PersonalExerciseDiaryServiceTest {
         PersonalExerciseDiary diary = createPersonalExerciseDiary();
         given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
         //When
-        PersonalExerciseDiaryDto dto = sut.getDiary(diaryId);
+        DiaryDto dto = sut.getDiary(diaryId);
         //Then
 
         then(diaryRepository).should().findById(diaryId);
@@ -81,7 +81,7 @@ class PersonalExerciseDiaryServiceTest {
     @DisplayName("다이어리 정보를 입력하면, 저장한다.")
     @Test
     void givenDiaryInfo_whenCreatingANewDiary_thenSavesIt() {
-        PersonalExerciseDiaryDto dto = createDiaryDto();
+        DiaryDto dto = createDiaryDto();
         given(diaryRepository.save(any(PersonalExerciseDiary.class))).willReturn(createPersonalExerciseDiary());
         // When
         sut.saveDiary(dto);
@@ -96,7 +96,7 @@ class PersonalExerciseDiaryServiceTest {
     void givenArticleIdAndModifiedInfo_whenUpdatingArticle_thenUpdatesArticle() {
         // Given
         PersonalExerciseDiary diary = createPersonalExerciseDiary();
-        PersonalExerciseDiaryDto dto = createDiaryDto("새 타이틀", "새 내용", false,"");
+        DiaryDto dto = createDiaryDto("새 타이틀", "새 내용", false,"");
         given(diaryRepository.getReferenceById(dto.id())).willReturn(diary);
         // When
         sut.updateDiary(dto);
@@ -153,12 +153,12 @@ class PersonalExerciseDiaryServiceTest {
         return diary;
     }
 
-    private PersonalExerciseDiaryDto createDiaryDto() {
+    private DiaryDto createDiaryDto() {
         return createDiaryDto("title", "content", false, "testurl");
     }
 
-    private PersonalExerciseDiaryDto createDiaryDto(String title, String content, Boolean isPublic, String youtubeUrl) {
-        return PersonalExerciseDiaryDto.of(
+    private DiaryDto createDiaryDto(String title, String content, Boolean isPublic, String youtubeUrl) {
+        return DiaryDto.of(
                 createUserAccountDto(),
                 title,
                 content,
