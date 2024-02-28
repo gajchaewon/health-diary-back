@@ -2,9 +2,11 @@ package com.bodytok.healthdiary.service;
 
 
 import com.bodytok.healthdiary.domain.*;
+import com.bodytok.healthdiary.dto.diary.DiaryWithHashtag;
 import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryDto;
 import com.bodytok.healthdiary.dto.diary.PersonalExerciseDiaryWithCommentDto;
 import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
+import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import com.bodytok.healthdiary.repository.HashtagRepository;
 import com.bodytok.healthdiary.repository.PersonalExerciseDiaryHashtagRepository;
@@ -34,49 +36,47 @@ public class PersonalExerciseDiaryService {
     private final UserAccountRepository userAccountRepository;
 
     //다이어리에 해시태그들을 추가하는 메소드
-    private DiaryResponse convertToDtoWithHashtags(PersonalExerciseDiary diary) {
+    private DiaryWithHashtag convertToDtoWithHashtags(PersonalExerciseDiary diary) {
         Set<Hashtag> hashtags = diaryHashtagRepository.findByDiaryId(diary.getId())
                 .stream()
                 .map(PersonalExerciseDiaryHashtag::getHashtag)
                 .collect(Collectors.toUnmodifiableSet());
 
-        PersonalExerciseDiaryDto diaryDto = PersonalExerciseDiaryDto.from(diary);
-        return DiaryResponse.from(diaryDto, hashtags.stream().map(HashtagDto::from).collect(Collectors.toUnmodifiableSet()));
+        return DiaryWithHashtag.of(diary, hashtags.stream().map(HashtagDto::from).collect(Collectors.toUnmodifiableSet()));
     }
 
     @Transactional(readOnly = true)
     public Page<DiaryResponse> getAllDiaries(Pageable pageable) {
         Page<PersonalExerciseDiary> diaries = diaryRepository.findAll(pageable);
-        return diaries.map(this::convertToDtoWithHashtags);
+        return diaries
+                .map(this::convertToDtoWithHashtags)
+                .map(DiaryWithHashtag::toDiaryResponse);
     }
 
     @Transactional(readOnly = true)
-    public PersonalExerciseDiaryDto getDiary(Long diaryId) {
-        return diaryRepository.findById(diaryId)
-                .map(PersonalExerciseDiaryDto::from)
+    public DiaryResponse getDiary(Long diaryId) {
+        var diary = diaryRepository.findById(diaryId);
+        return diary.map(this::convertToDtoWithHashtags)
+                .map(DiaryWithHashtag::toDiaryResponse)
                 .orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : "+ diaryId));
     }
 
     @Transactional(readOnly = true)
-    public PersonalExerciseDiaryWithCommentDto getDiaryWithComments(Long diaryId) {
-        return diaryRepository.findById(diaryId)
-                .map(PersonalExerciseDiaryWithCommentDto::from)
+    public DiaryWithCommentResponse getDiaryWithComments(Long diaryId) {
+        var diary = diaryRepository.findById(diaryId);
+        return diary.map(this::convertToDtoWithHashtags)
+                .map(DiaryWithHashtag::toDiaryWithCommentResponse)
                 .orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : "+ diaryId));
     }
 
 
     public DiaryResponse saveDiaryWithHashtags(PersonalExerciseDiaryDto dto, Set<HashtagDto> hashtagDtoSet) {
         // Convert DTOs to entities
-
-        log.info("user id : {}", dto.userAccountDto().id());
-        log.info("hashtags set : {}", hashtagDtoSet);
         UserAccount userAccount = userAccountRepository.getReferenceById(dto.userAccountDto().id());
         PersonalExerciseDiary diary = dto.toEntity(userAccount);
         Set<Hashtag> hashtags = hashtagDtoSet.stream()
                 .map(HashtagDto::toEntity)
                 .collect(Collectors.toUnmodifiableSet());
-
-        log.info("hashtags after of() : {}", hashtags);
         // Save diary and hashtags
         diary = diaryRepository.save(diary);
         hashtags = hashtags.stream().map(hashtagRepository::save).collect(Collectors.toUnmodifiableSet());

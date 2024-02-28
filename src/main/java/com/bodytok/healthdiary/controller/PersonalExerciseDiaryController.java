@@ -50,24 +50,24 @@ public class PersonalExerciseDiaryController {
     }
 
     @GetMapping("/{diaryId}")
-    public ResponseEntity<DiaryWithCommentResponse> getDiary(@PathVariable Long diaryId) {
-        DiaryWithCommentResponse diary = DiaryWithCommentResponse.from(diaryService.getDiaryWithComments(diaryId));
+    public ResponseEntity<DiaryWithCommentResponse> getDiaryWithComments(@PathVariable Long diaryId) {
+        DiaryWithCommentResponse diary = diaryService.getDiaryWithComments(diaryId);
 
         return ResponseEntity.ok(diary);
     }
 
-    @PutMapping("/{diaryId}")
-    public ResponseEntity<?> updateDiary(
-            @PathVariable Long diaryId,
-            @RequestBody DiaryRequest request
-    ) {
-        return (ResponseEntity<?>) ResponseEntity.ok();
-    }
-
-    @DeleteMapping("/{diaryId}")
-    public ResponseEntity<Void> deleteDiary(@PathVariable Long diaryId) {
-        diaryService.deleteDiary(diaryId);
-        return ResponseEntity.ok().build();
-    }
+//    @PutMapping("/{diaryId}")
+//    public ResponseEntity<?> updateDiary(
+//            @PathVariable Long diaryId,
+//            @RequestBody DiaryRequest request
+//    ) {
+//        return (ResponseEntity<?>) ResponseEntity.ok();
+//    }
+//
+//    @DeleteMapping("/{diaryId}")
+//    public ResponseEntity<Void> deleteDiary(@PathVariable Long diaryId) {
+//        diaryService.deleteDiary(diaryId);
+//        return ResponseEntity.ok().build();
+//    }
 
 }
