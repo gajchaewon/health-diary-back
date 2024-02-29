@@ -1,6 +1,5 @@
 package com.bodytok.healthdiary.domain;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,7 +9,6 @@ import org.hibernate.annotations.ColumnDefault;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
-
 
 @Getter
 @ToString(callSuper = true)
@@ -48,11 +46,15 @@ public class PersonalExerciseDiary extends AuditingFields {
     @Column(nullable = false)
     private Boolean isPublic;
 
-    //diary 에서 댓글 불러올 일이 많으므로 양방향 연결함
-    @ToString.Exclude /*-> circular referential 발생 방지*/
+    @ToString.Exclude
     @OrderBy("createdAt DESC")
     @OneToMany(mappedBy = "personalExerciseDiary", cascade = CascadeType.ALL)
-    private final Set<Comment> comments  = new LinkedHashSet<>();
+    private final Set<Comment> comments = new LinkedHashSet<>();
+
+    // 좋아요 필드 추가
+    @ToString.Exclude
+    @OneToMany(mappedBy = "personalExerciseDiary", cascade = CascadeType.ALL)
+    private final Set<DiaryLike> likes = new LinkedHashSet<>();
 
     protected PersonalExerciseDiary() {
     }
@@ -65,14 +67,14 @@ public class PersonalExerciseDiary extends AuditingFields {
         this.isPublic = isPublic;
     }
 
-    public  static PersonalExerciseDiary of(UserAccount userAccount, String title, String content, Integer totalExTime, Boolean isPublic) {
+    public static PersonalExerciseDiary of(UserAccount userAccount, String title, String content, Integer totalExTime, Boolean isPublic) {
         return new PersonalExerciseDiary(userAccount, title, content, totalExTime, isPublic);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof PersonalExerciseDiary that)) return false; // pattern variable
+        if (!(o instanceof PersonalExerciseDiary that)) return false;
         return Objects.equals(id, that.id);
     }
 
