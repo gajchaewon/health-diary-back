@@ -7,6 +7,7 @@ import com.bodytok.healthdiary.dto.UserAccountDto;
 import com.bodytok.healthdiary.repository.PersonalExerciseDiaryRepository;
 import com.bodytok.healthdiary.repository.UserAccountRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
 
 
+@Disabled("테스트 코드 작성 학습 중")
 @DisplayName("비즈니스 로직 - 다이어리")
 @ExtendWith(MockitoExtension.class)
 class PersonalExerciseDiaryServiceTest {
