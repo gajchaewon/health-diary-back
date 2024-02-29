@@ -36,8 +36,7 @@ public class Hashtag {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Hashtag)) return false;
-        Hashtag that = (Hashtag) o;
+        if (!(o instanceof Hashtag that)) return false;
         // id가 null이면 hashtag 필드를 기준으로 비교, 아니면 id 필드를 기준으로 비교
         return (id == null) ? Objects.equals(hashtag, that.hashtag) : Objects.equals(id, that.id);
     }

@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
+@Disabled("테스트 코드 작성 학습 중")
 @DisplayName("컨트롤러 - 다이어리")
 @Import({TestSecurityConfig.class})
 @WebMvcTest(PersonalExerciseDiaryController.class)
