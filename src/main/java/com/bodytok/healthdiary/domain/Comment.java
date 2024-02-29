@@ -52,8 +52,8 @@ public class Comment extends AuditingFields {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!( o instanceof Comment comment)) return false;
-        return Objects.equals(id, comment.id);
+        if (!( o instanceof Comment that)) return false;
+        return Objects.equals(id, that.id);
     }
 
     @Override
