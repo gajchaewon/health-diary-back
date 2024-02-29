@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Set;
+
 
 @Getter
 @Table(name = "personal_exercise_diary_hashtag")
@@ -37,6 +39,12 @@ public class PersonalExerciseDiaryHashtag {
 
     public static PersonalExerciseDiaryHashtag of(PersonalExerciseDiaryHashtagId diaryHashtagId, PersonalExerciseDiary diary, Hashtag hashtag){
         return new PersonalExerciseDiaryHashtag(diaryHashtagId, diary, hashtag);
+    }
+
+    public static PersonalExerciseDiaryHashtag of(PersonalExerciseDiary diary, Hashtag hashtag){
+        return new PersonalExerciseDiaryHashtag(
+                PersonalExerciseDiaryHashtagId.of(diary.getId(), hashtag.getId()), diary, hashtag
+        );
     }
 
 

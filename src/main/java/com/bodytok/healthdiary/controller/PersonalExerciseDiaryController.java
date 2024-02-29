@@ -2,6 +2,8 @@ package com.bodytok.healthdiary.controller;
 
 
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
+import com.bodytok.healthdiary.dto.diary.DiaryDto;
+import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
 import com.bodytok.healthdiary.dto.diary.request.DiaryRequest;
 import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
 import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
@@ -29,9 +31,11 @@ public class PersonalExerciseDiaryController {
     public ResponseEntity<Page<DiaryResponse>> getAllDiaries(
             @PageableDefault() Pageable pageable
     ) {
-        Page<DiaryResponse> diaries = diaryService.getAllDiaries(pageable);
+        Page<DiaryDto> diaries = diaryService.getAllDiaries(pageable);
 
-        return ResponseEntity.ok(diaries);
+        return ResponseEntity.ok().body(
+                diaries.map(DiaryResponse::from)
+        );
     }
 
     @PostMapping("/new")
@@ -39,18 +43,20 @@ public class PersonalExerciseDiaryController {
             @RequestBody DiaryRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        DiaryResponse diary = diaryService.saveDiaryWithHashtags(
+        DiaryDto diary = diaryService.saveDiaryWithHashtags(
                 request.toDto(userDetails.toDto()),
                 request.hashtags().stream()
                         .map(HashtagDto::of).collect(Collectors.toUnmodifiableSet()));
-        return ResponseEntity.ok(diary);
+        DiaryResponse diaryResponse = DiaryResponse.from(diary);
+
+        return ResponseEntity.ok(diaryResponse);
     }
 
     @GetMapping("/{diaryId}")
     public ResponseEntity<DiaryWithCommentResponse> getDiaryWithComments(@PathVariable Long diaryId) {
-        DiaryWithCommentResponse diary = diaryService.getDiaryWithComments(diaryId);
+        DiaryWithCommentDto diary = diaryService.getDiaryWithComments(diaryId);
 
-        return ResponseEntity.ok(diary);
+        return ResponseEntity.ok(DiaryWithCommentResponse.from(diary));
     }
 
 //    @PutMapping("/{diaryId}")

@@ -9,5 +9,4 @@ import java.util.Set;
 public interface DiaryHashtagRepositoryCustom {
 
     Page<PersonalExerciseDiaryHashtag> findDiariesByHashtagId(Long hashtagId, Pageable pageable);
-    Set<PersonalExerciseDiaryHashtag> findByDiaryId(Long diaryId);
 }

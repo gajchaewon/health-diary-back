@@ -32,13 +32,4 @@ public class DiaryHashtagRepositoryCustomImpl extends QuerydslRepositorySupport 
 
         return new PageImpl<>(diaries, pageable, total);
     }
-
-    @Override
-    public Set<PersonalExerciseDiaryHashtag> findByDiaryId(Long diaryId) {
-        QPersonalExerciseDiaryHashtag diaryHashtag = QPersonalExerciseDiaryHashtag.personalExerciseDiaryHashtag;
-        JPQLQuery<PersonalExerciseDiaryHashtag> query = from(diaryHashtag)
-                .where(diaryHashtag.personalExerciseDiary.id.eq(diaryId));
-
-        return new LinkedHashSet<>(query.fetch());
-    }
 }
