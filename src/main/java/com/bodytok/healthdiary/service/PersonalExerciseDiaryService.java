@@ -7,10 +7,7 @@ import com.bodytok.healthdiary.dto.diary.DiaryWithHashtag;
 import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
 import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
-import com.bodytok.healthdiary.repository.HashtagRepository;
-import com.bodytok.healthdiary.repository.PersonalExerciseDiaryHashtagRepository;
-import com.bodytok.healthdiary.repository.PersonalExerciseDiaryRepository;
-import com.bodytok.healthdiary.repository.UserAccountRepository;
+import com.bodytok.healthdiary.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,17 +29,10 @@ public class PersonalExerciseDiaryService {
     private final HashtagRepository hashtagRepository;
     private final PersonalExerciseDiaryHashtagRepository diaryHashtagRepository;
     private final UserAccountRepository userAccountRepository;
+    private final CommunityExerciseDiaryService communityExerciseDiaryService;
 
-    //다이어리에 해시태그들을 추가하는 메소드
-    private DiaryWithHashtag convertToDtoWithHashtags(PersonalExerciseDiary diary) {
-        Set<Hashtag> hashtags = diaryHashtagRepository.findByDiaryId(diary.getId())
-                .stream()
-                .map(PersonalExerciseDiaryHashtag::getHashtag)
-                .collect(Collectors.toUnmodifiableSet());
 
-        return DiaryWithHashtag.of(diary, hashtags.stream().map(HashtagDto::from).collect(Collectors.toUnmodifiableSet()));
-    }
-
+    //모든 다이어리 가져오기 - 댓글 미포함
     @Transactional(readOnly = true)
     public Page<DiaryResponse> getAllDiaries(Pageable pageable) {
         Page<PersonalExerciseDiary> diaries = diaryRepository.findAll(pageable);
@@ -51,6 +41,7 @@ public class PersonalExerciseDiaryService {
                 .map(DiaryWithHashtag::toDiaryResponse);
     }
 
+    //다이어리 조회 - 댓글 미포함
     @Transactional(readOnly = true)
     public DiaryResponse getDiary(Long diaryId) {
         var diary = diaryRepository.findById(diaryId);
@@ -59,6 +50,7 @@ public class PersonalExerciseDiaryService {
                 .orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : "+ diaryId));
     }
 
+    //다이어리 조회 - 댓글 포함
     @Transactional(readOnly = true)
     public DiaryWithCommentResponse getDiaryWithComments(Long diaryId) {
         var diary = diaryRepository.findById(diaryId);
@@ -80,6 +72,7 @@ public class PersonalExerciseDiaryService {
         hashtags = hashtags.stream().map(hashtagRepository::save).collect(Collectors.toUnmodifiableSet());
 
         // Create and save DiaryHashtag entities
+        //TODO : 인스턴스 생성 로직 함수 만들기, 지금은 너무 길다.
         for (Hashtag hashtag : hashtags) {
             var diaryHashtagId = PersonalExerciseDiaryHashtagId.of(diary.getId(), hashtag.getId());
             var diaryHashtag = PersonalExerciseDiaryHashtag.of(
@@ -88,6 +81,10 @@ public class PersonalExerciseDiaryService {
                     hashtag
             );
             diaryHashtagRepository.save(diaryHashtag);
+        }
+        // 커뮤니티에 저장하기
+        if(diary.getIsPublic()){
+            communityExerciseDiaryService.savePublicDiary(diary);
         }
 
         return DiaryResponse.from(
@@ -109,5 +106,16 @@ public class PersonalExerciseDiaryService {
 
     public void deleteDiary(Long diaryId) {
         diaryRepository.deleteById(diaryId);
+    }
+
+
+    //다이어리에 해시태그들을 추가하는 메소드
+    private DiaryWithHashtag convertToDtoWithHashtags(PersonalExerciseDiary diary) {
+        Set<Hashtag> hashtags = diaryHashtagRepository.findByDiaryId(diary.getId())
+                .stream()
+                .map(PersonalExerciseDiaryHashtag::getHashtag)
+                .collect(Collectors.toUnmodifiableSet());
+
+        return DiaryWithHashtag.of(diary, hashtags.stream().map(HashtagDto::from).collect(Collectors.toUnmodifiableSet()));
     }
 }
