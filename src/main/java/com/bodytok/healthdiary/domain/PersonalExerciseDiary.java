@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -49,12 +50,16 @@ public class PersonalExerciseDiary extends AuditingFields {
     @ToString.Exclude
     @OrderBy("createdAt DESC")
     @OneToMany(mappedBy = "personalExerciseDiary", cascade = CascadeType.ALL)
-    private final Set<Comment> comments = new LinkedHashSet<>();
+    private Set<Comment> comments = new LinkedHashSet<>();
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "personalExerciseDiary", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<PersonalExerciseDiaryHashtag> diaryHashtags = new HashSet<>();
 
     // 좋아요 필드 추가
     @ToString.Exclude
     @OneToMany(mappedBy = "personalExerciseDiary", cascade = CascadeType.ALL)
-    private final Set<DiaryLike> likes = new LinkedHashSet<>();
+    private  Set<DiaryLike> likes = new LinkedHashSet<>();
 
     protected PersonalExerciseDiary() {
     }
@@ -70,6 +75,27 @@ public class PersonalExerciseDiary extends AuditingFields {
     public static PersonalExerciseDiary of(UserAccount userAccount, String title, String content, Integer totalExTime, Boolean isPublic) {
         return new PersonalExerciseDiary(userAccount, title, content, totalExTime, isPublic);
     }
+
+
+    // 해시태그를 추가하는 메서드
+    public void addHashtag(Hashtag hashtag) {
+        var diaryHashtag = PersonalExerciseDiaryHashtag.of(this, hashtag);
+        diaryHashtags.add(diaryHashtag);
+    }
+
+    // 해시태그를 제거하는 메서드
+    public void removeHashtag(Hashtag hashtag) {
+        for (PersonalExerciseDiaryHashtag diaryHashtag : diaryHashtags) {
+            if (diaryHashtag.getPersonalExerciseDiary().equals(this) &&
+                    diaryHashtag.getHashtag().equals(hashtag)) {
+                diaryHashtags.remove(diaryHashtag);
+                diaryHashtag.setPersonalExerciseDiary(null);
+                diaryHashtag.setHashtag(null);
+                return;
+            }
+        }
+    }
+
 
     @Override
     public boolean equals(Object o) {

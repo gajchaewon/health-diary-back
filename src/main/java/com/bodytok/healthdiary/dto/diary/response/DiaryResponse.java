@@ -25,7 +25,7 @@ public record DiaryResponse(
 
     }
 
-    public static DiaryResponse from(DiaryDto dto, Set<HashtagDto> hashtags) {
+    public static DiaryResponse from(DiaryDto dto) {
         String nickname = dto.userAccountDto().nickname();
         if (nickname == null || nickname.isBlank()) {
             nickname = dto.userAccountDto().email();
@@ -41,7 +41,7 @@ public record DiaryResponse(
                 dto.userAccountDto().id(),
                 dto.userAccountDto().email(),
                 nickname,
-                hashtags
+                dto.hashtagDtoSet()
         );
     }
 }

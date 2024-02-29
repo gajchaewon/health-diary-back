@@ -1,8 +1,10 @@
 package com.bodytok.healthdiary.dto.diary;
 
 import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
+import com.bodytok.healthdiary.domain.PersonalExerciseDiaryHashtag;
 import com.bodytok.healthdiary.dto.UserAccountDto;
 import com.bodytok.healthdiary.dto.comment.CommentDto;
+import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
@@ -18,11 +20,15 @@ public record DiaryWithCommentDto(
         Integer totalExTime,
         Boolean isPublic,
         LocalDateTime createdAt,
-        LocalDateTime modifiedAt
+        LocalDateTime modifiedAt,
+        Set<HashtagDto> hashtagDtoSet
 ) {
 
     public static DiaryWithCommentDto of(Long id, UserAccountDto userAccountDto, Set<CommentDto> commentDtoSet, String title, String content, Integer totalExTime, Boolean isPublic, LocalDateTime createdAt, LocalDateTime modifiedAt) {
-        return new DiaryWithCommentDto(id, userAccountDto, commentDtoSet, title, content, totalExTime, isPublic, createdAt, modifiedAt);
+        return new DiaryWithCommentDto(id, userAccountDto, commentDtoSet, title, content, totalExTime, isPublic, createdAt, modifiedAt, Set.of());
+    }
+    public static DiaryWithCommentDto of(Long id, UserAccountDto userAccountDto, Set<CommentDto> commentDtoSet, String title, String content, Integer totalExTime, Boolean isPublic, LocalDateTime createdAt, LocalDateTime modifiedAt,  Set<HashtagDto> hashtagDtoSet) {
+        return new DiaryWithCommentDto(id, userAccountDto, commentDtoSet, title, content, totalExTime, isPublic, createdAt, modifiedAt, hashtagDtoSet);
     }
 
     public static DiaryWithCommentDto from(PersonalExerciseDiary entity) {
@@ -37,7 +43,11 @@ public record DiaryWithCommentDto(
                 entity.getTotalExTime(),
                 entity.getIsPublic(),
                 entity.getCreatedAt(),
-                entity.getModifiedAt()
+                entity.getModifiedAt(),
+                entity.getDiaryHashtags().stream()
+                        .map(PersonalExerciseDiaryHashtag::getHashtag)
+                        .map(HashtagDto::from)
+                        .collect(Collectors.toUnmodifiableSet())
         );
     }
 

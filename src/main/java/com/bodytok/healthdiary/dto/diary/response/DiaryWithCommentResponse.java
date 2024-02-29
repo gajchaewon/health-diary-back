@@ -20,15 +20,15 @@ public record DiaryWithCommentResponse(
         String email,
         String nickname,
         Set<HashtagDto> hashtags,
-        Set<CommentResponse> commentResponses
+        Set<CommentResponse> comments
 ) {
 
-    public static DiaryWithCommentResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<HashtagDto> hashtags, Set<CommentResponse> commentResponses){
-        return new DiaryWithCommentResponse(id, title, content, isPublic, totalExTime, createAt, userId, email, nickname, hashtags, commentResponses);
+    public static DiaryWithCommentResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<HashtagDto> hashtags, Set<CommentResponse> comments){
+        return new DiaryWithCommentResponse(id, title, content, isPublic, totalExTime, createAt, userId, email, nickname, hashtags, comments);
 
     }
 
-    public static DiaryWithCommentResponse from(DiaryWithCommentDto dto, Set<HashtagDto> hashtags) {
+    public static DiaryWithCommentResponse from(DiaryWithCommentDto dto) {
         String nickname = dto.userAccountDto().nickname();
         if (nickname == null || nickname.isBlank()) {
             nickname = dto.userAccountDto().email();
@@ -44,7 +44,8 @@ public record DiaryWithCommentResponse(
                 dto.userAccountDto().id(),
                 dto.userAccountDto().email(),
                 nickname,
-                hashtags,
+                dto.hashtagDtoSet().stream()
+                        .collect(Collectors.toUnmodifiableSet()),
                 dto.commentDtoSet().stream()
                         .map(CommentResponse::from)
                         .collect(Collectors.toCollection(LinkedHashSet::new))

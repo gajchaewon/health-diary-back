@@ -3,9 +3,7 @@ package com.bodytok.healthdiary.service;
 
 import com.bodytok.healthdiary.domain.*;
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
-import com.bodytok.healthdiary.dto.diary.DiaryWithHashtag;
-import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
-import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
+import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import com.bodytok.healthdiary.repository.*;
 import jakarta.persistence.EntityNotFoundException;
@@ -34,33 +32,28 @@ public class PersonalExerciseDiaryService {
 
     //모든 다이어리 가져오기 - 댓글 미포함
     @Transactional(readOnly = true)
-    public Page<DiaryResponse> getAllDiaries(Pageable pageable) {
+    public Page<DiaryDto> getAllDiaries(Pageable pageable) {
         Page<PersonalExerciseDiary> diaries = diaryRepository.findAll(pageable);
-        return diaries
-                .map(this::convertToDtoWithHashtags)
-                .map(DiaryWithHashtag::toDiaryResponse);
+
+        return diaries.map(DiaryDto::from);
     }
 
     //다이어리 조회 - 댓글 미포함
     @Transactional(readOnly = true)
-    public DiaryResponse getDiary(Long diaryId) {
-        var diary = diaryRepository.findById(diaryId);
-        return diary.map(this::convertToDtoWithHashtags)
-                .map(DiaryWithHashtag::toDiaryResponse)
-                .orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : "+ diaryId));
+    public DiaryDto getDiary(Long diaryId) {
+        var diary = diaryRepository.findById(diaryId).orElseThrow(()-> new EntityNotFoundException("다이어리가 없습니다. - diaryId : "+ diaryId));
+        return DiaryDto.from(diary);
     }
+
 
     //다이어리 조회 - 댓글 포함
     @Transactional(readOnly = true)
-    public DiaryWithCommentResponse getDiaryWithComments(Long diaryId) {
-        var diary = diaryRepository.findById(diaryId);
-        return diary.map(this::convertToDtoWithHashtags)
-                .map(DiaryWithHashtag::toDiaryWithCommentResponse)
-                .orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : "+ diaryId));
+    public DiaryWithCommentDto getDiaryWithComments(Long diaryId) {
+        var diary = diaryRepository.findById(diaryId).orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : "+ diaryId));
+        return DiaryWithCommentDto.from(diary);
     }
 
-
-    public DiaryResponse saveDiaryWithHashtags(DiaryDto dto, Set<HashtagDto> hashtagDtoSet) {
+    public DiaryDto saveDiaryWithHashtags(DiaryDto dto, Set<HashtagDto> hashtagDtoSet) {
         // Convert DTOs to entities
         UserAccount userAccount = userAccountRepository.getReferenceById(dto.userAccountDto().id());
         PersonalExerciseDiary diary = dto.toEntity(userAccount);
@@ -72,25 +65,20 @@ public class PersonalExerciseDiaryService {
         hashtags = hashtags.stream().map(hashtagRepository::save).collect(Collectors.toUnmodifiableSet());
 
         // Create and save DiaryHashtag entities
-        //TODO : 인스턴스 생성 로직 함수 만들기, 지금은 너무 길다.
         for (Hashtag hashtag : hashtags) {
-            var diaryHashtagId = PersonalExerciseDiaryHashtagId.of(diary.getId(), hashtag.getId());
             var diaryHashtag = PersonalExerciseDiaryHashtag.of(
-                    diaryHashtagId,
                     diary,
                     hashtag
             );
             diaryHashtagRepository.save(diaryHashtag);
         }
+
         // 커뮤니티에 저장하기
         if(diary.getIsPublic()){
             communityExerciseDiaryService.savePublicDiary(diary);
         }
 
-        return DiaryResponse.from(
-                DiaryDto.from(diary),
-                hashtags.stream().map(HashtagDto::from).collect(Collectors.toUnmodifiableSet())
-        );
+        return DiaryDto.from(diary);
     }
 
     public void updateDiary(DiaryDto dto) {
@@ -108,14 +96,4 @@ public class PersonalExerciseDiaryService {
         diaryRepository.deleteById(diaryId);
     }
 
-
-    //다이어리에 해시태그들을 추가하는 메소드
-    private DiaryWithHashtag convertToDtoWithHashtags(PersonalExerciseDiary diary) {
-        Set<Hashtag> hashtags = diaryHashtagRepository.findByDiaryId(diary.getId())
-                .stream()
-                .map(PersonalExerciseDiaryHashtag::getHashtag)
-                .collect(Collectors.toUnmodifiableSet());
-
-        return DiaryWithHashtag.of(diary, hashtags.stream().map(HashtagDto::from).collect(Collectors.toUnmodifiableSet()));
-    }
 }
