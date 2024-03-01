@@ -1,12 +1,16 @@
 package com.bodytok.healthdiary.service.jwt;
 
 
+import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.JwtToken;
+import com.bodytok.healthdiary.dto.UserAccountDto;
+import com.bodytok.healthdiary.service.UserAccountService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +22,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
+@RequiredArgsConstructor
 @Service
 public class JwtService {
+
+    private final UserAccountService userAccountService;
 
     // Create a key string with 256 bits
     private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
@@ -61,6 +68,11 @@ public class JwtService {
                 .compact();
     }
 
+    public UserDetails getUserDetailsFromToken(String token) {
+        String username = extractUsername(token);
+        UserAccountDto userAccountDto = userAccountService.getUserByEmail(username);
+        return CustomUserDetails.from(userAccountDto);
+    }
 
 
     public boolean isTokenValid(String token, UserDetails userDetails) {

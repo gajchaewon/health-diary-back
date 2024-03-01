@@ -3,19 +3,19 @@ package com.bodytok.healthdiary.controller;
 
 import com.bodytok.healthdiary.dto.auth.request.AuthenticationRequest;
 import com.bodytok.healthdiary.dto.auth.request.RegisterRequest;
-import com.bodytok.healthdiary.dto.auth.response.AuthenticationResponse;
+import com.bodytok.healthdiary.dto.auth.response.LoginResponse;
+import com.bodytok.healthdiary.dto.auth.response.RefreshTokenResponse;
+import com.bodytok.healthdiary.dto.auth.response.RegisterResponse;
+import com.bodytok.healthdiary.dto.auth.response.TokenResponse;
 import com.bodytok.healthdiary.service.auth.AuthenticationService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,21 +25,27 @@ public class AuthController {
     private final AuthenticationService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest request) {
-        var response = authService.authenticate(request);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(response);
+    public ResponseEntity<LoginResponse> login(@RequestBody AuthenticationRequest request) {
+        LoginResponse response = authService.authenticate(request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/sign-up")
-    public ResponseEntity<AuthenticationResponse> singUp(@RequestBody RegisterRequest request) {
-        var response = authService.register(request);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(response);
+    public ResponseEntity<RegisterResponse> singUp(@RequestBody RegisterRequest request) {
+        RegisterResponse response = authService.register(request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/refresh-token")
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        authService.refreshToken(request, response);
+    public ResponseEntity<RefreshTokenResponse> refreshToken(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken
+    ) throws IOException {
+        if (refreshToken == null)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(RefreshTokenResponse.of(null,"REFRESH_TOKEN_FAILED"));
+        String newRefreshToken = authService.refreshToken(refreshToken);
+        if (Objects.equals(newRefreshToken, "REFRESH_TOKEN_FAILED")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(RefreshTokenResponse.of(null,"REFRESH_TOKEN_FAILED"));
+        }
+        return ResponseEntity.ok(RefreshTokenResponse.of(newRefreshToken, "REFRESH_TOKEN_SUCCESS"));
     }
 }
