@@ -29,7 +29,7 @@ public class CustomUserDetails implements UserDetails {
 
     private static final Set<RoleType> roleTypes = Set.of(RoleType.USER);
 
-    public static CustomUserDetails of(String email,String nickname, String userPassword,  Byte[] profileImage) {
+    public static CustomUserDetails of(String email,String nickname,String userPassword, Byte[] profileImage) {
         return new CustomUserDetails(
                 null,
                 email,
@@ -43,7 +43,7 @@ public class CustomUserDetails implements UserDetails {
         );
     }
 
-    public static CustomUserDetails of(Long id, String email,String nickname, String userPassword,  Byte[] profileImage) {
+    public static CustomUserDetails of(Long id, String email,String nickname,String userPassword, Byte[] profileImage) {
         return new CustomUserDetails(
                 id,
                 email,
@@ -71,7 +71,7 @@ public class CustomUserDetails implements UserDetails {
         return UserAccount.of(
                 userDetails.getEmail(),
                 userDetails.getNickname(),
-                userDetails.getUserPassword(),
+                userDetails.getPassword(),
                 userDetails.getProfileImage()
         );
     }

@@ -1,13 +1,7 @@
 package com.bodytok.healthdiary.dto.auth.response;
 
-
-import com.bodytok.healthdiary.dto.JwtToken;
-
-public record AuthenticationResponse(
-
+public record RegisterResponse(
         String accessToken,
         String refreshToken
 ) {
 }
-
-
