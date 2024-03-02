@@ -17,25 +17,22 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
-
     private Long id;
     private String email;
     private String nickname;
     private String userPassword;
-    private Byte[] profileImage;
 
     private Collection<? extends GrantedAuthority> authorities;
 
 
     private static final Set<RoleType> roleTypes = Set.of(RoleType.USER);
 
-    public static CustomUserDetails of(String email,String nickname,String userPassword, Byte[] profileImage) {
+    public static CustomUserDetails of(String email,String nickname,String userPassword) {
         return new CustomUserDetails(
                 null,
                 email,
                 nickname,
                 userPassword,
-                profileImage,
                 roleTypes.stream()
                         .map(RoleType::getName)
                         .map(SimpleGrantedAuthority::new)
@@ -43,13 +40,12 @@ public class CustomUserDetails implements UserDetails {
         );
     }
 
-    public static CustomUserDetails of(Long id, String email,String nickname,String userPassword, Byte[] profileImage) {
+    public static CustomUserDetails of(Long id, String email,String nickname,String userPassword) {
         return new CustomUserDetails(
                 id,
                 email,
                 nickname,
                 userPassword,
-                profileImage,
                 roleTypes.stream()
                         .map(RoleType::getName)
                         .map(SimpleGrantedAuthority::new)
@@ -62,8 +58,7 @@ public class CustomUserDetails implements UserDetails {
                 dto.id(),
                 dto.email(),
                 dto.nickname(),
-                dto.userPassword(),
-                dto.profileImage()
+                dto.userPassword()
         );
     }
 
@@ -72,7 +67,7 @@ public class CustomUserDetails implements UserDetails {
                 userDetails.getEmail(),
                 userDetails.getNickname(),
                 userDetails.getPassword(),
-                userDetails.getProfileImage()
+                null
         );
     }
     public UserAccountDto toDto() {
@@ -81,7 +76,7 @@ public class CustomUserDetails implements UserDetails {
                 email,
                 nickname,
                 userPassword,
-                profileImage
+                null
         );
     }
 

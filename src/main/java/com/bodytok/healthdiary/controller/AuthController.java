@@ -6,7 +6,6 @@ import com.bodytok.healthdiary.dto.auth.request.RegisterRequest;
 import com.bodytok.healthdiary.dto.auth.response.LoginResponse;
 import com.bodytok.healthdiary.dto.auth.response.RefreshTokenResponse;
 import com.bodytok.healthdiary.dto.auth.response.RegisterResponse;
-import com.bodytok.healthdiary.dto.auth.response.TokenResponse;
 import com.bodytok.healthdiary.service.auth.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Objects;
 
 @RequiredArgsConstructor

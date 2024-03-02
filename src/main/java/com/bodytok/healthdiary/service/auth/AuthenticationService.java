@@ -15,11 +15,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Optional;
 
 
 @Service
@@ -32,14 +32,13 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public RegisterResponse register(RegisterRequest request) {
-        userAccountRepository.findByEmail(request.getEmail()).ifPresent(userAccount -> {
+        userAccountRepository.findByEmail(request.email()).ifPresent(userAccount -> {
             throw new RuntimeException("User already exists -> User's Email : " + userAccount.getEmail());
         });
         CustomUserDetails userDetails = CustomUserDetails.of(
-                request.getEmail(),
-                request.getNickname(),
-                passwordEncoder.encode(request.getPassword()),
-                request.getProfileImage()
+                request.email(),
+                request.nickname(),
+                passwordEncoder.encode(request.password())
         );
         UserAccount user = CustomUserDetails.toUserEntity(userDetails);
         userAccountRepository.save(user);
@@ -56,14 +55,15 @@ public class AuthenticationService {
                         request.password()
                 )
         );
-        CustomUserDetails userDetails = userAccountRepository.findByEmail(request.email())
-                .map(UserAccountDto::from)
+        Optional<UserAccountDto> userAccountDto = userAccountRepository.findByEmail(request.email())
+                .map(UserAccountDto::from);
+        CustomUserDetails userDetails = userAccountDto
                 .map(CustomUserDetails::from)
                 .orElseThrow();
         String jwtToken = jwtService.generateToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
         TokenResponse tokenResponse = TokenResponse.of(jwtToken, refreshToken);
-        UserResponse userResponse = UserResponse.from(userDetails.toDto());
+        UserResponse userResponse = UserResponse.from(userAccountDto.get());
         return new LoginResponse(tokenResponse,userResponse);
     }
 

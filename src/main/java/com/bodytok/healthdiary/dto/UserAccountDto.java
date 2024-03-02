@@ -12,12 +12,15 @@ public record UserAccountDto(
         String email,
         String nickname,
         String userPassword,
-
         Byte[] profileImage,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt
 
 ) {
+
+    public static UserAccountDto of(String email, String nickname, String userPassword) {
+        return new UserAccountDto(null, email, nickname, userPassword, null, null, null);
+    }
 
     public static UserAccountDto of(String email, String nickname, String userPassword, Byte[] profileImage) {
         return new UserAccountDto(null, email, nickname, userPassword, profileImage, null, null);
