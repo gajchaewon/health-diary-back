@@ -14,7 +14,7 @@ public class UserAccountService {
     private final UserAccountRepository userAccountRepository;
 
 
-    public UserAccountDto getUserByEmail(String email){
+    public UserAccountDto getUserByEmail(String email) {
         return userAccountRepository.findByEmail(email)
                 .map(UserAccountDto::from)
                 .orElseThrow(() -> new EntityNotFoundException("유저 없음"));
