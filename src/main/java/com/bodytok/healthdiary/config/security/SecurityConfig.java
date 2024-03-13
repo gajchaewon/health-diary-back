@@ -67,7 +67,7 @@ public class SecurityConfig {
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true); // 클라이언트가 쿠키를 전송할 수 있도록 허용
-        config.addAllowedOrigin("*"); // 모든 출처를 허용 (실제 배포 시에는 필요한 출처만 허용해야 함)
+        config.addAllowedOrigin("http://localhost:3000"); // 모든 출처를 허용 (실제 배포 시에는 필요한 출처만 허용해야 함)
         config.addAllowedHeader("*"); // 모든 헤더 허용
         config.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
 
