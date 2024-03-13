@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 public class PersonalExerciseDiaryService {
 
     private final PersonalExerciseDiaryRepository diaryRepository;
-    private final HashtagRepository hashtagRepository;
     private final PersonalExerciseDiaryHashtagRepository diaryHashtagRepository;
     private final UserAccountRepository userAccountRepository;
     private final CommunityExerciseDiaryService communityExerciseDiaryService;
@@ -41,7 +40,7 @@ public class PersonalExerciseDiaryService {
     //다이어리 조회 - 댓글 미포함
     @Transactional(readOnly = true)
     public DiaryDto getDiary(Long diaryId) {
-        var diary = diaryRepository.findById(diaryId).orElseThrow(()-> new EntityNotFoundException("다이어리가 없습니다. - diaryId : "+ diaryId));
+        var diary = diaryRepository.findById(diaryId).orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : " + diaryId));
         return DiaryDto.from(diary);
     }
 
@@ -49,51 +48,99 @@ public class PersonalExerciseDiaryService {
     //다이어리 조회 - 댓글 포함
     @Transactional(readOnly = true)
     public DiaryWithCommentDto getDiaryWithComments(Long diaryId) {
-        var diary = diaryRepository.findById(diaryId).orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : "+ diaryId));
+        var diary = diaryRepository.findById(diaryId).orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : " + diaryId));
         return DiaryWithCommentDto.from(diary);
     }
 
+    //다이어리 저장
     public DiaryDto saveDiaryWithHashtags(DiaryDto dto, Set<HashtagDto> hashtagDtoSet) {
-        // Convert DTOs to entities
-        UserAccount userAccount = userAccountRepository.getReferenceById(dto.userAccountDto().id());
-        PersonalExerciseDiary diary = dto.toEntity(userAccount);
-        Set<Hashtag> hashtags = hashtagDtoSet.stream()
-                .map(HashtagDto::toEntity)
-                .collect(Collectors.toUnmodifiableSet());
-        // Save diary and hashtags
-        diary = diaryRepository.save(diary);
-        hashtags = hashtags.stream().map(hashtagRepository::save).collect(Collectors.toUnmodifiableSet());
 
-        // Create and save DiaryHashtag entities
-        for (Hashtag hashtag : hashtags) {
-            var diaryHashtag = PersonalExerciseDiaryHashtag.of(
-                    diary,
-                    hashtag
-            );
-            diaryHashtagRepository.save(diaryHashtag);
+        try{
+            // Dto -> Entity
+            UserAccount userAccount = userAccountRepository.getReferenceById(dto.userAccountDto().id());
+            PersonalExerciseDiary diary = dto.toEntity(userAccount);
+
+            diary = diaryRepository.save(diary);
+            if (! hashtagDtoSet.isEmpty()){
+                // 다이어리에 해시태그 추가
+                for (HashtagDto hashtagDto : hashtagDtoSet) {
+                    Hashtag hashtag = hashtagDto.toEntity();
+                    diary.addHashtag(hashtag);
+                }
+
+            }
+
+            // 커뮤니티에 저장하기
+            if (diary.getIsPublic()) {
+                communityExerciseDiaryService.savePublicDiary(diary);
+            }
+            return DiaryDto.from(diary);
+
+        }catch (EntityNotFoundException e){
+            log.warn("다이어리 저장 실패. 사용자 계정을 찾을 수 없습니다. - dto: {}", dto);
+            throw e;
         }
-
-        // 커뮤니티에 저장하기
-        if(diary.getIsPublic()){
-            communityExerciseDiaryService.savePublicDiary(diary);
-        }
-
-        return DiaryDto.from(diary);
     }
 
-    public void updateDiary(DiaryDto dto) {
+    //다이어리 수정
+    public void updateDiary(Long diaryId, DiaryDto dto, Set<HashtagDto> hashtagDtoSet) {
         try {
-            PersonalExerciseDiary diary = diaryRepository.getReferenceById(dto.id());
-            if (dto.title() != null) { diary.setTitle(dto.title()); }
-            if (dto.content() != null) { diary.setContent(dto.content()); }
-            //TODO : 해시태그 업데이트 구현
+            PersonalExerciseDiary diary = diaryRepository.findById(diaryId)
+                    .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다. - diaryId: " + diaryId));
+
+            // 업데이트할 필드가 존재하는 경우에만 업데이트 진행
+            if (dto.title() != null) {
+                diary.setTitle(dto.title());
+            }
+            if (dto.content() != null) {
+                diary.setContent(dto.content());
+            }
+            if (!hashtagDtoSet.isEmpty()){
+                // 해시태그 업데이트
+                updateHashtags(diary, hashtagDtoSet);
+            }
+            diaryRepository.save(diary);
         } catch (EntityNotFoundException e) {
             log.warn("게시글 업데이트 실패. 게시글을 찾을 수 없습니다 - dto: {}", dto);
         }
     }
 
-    public void deleteDiary(Long diaryId) {
-        diaryRepository.deleteById(diaryId);
+    // 해시태그 업데이트 관련 함수
+    private void updateHashtags(PersonalExerciseDiary diary, Set<HashtagDto> hashtagDtoSet) {
+        Set<Hashtag> newHashtags = hashtagDtoSet.stream()
+                .map(HashtagDto::toEntity)
+                .collect(Collectors.toSet());
+
+        // 기존 해시태그 중 새로운 해시태그에 포함되지 않는 해시태그를 제거
+        diary.getDiaryHashtags().removeIf(diaryHashtag -> !newHashtags.contains(diaryHashtag.getHashtag()));
+
+        // 새로운 해시태그 추가
+        for (Hashtag hashtag : newHashtags) {
+            if (diary.getDiaryHashtags().stream().noneMatch(diaryHashtag -> diaryHashtag.getHashtag().equals(hashtag))) {
+                PersonalExerciseDiaryHashtag diaryHashtag = PersonalExerciseDiaryHashtag.of(diary, hashtag);
+                diary.getDiaryHashtags().add(diaryHashtag);
+            }
+        }
     }
+
+    public void deleteDiary(Long diaryId) {
+        try {
+            PersonalExerciseDiary diary = diaryRepository.findById(diaryId)
+                    .orElseThrow(() -> new EntityNotFoundException("다이어리를 찾을 수 없습니다. - diaryId: " + diaryId));
+
+            //다이어리 연관 해시태그 삭제 -> entity bulk 삭제를 지원함
+            diaryHashtagRepository.deleteAll(diary.getDiaryHashtags());
+
+            //다이어리와 연관 댓글 모두 제거
+            diary.getComments().clear();
+
+            // 다이어리 삭제
+            diaryRepository.delete(diary);
+        } catch (EntityNotFoundException e) {
+            log.warn("다이어리 삭제 실패. 다이어리를 찾을 수 없습니다. - diaryId: {}", diaryId);
+        }
+    }
+
+
 
 }
