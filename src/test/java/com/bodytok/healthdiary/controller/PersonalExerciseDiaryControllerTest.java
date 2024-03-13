@@ -130,8 +130,7 @@ class PersonalExerciseDiaryControllerTest {
                 createUserAccountDto(),
                 "title",
                 "content",
-                false,
-                "testurl"
+                false
         );
     }
 
