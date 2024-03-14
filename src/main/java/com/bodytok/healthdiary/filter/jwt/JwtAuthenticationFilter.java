@@ -9,16 +9,20 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Slf4j
 @Component
@@ -27,6 +31,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+
+    private final AntPathRequestMatcher[] permitAllMatchers = {
+            new AntPathRequestMatcher("/auth/sign-up", HttpMethod.POST.name()),
+            new AntPathRequestMatcher("/auth/login", HttpMethod.POST.name()),
+            new AntPathRequestMatcher("/diaries", HttpMethod.GET.name())
+    };
+
 
     @Override
     protected void doFilterInternal(
@@ -39,7 +50,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String userEmail;
 
+
         try{
+            log.info("요청 정보\n->{}\n->{}",request.getMethod(),request.getRequestURI());
+            if(isPermitAllRequest(request)){ // jwt 인증이 필요없는 요청 검증 없이 넘기기
+                filterChain.doFilter(request, response);
+                return;
+            }
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 filterChain.doFilter(request, response);
                 return;
@@ -66,5 +83,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isPermitAllRequest(HttpServletRequest request) {
+        return Arrays.stream(permitAllMatchers)
+                .anyMatch(matcher -> matcher.matches(request));
     }
 }
