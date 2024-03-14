@@ -34,7 +34,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final AntPathRequestMatcher[] permitAllMatchers = {
             new AntPathRequestMatcher("/auth/sign-up", HttpMethod.POST.name()),
-            new AntPathRequestMatcher("/auth/login", HttpMethod.POST.name())
+            new AntPathRequestMatcher("/auth/login", HttpMethod.POST.name()),
+            new AntPathRequestMatcher("/diaries", HttpMethod.GET.name())
     };
 
 
