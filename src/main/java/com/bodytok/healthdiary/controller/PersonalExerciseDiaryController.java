@@ -9,6 +9,7 @@ import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
 import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import com.bodytok.healthdiary.service.PersonalExerciseDiaryService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/diaries")
+@Tag(name = "Diary")
 public class PersonalExerciseDiaryController {
 
     private final PersonalExerciseDiaryService diaryService;
