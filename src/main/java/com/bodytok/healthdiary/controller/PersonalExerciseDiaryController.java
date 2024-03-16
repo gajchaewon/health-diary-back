@@ -75,7 +75,7 @@ public class PersonalExerciseDiaryController {
     @GetMapping("/{diaryId}")
     @Operation(summary = "다이어리 조회 - 댓글 포함")
     public ResponseEntity<DiaryWithCommentResponse> getDiaryWithComments(
-            @Parameter(name = "diaryId", description = "다이어리 아이디") @PathVariable Long diaryId
+            @PathVariable(name = "diaryId") Long diaryId
     ) {
         DiaryWithCommentDto diary = diaryService.getDiaryWithComments(diaryId);
 
@@ -85,7 +85,7 @@ public class PersonalExerciseDiaryController {
     @PutMapping("/{diaryId}")
     @Operation(summary = "다이어리 수정")
     public ResponseEntity<Void> updateDiary(
-            @Parameter(name = "diaryId", description = "다이어리 아이디") @PathVariable Long diaryId,
+            @PathVariable(name = "diaryId") Long diaryId,
             @RequestBody DiaryRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -107,7 +107,7 @@ public class PersonalExerciseDiaryController {
     @DeleteMapping("/{diaryId}")
     @Operation(summary = "다이어리 삭제")
     public ResponseEntity<Void> deleteDiary(
-            @Parameter(name = "diaryId", description = "다이어리 아이디") @PathVariable Long diaryId
+            @PathVariable(name = "diaryId") Long diaryId
     ) {
         diaryService.deleteDiary(diaryId);
         return ResponseEntity.ok().build();
