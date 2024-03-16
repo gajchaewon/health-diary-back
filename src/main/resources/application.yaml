@@ -11,8 +11,8 @@ logging:
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/bodytok
-    username: ilgong
-    password: password!@#
+    username: root
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     open-in-view: false
@@ -34,12 +34,16 @@ spring:
       mode: always
   devtools:
     livereload:
-      enabled: true
+      enabled: false
+    restart:
+      enabled: false
   h2:
     console:
       enabled: true
-
-
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+    display-request-duration: true
 
 #--- test ?? ???
 #
