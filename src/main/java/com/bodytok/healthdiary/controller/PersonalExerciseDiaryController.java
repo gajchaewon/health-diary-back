@@ -9,7 +9,14 @@ import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
 import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import com.bodytok.healthdiary.service.PersonalExerciseDiaryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -25,13 +32,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/diaries")
+@Tag(name = "Diary")
 public class PersonalExerciseDiaryController {
 
     private final PersonalExerciseDiaryService diaryService;
 
     @GetMapping
+    @Operation(summary = "모든 다이어리 가져오기 - 댓글 미포함")
+    @SecurityRequirements(value = {}) // Swagger 글로벌 security 설정 지우기
     public ResponseEntity<Page<DiaryResponse>> getAllDiaries(
-            @PageableDefault() Pageable pageable
+           @ParameterObject @PageableDefault(sort = "createdAt") Pageable pageable
     ) {
         Page<DiaryDto> diaries = diaryService.getAllDiaries(pageable);
 
@@ -40,7 +50,9 @@ public class PersonalExerciseDiaryController {
         );
     }
 
+
     @PostMapping("/new")
+    @Operation(summary = "새로운 다이어리 생성하기")
     public ResponseEntity<DiaryResponse> createDiary(
             @RequestBody DiaryRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -61,15 +73,19 @@ public class PersonalExerciseDiaryController {
     }
 
     @GetMapping("/{diaryId}")
-    public ResponseEntity<DiaryWithCommentResponse> getDiaryWithComments(@PathVariable Long diaryId) {
+    @Operation(summary = "다이어리 조회 - 댓글 포함")
+    public ResponseEntity<DiaryWithCommentResponse> getDiaryWithComments(
+            @Parameter(name = "diaryId", description = "다이어리 아이디") @PathVariable Long diaryId
+    ) {
         DiaryWithCommentDto diary = diaryService.getDiaryWithComments(diaryId);
 
         return ResponseEntity.ok(DiaryWithCommentResponse.from(diary));
     }
 
     @PutMapping("/{diaryId}")
+    @Operation(summary = "다이어리 수정")
     public ResponseEntity<Void> updateDiary(
-            @PathVariable Long diaryId,
+            @Parameter(name = "diaryId", description = "다이어리 아이디") @PathVariable Long diaryId,
             @RequestBody DiaryRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -89,7 +105,10 @@ public class PersonalExerciseDiaryController {
     }
 
     @DeleteMapping("/{diaryId}")
-    public ResponseEntity<Void> deleteDiary(@PathVariable Long diaryId) {
+    @Operation(summary = "다이어리 삭제")
+    public ResponseEntity<Void> deleteDiary(
+            @Parameter(name = "diaryId", description = "다이어리 아이디") @PathVariable Long diaryId
+    ) {
         diaryService.deleteDiary(diaryId);
         return ResponseEntity.ok().build();
     }

@@ -10,10 +10,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 
-@RepositoryRestResource
 public interface PersonalExerciseDiaryRepository extends
         JpaRepository<PersonalExerciseDiary, Long>,
         QuerydslPredicateExecutor<PersonalExerciseDiary>, // 기본적으로 모든 필드에 대한 검색기능 추가

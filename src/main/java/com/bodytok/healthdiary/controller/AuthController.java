@@ -7,6 +7,7 @@ import com.bodytok.healthdiary.dto.auth.response.LoginResponse;
 import com.bodytok.healthdiary.dto.auth.response.RefreshTokenResponse;
 import com.bodytok.healthdiary.dto.auth.response.RegisterResponse;
 import com.bodytok.healthdiary.service.auth.AuthenticationService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,12 +16,15 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.Objects;
 
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Auth")
 public class AuthController {
 
     private final AuthenticationService authService;
+
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody AuthenticationRequest request) {
