@@ -12,6 +12,7 @@ import com.bodytok.healthdiary.dto.auth.response.UserResponse;
 import com.bodytok.healthdiary.repository.UserAccountRepository;
 import com.bodytok.healthdiary.service.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -68,14 +70,10 @@ public class AuthenticationService {
     }
 
     public String refreshToken(String refreshToken) throws IOException {
-        // 리프레시 토큰으로 유저 데이터 추출
         UserDetails userDetails = jwtService.getUserDetailsFromToken(refreshToken);
-
-        // UserDetails가 유효하다면 새로운 accessToken과 refreshToken을 발급
-        if (userDetails != null) {
+        if(userDetails != null){
             String newAccessToken = jwtService.generateToken(userDetails);
-            String newRefreshToken = jwtService.generateRefreshToken(userDetails);
-            // 새로 발급받은 refreshToken은 클라이언트에게 반환하지 않는다
+            log.info("새로운 엑세스 토큰 : {} " , newAccessToken);
             return newAccessToken;
         } else {
             // refreshToken이 유효하지 않은 경우 예외 처리 또는 다른 로직을 수행
