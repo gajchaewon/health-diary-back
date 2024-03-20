@@ -11,8 +11,7 @@ import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import com.bodytok.healthdiary.service.PersonalExerciseDiaryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.Schema;
+
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -51,7 +52,7 @@ public class PersonalExerciseDiaryController {
     }
 
 
-    @PostMapping("/new")
+    @PostMapping
     @Operation(summary = "새로운 다이어리 생성하기")
     public ResponseEntity<DiaryResponse> createDiary(
             @RequestBody DiaryRequest request,
@@ -82,6 +83,19 @@ public class PersonalExerciseDiaryController {
         return ResponseEntity.ok(DiaryWithCommentResponse.from(diary));
     }
 
+    @GetMapping("/search")
+    @Operation(summary = "다이어리 조회 - 날짜 검색")
+    public ResponseEntity<Page<DiaryWithCommentResponse>> getDiaryWithCommentsADay(
+            @Parameter(name = "date",description = "원하는 날짜(yyyy-MM-dd) 를 String 형식으로 기입")
+            @RequestParam(name = "date") String date,
+            @ParameterObject @PageableDefault(sort = "createdAt") Pageable pageable
+            ){
+        Page<DiaryWithCommentDto> diaries = diaryService.getDiaryWithCommentsADay(date, pageable);
+        return ResponseEntity.ok().body(
+                diaries.map(DiaryWithCommentResponse::from)
+        );
+    }
+
     @PutMapping("/{diaryId}")
     @Operation(summary = "다이어리 수정")
     public ResponseEntity<Void> updateDiary(
@@ -89,12 +103,10 @@ public class PersonalExerciseDiaryController {
             @RequestBody DiaryRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-
         // 해시태그가 비어 있는 경우에 대비하여 빈 Set으로 전달
         Set<HashtagDto> hashtags = request.hashtags() != null ?
                 request.hashtags().stream().map(HashtagDto::of).collect(Collectors.toSet()) :
                 Collections.emptySet();
-
 
         diaryService.updateDiary(
                 diaryId,
