@@ -14,6 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -50,6 +54,29 @@ public class PersonalExerciseDiaryService {
     public DiaryWithCommentDto getDiaryWithComments(Long diaryId) {
         var diary = diaryRepository.findById(diaryId).orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : " + diaryId));
         return DiaryWithCommentDto.from(diary);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<DiaryWithCommentDto> getDiaryWithCommentsADay(String date, Pageable pageable) {
+        // "yyyy-mm-dd" 형식의 문자열을 LocalDateTime으로 변환
+        LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE);
+        log.info("변환된 localDate : {}", localDate);
+
+        // 클라이언트에서 전달된 날짜의 최소 시각과 최대 시각 계산
+        LocalDateTime startDateTime = localDate.atStartOfDay();
+        LocalDateTime endDateTime = localDate.atTime(LocalTime.MAX);
+
+        log.info("startDateTime : {}\n", startDateTime);
+        log.info("endDateTime : {}\n", endDateTime);
+
+        Page<PersonalExerciseDiary> diaries = diaryRepository.findByCreatedAtBetween(startDateTime, endDateTime, pageable);
+        //빈 배열인지 확인
+        if (diaries == null || diaries.getContent().isEmpty()) {
+            // 빈 리스트에 대한 예외 처리 또는 다른 작업 수행
+            throw new EntityNotFoundException("해당 날짜의 다이어리가 없습니다. date: " + date);
+        }
+
+        return diaries.map(DiaryWithCommentDto::from);
     }
 
     //다이어리 저장

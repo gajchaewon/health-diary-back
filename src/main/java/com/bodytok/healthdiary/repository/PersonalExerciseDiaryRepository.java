@@ -2,7 +2,6 @@ package com.bodytok.healthdiary.repository;
 
 import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.domain.QPersonalExerciseDiary;
-import com.querydsl.core.types.dsl.DateTimeExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +10,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 
+import java.time.LocalDateTime;
 
 public interface PersonalExerciseDiaryRepository extends
         JpaRepository<PersonalExerciseDiary, Long>,
@@ -22,13 +22,12 @@ public interface PersonalExerciseDiaryRepository extends
     Page<PersonalExerciseDiary> findByContentContaining(String content, Pageable pageable);
     Page<PersonalExerciseDiary> findByUserAccount_IdContaining(String userId, Pageable pageable);
     Page<PersonalExerciseDiary> findByUserAccount_NicknameContaining(String nickname, Pageable pageable);
-
+    Page<PersonalExerciseDiary> findByCreatedAtBetween(LocalDateTime startDateTime, LocalDateTime endDateTime, Pageable pageable);
 
     @Override
     default void customize(QuerydslBindings bindings, QPersonalExerciseDiary root){
         bindings.excludeUnlistedProperties(true);
         bindings.including(root.title, root.isPublic, root.totalExTime, root.createdAt);
         bindings.bind(root.title).first(StringExpression::containsIgnoreCase); // like '%{value}%'
-        bindings.bind(root.createdAt).first(DateTimeExpression::eq);
     }
 }
