@@ -54,8 +54,8 @@ public class SecurityConfig {
                         auth -> auth
                                 .requestMatchers("auth/login/**").permitAll()
                                 .requestMatchers("auth/sign-up/**").permitAll()
-                                .requestMatchers("auth/refresh-token/**").permitAll() //refresh-token 요청
-                                .requestMatchers(HttpMethod.GET,"diaries/**").permitAll()
+                                .requestMatchers(HttpMethod.GET,"auth/refresh-token").permitAll() //refresh-token 요청
+                                .requestMatchers(HttpMethod.GET,"diaries").permitAll()
                                 .requestMatchers(HttpMethod.GET, "community/**").permitAll() //커뮤니티 다이어리 가져오기
                                 .anyRequest().authenticated()
                 )

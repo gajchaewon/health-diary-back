@@ -10,8 +10,11 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -25,14 +28,13 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 @Service
 public class JwtService {
-
-    private final UserAccountService userAccountService;
+    private final UserDetailsService userDetailsService;
 
     // Create a key string with 256 bits
     private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     private final JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(SECRET_KEY).build();
-    private final long jwtExpiration = 86400000; // 1-day
-    private final long refreshExpiration = 604800000; // 7-day
+    private final long jwtExpiration = 3600000; // 1 hour
+    private final long refreshExpiration = 86400000; // 1 day
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -62,18 +64,36 @@ public class JwtService {
     public String buildToken(Map<String, Object> claims, UserDetails userDetails, long expiration) {
         return Jwts.builder().setClaims(claims)
                 .setSubject(userDetails.getUsername())
-                .setIssuedAt(Date.from(Instant.now()))
-                .setExpiration(Date.from(Instant.now().plusMillis(expiration)))
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public UserDetails getUserDetailsFromToken(String token) {
-        String username = extractUsername(token);
-        UserAccountDto userAccountDto = userAccountService.getUserByEmail(username);
-        return CustomUserDetails.from(userAccountDto);
+    public Cookie createCookie(String refreshToken) {
+        String cookieName = "refreshToken";
+        Cookie cookie = new Cookie(cookieName, refreshToken);
+        // 쿠키 속성 설정
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60 * 24);
+        return cookie;
     }
 
+    public UserDetails getUserDetailsFromToken(String token) {
+        if (!isTokenExpired(token)){ //refreshToken 도 만료되었다면 다시 로그인 해야함
+            String username = extractUsername(token);
+            if (username != null) {
+                try {
+                    return userDetailsService.loadUserByUsername(username);
+                } catch (UsernameNotFoundException e) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
