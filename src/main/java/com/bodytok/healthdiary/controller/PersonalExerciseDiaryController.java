@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -135,6 +134,16 @@ public class PersonalExerciseDiaryController {
             @PathVariable(name = "diaryId") Long diaryId
     ) {
         diaryService.deleteDiary(diaryId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{diaryId}/like")
+    @Operation(summary = "다이어리 좋아요")
+    public ResponseEntity<Void> likeDiary(
+            @PathVariable(name = "diaryId") Long diaryId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        diaryService.likeDiary(diaryId, userDetails.getId());
         return ResponseEntity.ok().build();
     }
 

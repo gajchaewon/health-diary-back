@@ -12,8 +12,6 @@ import java.util.Objects;
 @ToString(callSuper = true)
 @Table(indexes = {
         @Index(columnList = "createdAt"),
-//        @Index(columnList = "user_id"),
-//        @Index(columnList = "diary_id") -> 추후 쿼리 작성 시 고려
 })
 @Entity
 public class DiaryLike extends AuditingFields {
@@ -23,11 +21,11 @@ public class DiaryLike extends AuditingFields {
     @Column(name = "like_id")
     private Long id;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserAccount userAccount;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "diary_id", nullable = false)
     private PersonalExerciseDiary personalExerciseDiary;
 
