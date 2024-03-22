@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -91,6 +92,18 @@ public class PersonalExerciseDiaryController {
             @ParameterObject @PageableDefault(sort = "createdAt") Pageable pageable
             ){
         Page<DiaryWithCommentDto> diaries = diaryService.getDiaryWithCommentsADay(date, pageable);
+        return ResponseEntity.ok().body(
+                diaries.map(DiaryWithCommentResponse::from)
+        );
+    }
+
+    @GetMapping("/my")
+    @Operation(summary = "다이어리 조회 - 유저 인증 기반")
+    public ResponseEntity<Page<DiaryWithCommentResponse>> getDiariesWithCommentsByUserId(
+            @ParameterObject @PageableDefault(sort = "createdAt",direction = Sort.Direction.DESC) Pageable pageable,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+        var diaries = diaryService.getDiaryWithCommentsByUserId(userDetails.getId(), pageable);
         return ResponseEntity.ok().body(
                 diaries.map(DiaryWithCommentResponse::from)
         );

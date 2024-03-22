@@ -20,7 +20,7 @@ public interface PersonalExerciseDiaryRepository extends
     //TODO : 모든 검색을 Containing 으로 하고 있으므로, 인덱스 사용 문제가 야기될 수 있다. 튜닝필요
     Page<PersonalExerciseDiary> findByTitleContaining(String title, Pageable pageable);
     Page<PersonalExerciseDiary> findByContentContaining(String content, Pageable pageable);
-    Page<PersonalExerciseDiary> findByUserAccount_IdContaining(String userId, Pageable pageable);
+    Page<PersonalExerciseDiary> findByUserAccount_Id(Long Id, Pageable pageable);
     Page<PersonalExerciseDiary> findByUserAccount_NicknameContaining(String nickname, Pageable pageable);
     Page<PersonalExerciseDiary> findByCreatedAtBetween(LocalDateTime startDateTime, LocalDateTime endDateTime, Pageable pageable);
 
