@@ -58,7 +58,7 @@ public class PersonalExerciseDiary extends AuditingFields {
 
     // 좋아요 필드 추가
     @ToString.Exclude
-    @OneToMany(mappedBy = "personalExerciseDiary", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "personalExerciseDiary", cascade = CascadeType.ALL, orphanRemoval = true)
     private  Set<DiaryLike> likes = new LinkedHashSet<>();
 
     protected PersonalExerciseDiary() {
@@ -94,6 +94,13 @@ public class PersonalExerciseDiary extends AuditingFields {
                 return;
             }
         }
+    }
+
+    public void addLike(DiaryLike like) {
+        likes.add(like);
+    }
+    public void removeLike(DiaryLike like){
+        likes.remove(like);
     }
 
 
