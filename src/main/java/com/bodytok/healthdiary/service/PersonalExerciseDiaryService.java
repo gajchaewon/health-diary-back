@@ -56,6 +56,14 @@ public class PersonalExerciseDiaryService {
         return DiaryWithCommentDto.from(diary);
     }
 
+    //다이어리 조회 - 유저 인증 기반
+    @Transactional(readOnly = true)
+    public Page<DiaryWithCommentDto> getDiaryWithCommentsByUserId(Long userId, Pageable pageable){
+        var diaries = diaryRepository.findByUserAccount_Id(userId, pageable);
+        return diaries.map(DiaryWithCommentDto::from);
+
+    }
+
     @Transactional(readOnly = true)
     public Page<DiaryWithCommentDto> getDiaryWithCommentsADay(String date, Pageable pageable) {
         // "yyyy-mm-dd" 형식의 문자열을 LocalDateTime으로 변환
