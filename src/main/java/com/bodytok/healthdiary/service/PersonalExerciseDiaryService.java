@@ -20,7 +20,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,6 +31,7 @@ public class PersonalExerciseDiaryService {
     private final PersonalExerciseDiaryHashtagRepository diaryHashtagRepository;
     private final UserAccountRepository userAccountRepository;
     private final CommunityExerciseDiaryService communityExerciseDiaryService;
+    private final HashtagService hashtagService;
 
 
     //모든 다이어리 가져오기 - 댓글 미포함
@@ -59,7 +59,7 @@ public class PersonalExerciseDiaryService {
 
     //다이어리 조회 - 유저 인증 기반
     @Transactional(readOnly = true)
-    public Page<DiaryWithCommentDto> getDiaryWithCommentsByUserId(Long userId, Pageable pageable){
+    public Page<DiaryWithCommentDto> getDiaryWithCommentsByUserId(Long userId, Pageable pageable) {
         var diaries = diaryRepository.findByUserAccount_Id(userId, pageable);
         return diaries.map(DiaryWithCommentDto::from);
 
@@ -91,28 +91,26 @@ public class PersonalExerciseDiaryService {
     //다이어리 저장
     public DiaryDto saveDiaryWithHashtags(DiaryDto dto, Set<HashtagDto> hashtagDtoSet) {
 
-        try{
+        try {
             // Dto -> Entity
             UserAccount userAccount = userAccountRepository.getReferenceById(dto.userAccountDto().id());
             PersonalExerciseDiary diary = dto.toEntity(userAccount);
 
             diary = diaryRepository.save(diary);
-            if (! hashtagDtoSet.isEmpty()){
-                // 다이어리에 해시태그 추가
-                for (HashtagDto hashtagDto : hashtagDtoSet) {
-                    Hashtag hashtag = hashtagDto.toEntity();
+
+            if (!hashtagDtoSet.isEmpty()) {
+                Set<Hashtag> hashtags = hashtagService.renewHashtagsFromRequest(hashtagDtoSet);
+                for (Hashtag hashtag : hashtags) {
                     diary.addHashtag(hashtag);
                 }
-
             }
-
             // 커뮤니티에 저장하기
             if (diary.getIsPublic()) {
                 communityExerciseDiaryService.savePublicDiary(diary);
             }
             return DiaryDto.from(diary);
 
-        }catch (EntityNotFoundException e){
+        } catch (EntityNotFoundException e) {
             log.warn("다이어리 저장 실패. 사용자 계정을 찾을 수 없습니다. - dto: {}", dto);
             throw e;
         }
@@ -124,39 +122,48 @@ public class PersonalExerciseDiaryService {
             PersonalExerciseDiary diary = diaryRepository.findById(diaryId)
                     .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다. - diaryId: " + diaryId));
 
-            // 업데이트할 필드가 존재하는 경우에만 업데이트 진행
-            if (dto.title() != null) {
+            // 업데이트할 필드가 존재 & 다를 경우에만 필드업데이트 진행
+            if (dto.title() != null && !dto.title().equals(diary.getTitle())) {
                 diary.setTitle(dto.title());
             }
-            if (dto.content() != null) {
+            if (dto.content() != null && !dto.content().equals(diary.getContent())) {
                 diary.setContent(dto.content());
             }
-            if (!hashtagDtoSet.isEmpty()){
-                // 해시태그 업데이트
-                updateHashtags(diary, hashtagDtoSet);
+            if (dto.isPublic() != diary.getIsPublic()) {
+                diary.setIsPublic(dto.isPublic());
             }
-            diaryRepository.save(diary);
+
+            // 해시태그 업데이트
+            PersonalExerciseDiary diaryWithUpdatedHashtags = updateHashtags(diary, hashtagDtoSet);
+            diaryRepository.save(diaryWithUpdatedHashtags);
         } catch (EntityNotFoundException e) {
             log.warn("게시글 업데이트 실패. 게시글을 찾을 수 없습니다 - dto: {}", dto);
+            throw e;
         }
     }
 
-    // 해시태그 업데이트 관련 함수
-    private void updateHashtags(PersonalExerciseDiary diary, Set<HashtagDto> hashtagDtoSet) {
-        Set<Hashtag> newHashtags = hashtagDtoSet.stream()
-                .map(HashtagDto::toEntity)
-                .collect(Collectors.toSet());
+    //새로운 해시태그는 저장하고 있던 것은 제거하는 메서드
+    private PersonalExerciseDiary updateHashtags(PersonalExerciseDiary diary, Set<HashtagDto> hashtagDtoSet) {
+        if (!hashtagDtoSet.isEmpty()) {
+            //기존 해시태그 엔티티에 있는 해시태그는 그대로 사용
+            Set<Hashtag> updatedHashtags = hashtagService.renewHashtagsFromRequest(hashtagDtoSet);
 
-        // 기존 해시태그 중 새로운 해시태그에 포함되지 않는 해시태그를 제거
-        diary.getDiaryHashtags().removeIf(diaryHashtag -> !newHashtags.contains(diaryHashtag.getHashtag()));
+            //기존 해시태그 중 업데이트 해시태그셋에 포함되지 않는 해시태그를 제거
+            diary.getDiaryHashtags().removeIf(diaryHashtag -> !updatedHashtags.contains(diaryHashtag.getHashtag()));
 
-        // 새로운 해시태그 추가
-        for (Hashtag hashtag : newHashtags) {
-            if (diary.getDiaryHashtags().stream().noneMatch(diaryHashtag -> diaryHashtag.getHashtag().equals(hashtag))) {
-                PersonalExerciseDiaryHashtag diaryHashtag = PersonalExerciseDiaryHashtag.of(diary, hashtag);
-                diary.getDiaryHashtags().add(diaryHashtag);
+            // 새로운 해시태그를 추가
+            for (Hashtag hashtag : updatedHashtags) {
+                if (diary.getDiaryHashtags().stream().noneMatch(diaryHashtag -> diaryHashtag.getHashtag().equals(hashtag))) {
+                    diary.addHashtag(hashtag);
+                }
             }
+            return diary;
+        }else {
+            //업데이트된 해시태그 셋이 비어있으면 모두 제거
+            diary.getDiaryHashtags().clear();
         }
+        return diary;
+
     }
 
     public void deleteDiary(Long diaryId) {
@@ -177,8 +184,8 @@ public class PersonalExerciseDiaryService {
         }
     }
 
-    public void likeDiary(Long diaryId, Long userId){
-        try{
+    public void likeDiary(Long diaryId, Long userId) {
+        try {
             PersonalExerciseDiary diary = diaryRepository.findById(diaryId)
                     .orElseThrow(() -> new EntityNotFoundException("다이어리를 찾을 수 없습니다. - diaryId: " + diaryId));
             UserAccount userAccount = userAccountRepository.findById(userId)
@@ -188,7 +195,7 @@ public class PersonalExerciseDiaryService {
             Optional<DiaryLike> diaryLike = diary.getLikes().stream()
                     .filter(like -> like.getUserAccount().equals(userAccount)).findFirst();
 
-            if (diaryLike.isPresent()){
+            if (diaryLike.isPresent()) {
                 //좋아요 취소
                 diary.removeLike(diaryLike.get());
             } else {
@@ -197,12 +204,11 @@ public class PersonalExerciseDiaryService {
                 diary.addLike(like);
             }
             diaryRepository.save(diary);
-        }catch (EntityNotFoundException e){
+        } catch (EntityNotFoundException e) {
             log.warn("다이어리 좋아요 실패: 다이어리 또는 사용자를 찾을 수 없습니다. - diaryId: {}, userId: {}", diaryId, userId);
-            throw new EntityNotFoundException("like 실패 : 엔티티가 없습니다.",e);
+            throw new EntityNotFoundException("like 실패 : 엔티티가 없습니다.", e);
         }
     }
-
 
 
 }

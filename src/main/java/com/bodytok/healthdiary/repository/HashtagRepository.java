@@ -8,6 +8,8 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 
+import java.util.Set;
+
 
 public interface HashtagRepository extends
         JpaRepository<Hashtag, Long>,
@@ -16,7 +18,7 @@ public interface HashtagRepository extends
 {
 
     Hashtag findByHashtagContaining(String Hashtag);
-
+    Set<Hashtag> findHashtagsByHashtagIn(Set<String> hashtags);
 
     @Override
     default void customize(QuerydslBindings bindings, QHashtag root){
