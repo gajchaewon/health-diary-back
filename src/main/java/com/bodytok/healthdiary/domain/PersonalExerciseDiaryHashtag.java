@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Set;
 
 
 @Getter
@@ -18,14 +17,14 @@ public class PersonalExerciseDiaryHashtag {
 
     @MapsId("diaryId")
     @Setter
-    @ManyToOne(cascade = CascadeType.REMOVE)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "diary_id", referencedColumnName = "diary_id")
     private PersonalExerciseDiary personalExerciseDiary;
 
 
     @MapsId("hashtagId")
     @Setter
-    @ManyToOne(cascade = CascadeType.REMOVE)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "hashtag_id", referencedColumnName = "hashtag_id")
     private Hashtag hashtag;
 
