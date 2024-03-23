@@ -1,11 +1,11 @@
 package com.bodytok.healthdiary.exepction;
 
 
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -58,6 +58,19 @@ public class GlobalExceptionHandler {
         CommonApiError apiError = new CommonApiError(
                 request.getRequestURI(),
                 message,
+                HttpStatus.UNAUTHORIZED.value(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<CommonApiError> handleAccessDeniedException(
+            AccessDeniedException ex,
+            HttpServletRequest request) {
+        CommonApiError apiError = new CommonApiError(
+                request.getRequestURI(),
+                ex.getMessage(),
                 HttpStatus.UNAUTHORIZED.value(),
                 LocalDateTime.now()
         );
