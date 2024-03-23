@@ -2,6 +2,7 @@ package com.bodytok.healthdiary.service;
 
 
 import com.bodytok.healthdiary.domain.*;
+import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
 import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
@@ -10,6 +11,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -121,7 +124,9 @@ public class PersonalExerciseDiaryService {
         try {
             PersonalExerciseDiary diary = diaryRepository.findById(diaryId)
                     .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다. - diaryId: " + diaryId));
-
+            if (!dto.userAccountDto().id().equals(diary.getUserAccount().getId())){
+                throw new AccessDeniedException("다이어리 소유자가 아닙니다. - 다이어리의 userId : "+ diary.getUserAccount().getId());
+            }
             // 업데이트할 필드가 존재 & 다를 경우에만 필드업데이트 진행
             if (dto.title() != null && !dto.title().equals(diary.getTitle())) {
                 diary.setTitle(dto.title());
@@ -166,11 +171,13 @@ public class PersonalExerciseDiaryService {
 
     }
 
-    public void deleteDiary(Long diaryId) {
+    public void deleteDiary(Long diaryId, CustomUserDetails userDetails) {
         try {
             PersonalExerciseDiary diary = diaryRepository.findById(diaryId)
                     .orElseThrow(() -> new EntityNotFoundException("다이어리를 찾을 수 없습니다. - diaryId: " + diaryId));
-
+            if(!diary.getUserAccount().getId().equals(userDetails.getId())){
+                throw new AccessDeniedException("다이어리 소유자가 아닙니다. - 다이어리의 userId : "+ diary.getUserAccount().getId());
+            }
             //다이어리 연관 해시태그 삭제 -> entity bulk 삭제를 지원함
             diaryHashtagRepository.deleteAll(diary.getDiaryHashtags());
 

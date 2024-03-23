@@ -131,9 +131,10 @@ public class PersonalExerciseDiaryController {
     @DeleteMapping("/{diaryId}")
     @Operation(summary = "다이어리 삭제")
     public ResponseEntity<Void> deleteDiary(
-            @PathVariable(name = "diaryId") Long diaryId
+            @PathVariable(name = "diaryId") Long diaryId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        diaryService.deleteDiary(diaryId);
+        diaryService.deleteDiary(diaryId, userDetails);
         return ResponseEntity.ok().build();
     }
 
