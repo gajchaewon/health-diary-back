@@ -77,4 +77,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
     }
 
+
+    @ExceptionHandler(FollowException.class)
+    public ResponseEntity<CommonApiError> handleFollowException(
+            FollowException ex,
+            HttpServletRequest request) {
+        CommonApiError apiError = new CommonApiError(
+                request.getRequestURI(),
+                ex.getMessage(),
+                ex.getStatus().value(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(apiError, ex.getStatus());
+    }
 }
