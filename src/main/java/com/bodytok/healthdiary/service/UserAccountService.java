@@ -1,6 +1,7 @@
 package com.bodytok.healthdiary.service;
 
 
+import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.dto.UserAccountDto;
 import com.bodytok.healthdiary.repository.UserAccountRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -15,9 +16,14 @@ public class UserAccountService {
     private final UserAccountRepository userAccountRepository;
 
     @Transactional(readOnly = true)
-    public UserAccountDto getUserByEmail(String email) {
+    public UserAccount getUserById(Long id) {
+        return userAccountRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("유저 없음"));
+    }
+
+    @Transactional(readOnly = true)
+    public UserAccount getUserByEmail(String email) {
         return userAccountRepository.findByEmail(email)
-                .map(UserAccountDto::from)
                 .orElseThrow(() -> new EntityNotFoundException("유저 없음"));
     }
 

@@ -1,11 +1,13 @@
 package com.bodytok.healthdiary.domain;
 
 
+import com.bodytok.healthdiary.dto.FollowResponse;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -38,6 +40,16 @@ public class UserAccount extends AuditingFields {
     @Lob
     private Byte[] profileImage;
 
+
+    //팔로우
+    @ToString.Exclude
+    @OneToMany(mappedBy = "following")
+    private List<Follow> followerList;
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "follower")
+    private List<Follow> followingList;
+
     protected UserAccount() {}
 
     private UserAccount(String email,String nickname, String userPassword, Byte[] profileImage) {
@@ -51,6 +63,7 @@ public class UserAccount extends AuditingFields {
         return new UserAccount(email,nickname,userPassword,profileImage);
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -62,4 +75,6 @@ public class UserAccount extends AuditingFields {
     public int hashCode() {
         return Objects.hash(id);
     }
+
+
 }
