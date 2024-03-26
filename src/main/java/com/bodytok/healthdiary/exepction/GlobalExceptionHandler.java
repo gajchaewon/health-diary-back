@@ -3,8 +3,10 @@ package com.bodytok.healthdiary.exepction;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -18,63 +20,48 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ValidationError handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-
-        ex.getBindingResult().getFieldErrors().forEach(error -> {
-            String fieldName = error.getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-
-        return new ValidationError(
-                errors.get("email"),
-                errors.get("password"),
-                errors.get("nickname")
-        );
-    }
-
-
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<CommonApiError> handleEntityNotFoundException(
-            EntityNotFoundException ex,
+    @ExceptionHandler({RuntimeException.class, Exception.class})
+    public ResponseEntity<?> handleException(
+            Exception ex,
             HttpServletRequest request) {
-        CommonApiError apiError = new CommonApiError(
-                request.getRequestURI(),
-                ex.getMessage(),
-                HttpStatus.NOT_FOUND.value(),
-                LocalDateTime.now()
-        );
-        return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
-    }
+        String message = "Internal Server Error";
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
+        if (ex instanceof EntityNotFoundException) {
+            message = ex.getMessage();
+            status = HttpStatus.NOT_FOUND;
+        } else if (ex instanceof BadCredentialsException || ex instanceof AccessDeniedException) {
+            message = "Authentication failed or user is not authorized";
+            status = HttpStatus.UNAUTHORIZED;
+        } else if (ex instanceof DuplicateKeyException) {
+            message = ex.getMessage();
+            status = HttpStatus.CONFLICT;
+        } else if (ex instanceof HttpMessageNotReadableException) {
+            message = "요청이 잘못되었습니다. 유효하지 않은 데이터가 포함되어 있습니다.";
+            status = HttpStatus.BAD_REQUEST;
+        } else if (ex instanceof MethodArgumentNotValidException) {
+            Map<String, String> errors = new HashMap<>();
 
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<CommonApiError> handleBadCredentialsException(
-            BadCredentialsException ex,
-            HttpServletRequest request) {
-        String message = "Authentication failed or user is not authorized";
+            ((MethodArgumentNotValidException) ex).getBindingResult().getFieldErrors().forEach(error -> {
+                String fieldName = error.getField();
+                String errorMessage = error.getDefaultMessage();
+                errors.put(fieldName, errorMessage);
+            });
+            var valError = new ValidationError(
+                    errors.get("email"),
+                    errors.get("password"),
+                    errors.get("nickname")
+            );
+            return new ResponseEntity<>(valError, HttpStatus.BAD_REQUEST);
+        }
+
         CommonApiError apiError = new CommonApiError(
                 request.getRequestURI(),
                 message,
-                HttpStatus.UNAUTHORIZED.value(),
+                status.value(),
                 LocalDateTime.now()
         );
-        return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
-    }
-
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<CommonApiError> handleAccessDeniedException(
-            AccessDeniedException ex,
-            HttpServletRequest request) {
-        CommonApiError apiError = new CommonApiError(
-                request.getRequestURI(),
-                ex.getMessage(),
-                HttpStatus.UNAUTHORIZED.value(),
-                LocalDateTime.now()
-        );
-        return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(apiError, status);
     }
 
 

@@ -2,18 +2,25 @@ package com.bodytok.healthdiary.controller;
 
 
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
+import com.bodytok.healthdiary.dto.auth.response.RegisterResponse;
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
 import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
 import com.bodytok.healthdiary.dto.diary.request.DiaryRequest;
 import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
 import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
+import com.bodytok.healthdiary.exepction.CommonApiError;
+import com.bodytok.healthdiary.exepction.ValidationError;
 import com.bodytok.healthdiary.service.PersonalExerciseDiaryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -54,6 +61,9 @@ public class PersonalExerciseDiaryController {
 
     @PostMapping
     @Operation(summary = "새로운 다이어리 생성하기")
+    @ApiResponse(responseCode = "200", description = "OK", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryResponse.class))
+    })
     public ResponseEntity<DiaryResponse> createDiary(
             @RequestBody DiaryRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -75,6 +85,12 @@ public class PersonalExerciseDiaryController {
 
     @GetMapping("/{diaryId}")
     @Operation(summary = "다이어리 조회 - 댓글 포함")
+    @ApiResponse(responseCode = "200", description = "OK", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryWithCommentResponse.class))
+    })
+    @ApiResponse(responseCode = "404", description = "NOT FOUND", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = CommonApiError.class))
+    })
     public ResponseEntity<DiaryWithCommentResponse> getDiaryWithComments(
             @PathVariable(name = "diaryId") Long diaryId
     ) {
@@ -85,6 +101,12 @@ public class PersonalExerciseDiaryController {
 
     @GetMapping("/search")
     @Operation(summary = "다이어리 조회 - 날짜 검색")
+    @ApiResponse(responseCode = "200", description = "OK", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryWithCommentResponse.class))
+    })
+    @ApiResponse(responseCode = "404", description = "NOT FOUND", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = CommonApiError.class))
+    })
     public ResponseEntity<Page<DiaryWithCommentResponse>> getDiaryWithCommentsADay(
             @Parameter(name = "date",description = "원하는 날짜(yyyy-MM-dd) 를 String 형식으로 기입")
             @RequestParam(name = "date") String date,
@@ -98,6 +120,9 @@ public class PersonalExerciseDiaryController {
 
     @GetMapping("/my")
     @Operation(summary = "다이어리 조회 - 유저 인증 기반")
+    @ApiResponse(responseCode = "200", description = "OK", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryWithCommentResponse.class))
+    })
     public ResponseEntity<Page<DiaryWithCommentResponse>> getDiariesWithCommentsByUserId(
             @ParameterObject @PageableDefault(sort = "createdAt",direction = Sort.Direction.DESC) Pageable pageable,
             @AuthenticationPrincipal CustomUserDetails userDetails

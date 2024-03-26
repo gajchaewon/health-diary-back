@@ -13,6 +13,7 @@ import com.bodytok.healthdiary.repository.UserAccountRepository;
 import com.bodytok.healthdiary.service.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,7 +36,7 @@ public class AuthenticationService {
 
     public RegisterResponse register(RegisterRequest request) {
         userAccountRepository.findByEmail(request.email()).ifPresent(userAccount -> {
-            throw new RuntimeException("User already exists -> User's Email : " + userAccount.getEmail());
+            throw new DuplicateKeyException("User already exists -> User's Email : " + userAccount.getEmail());
         });
         CustomUserDetails userDetails = CustomUserDetails.of(
                 request.email(),

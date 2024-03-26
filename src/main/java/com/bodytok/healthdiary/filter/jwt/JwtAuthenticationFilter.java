@@ -18,7 +18,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -35,7 +34,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final AntPathRequestMatcher[] permitAllMatchers = {
             new AntPathRequestMatcher("/auth/sign-up", HttpMethod.POST.name()),
             new AntPathRequestMatcher("/auth/login", HttpMethod.POST.name()),
-            new AntPathRequestMatcher("/diaries", HttpMethod.GET.name())
+            new AntPathRequestMatcher("/diaries", HttpMethod.GET.name()),
+            new AntPathRequestMatcher("/swagger-ui/**"),
+            new AntPathRequestMatcher("/v2/api-docs"),
+            new AntPathRequestMatcher("/v3/api-docs"),
+            new AntPathRequestMatcher("/v3/api-docs/**"),
+            new AntPathRequestMatcher("/swagger-resources"),
+            new AntPathRequestMatcher("/swagger-resources/**"),
+            new AntPathRequestMatcher("/configuration/ui"),
+            new AntPathRequestMatcher("/configuration/security"),
+            new AntPathRequestMatcher("/webjars/**"),
+            new AntPathRequestMatcher("/swagger-ui.html")
     };
 
 
@@ -58,6 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                log.error("인증이 필요함");
                 filterChain.doFilter(request, response);
                 return;
             }
