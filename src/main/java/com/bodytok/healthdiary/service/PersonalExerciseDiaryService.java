@@ -9,10 +9,10 @@ import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import com.bodytok.healthdiary.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -113,8 +113,8 @@ public class PersonalExerciseDiaryService {
             }
             return DiaryDto.from(diary);
 
-        } catch (EntityNotFoundException e) {
-            log.warn("다이어리 저장 실패. 사용자 계정을 찾을 수 없습니다. - dto: {}", dto);
+        } catch (DataAccessException e) {
+            log.warn("다이어리 저장 실패. dto : {}\n error-message : {}", dto, e.getLocalizedMessage());
             throw e;
         }
     }
@@ -123,7 +123,7 @@ public class PersonalExerciseDiaryService {
     public void updateDiary(Long diaryId, DiaryDto dto, Set<HashtagDto> hashtagDtoSet) {
         try {
             PersonalExerciseDiary diary = diaryRepository.findById(diaryId)
-                    .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다. - diaryId: " + diaryId));
+                    .orElseThrow(() -> new EntityNotFoundException("다이어리를 찾을 수 없습니다. - diaryId: " + diaryId));
             if (!dto.userAccountDto().id().equals(diary.getUserAccount().getId())){
                 throw new AccessDeniedException("다이어리 소유자가 아닙니다. - 다이어리의 userId : "+ diary.getUserAccount().getId());
             }
@@ -142,8 +142,8 @@ public class PersonalExerciseDiaryService {
             PersonalExerciseDiary diaryWithUpdatedHashtags = updateHashtags(diary, hashtagDtoSet);
             diaryRepository.save(diaryWithUpdatedHashtags);
         } catch (EntityNotFoundException e) {
-            log.warn("게시글 업데이트 실패. 게시글을 찾을 수 없습니다 - dto: {}", dto);
-            throw e;
+            log.warn("다이어리 업데이트 실패. 게시글을 찾을 수 없습니다 - dto: {}", dto);
+            throw new EntityNotFoundException("다이어리를 찾을 수 없습니다 - error :  ", e);
         }
     }
 
@@ -188,6 +188,7 @@ public class PersonalExerciseDiaryService {
             diaryRepository.delete(diary);
         } catch (EntityNotFoundException e) {
             log.warn("다이어리 삭제 실패. 다이어리를 찾을 수 없습니다. - diaryId: {}", diaryId);
+            throw new EntityNotFoundException("다이어리를 찾을 수 없습니다 - error :  ", e);
         }
     }
 
