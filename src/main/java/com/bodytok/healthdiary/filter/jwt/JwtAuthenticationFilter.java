@@ -35,6 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             new AntPathRequestMatcher("/auth/sign-up", HttpMethod.POST.name()),
             new AntPathRequestMatcher("/auth/login", HttpMethod.POST.name()),
             new AntPathRequestMatcher("/diaries", HttpMethod.GET.name()),
+            new AntPathRequestMatcher("/community", HttpMethod.GET.name()),
             new AntPathRequestMatcher("/swagger-ui/**"),
             new AntPathRequestMatcher("/v2/api-docs"),
             new AntPathRequestMatcher("/v3/api-docs"),
@@ -67,7 +68,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                log.error("인증이 필요함");
                 filterChain.doFilter(request, response);
                 return;
             }

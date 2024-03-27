@@ -1,8 +1,8 @@
 package com.bodytok.healthdiary.controller;
 
 
+import com.bodytok.healthdiary.domain.constant.SearchType;
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
-import com.bodytok.healthdiary.dto.auth.response.RegisterResponse;
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
 import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
 import com.bodytok.healthdiary.dto.diary.request.DiaryRequest;
@@ -10,7 +10,6 @@ import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
 import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import com.bodytok.healthdiary.exepction.CommonApiError;
-import com.bodytok.healthdiary.exepction.ValidationError;
 import com.bodytok.healthdiary.service.PersonalExerciseDiaryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -18,9 +17,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -44,20 +41,6 @@ import java.util.stream.Collectors;
 public class PersonalExerciseDiaryController {
 
     private final PersonalExerciseDiaryService diaryService;
-
-    @GetMapping
-    @Operation(summary = "모든 다이어리 가져오기 - 댓글 미포함")
-    @SecurityRequirements(value = {}) // Swagger 글로벌 security 설정 지우기
-    public ResponseEntity<Page<DiaryResponse>> getAllDiaries(
-           @ParameterObject @PageableDefault(sort = "createdAt") Pageable pageable
-    ) {
-        Page<DiaryDto> diaries = diaryService.getAllDiaries(pageable);
-
-        return ResponseEntity.ok().body(
-                diaries.map(DiaryResponse::from)
-        );
-    }
-
 
     @PostMapping
     @Operation(summary = "새로운 다이어리 생성하기")
@@ -83,6 +66,26 @@ public class PersonalExerciseDiaryController {
         return ResponseEntity.ok(diaryResponse);
     }
 
+    @GetMapping("/my")
+    @Operation(summary = "나의 모든 다이어리 조회 - 날짜검색(optional) | ")
+    @ApiResponse(responseCode = "200", description = "OK", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryWithCommentResponse.class))
+    })
+    public ResponseEntity<Page<DiaryWithCommentResponse>> getDiariesWithCommentsByUserId(
+            @Parameter(name = "searchType",description = "검색하고자 하는 필드")
+            @RequestParam(required = false,name = "searchType") SearchType searchType,
+            @Parameter(name = "searchValue",description = "검색 키워드 - 검색 타입에 맞게 검색")
+            @RequestParam(required = false, name = "searchValue") String searchValue,
+            @ParameterObject @PageableDefault(sort = "createdAt",direction = Sort.Direction.DESC) Pageable pageable,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+
+    ){
+        var diaries = diaryService.getMyDiariesWithCommentsByUserId(userDetails,searchType, searchValue,pageable);
+        return ResponseEntity.ok().body(
+                diaries.map(DiaryWithCommentResponse::from)
+        );
+    }
+
     @GetMapping("/{diaryId}")
     @Operation(summary = "다이어리 조회 - 댓글 포함")
     @ApiResponse(responseCode = "200", description = "OK", content = {
@@ -92,45 +95,12 @@ public class PersonalExerciseDiaryController {
             @Content(mediaType = "application/json", schema = @Schema(implementation = CommonApiError.class))
     })
     public ResponseEntity<DiaryWithCommentResponse> getDiaryWithComments(
-            @PathVariable(name = "diaryId") Long diaryId
+            @PathVariable(name = "diaryId") Long diaryId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        DiaryWithCommentDto diary = diaryService.getDiaryWithComments(diaryId);
+        DiaryWithCommentDto diary = diaryService.getDiaryWithComments(diaryId, userDetails);
 
         return ResponseEntity.ok(DiaryWithCommentResponse.from(diary));
-    }
-
-    @GetMapping("/search")
-    @Operation(summary = "다이어리 조회 - 날짜 검색")
-    @ApiResponse(responseCode = "200", description = "OK", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryWithCommentResponse.class))
-    })
-    @ApiResponse(responseCode = "404", description = "NOT FOUND", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = CommonApiError.class))
-    })
-    public ResponseEntity<Page<DiaryWithCommentResponse>> getDiaryWithCommentsADay(
-            @Parameter(name = "date",description = "원하는 날짜(yyyy-MM-dd) 를 String 형식으로 기입")
-            @RequestParam(name = "date") String date,
-            @ParameterObject @PageableDefault(sort = "createdAt") Pageable pageable
-            ){
-        Page<DiaryWithCommentDto> diaries = diaryService.getDiaryWithCommentsADay(date, pageable);
-        return ResponseEntity.ok().body(
-                diaries.map(DiaryWithCommentResponse::from)
-        );
-    }
-
-    @GetMapping("/my")
-    @Operation(summary = "다이어리 조회 - 유저 인증 기반")
-    @ApiResponse(responseCode = "200", description = "OK", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryWithCommentResponse.class))
-    })
-    public ResponseEntity<Page<DiaryWithCommentResponse>> getDiariesWithCommentsByUserId(
-            @ParameterObject @PageableDefault(sort = "createdAt",direction = Sort.Direction.DESC) Pageable pageable,
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ){
-        var diaries = diaryService.getDiaryWithCommentsByUserId(userDetails.getId(), pageable);
-        return ResponseEntity.ok().body(
-                diaries.map(DiaryWithCommentResponse::from)
-        );
     }
 
     @PutMapping("/{diaryId}")

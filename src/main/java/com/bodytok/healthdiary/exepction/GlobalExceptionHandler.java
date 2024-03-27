@@ -39,6 +39,9 @@ public class GlobalExceptionHandler {
         } else if (ex instanceof HttpMessageNotReadableException) {
             message = "요청이 잘못되었습니다. 유효하지 않은 데이터가 포함되어 있습니다.";
             status = HttpStatus.BAD_REQUEST;
+        } else if(ex instanceof IllegalArgumentException){
+            message = ex.getMessage();
+            status = HttpStatus.BAD_REQUEST;
         } else if (ex instanceof MethodArgumentNotValidException) {
             Map<String, String> errors = new HashMap<>();
 
