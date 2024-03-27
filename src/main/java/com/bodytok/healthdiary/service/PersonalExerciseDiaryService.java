@@ -2,13 +2,16 @@ package com.bodytok.healthdiary.service;
 
 
 import com.bodytok.healthdiary.domain.*;
+import com.bodytok.healthdiary.domain.constant.SearchType;
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
 import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import com.bodytok.healthdiary.repository.*;
+import com.bodytok.healthdiary.util.DateConverter;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,10 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.Set;
 
@@ -33,63 +33,59 @@ public class PersonalExerciseDiaryService {
     private final PersonalExerciseDiaryRepository diaryRepository;
     private final PersonalExerciseDiaryHashtagRepository diaryHashtagRepository;
     private final UserAccountRepository userAccountRepository;
-    private final CommunityExerciseDiaryService communityExerciseDiaryService;
     private final HashtagService hashtagService;
-
-
-    //모든 다이어리 가져오기 - 댓글 미포함
-    @Transactional(readOnly = true)
-    public Page<DiaryDto> getAllDiaries(Pageable pageable) {
-        Page<PersonalExerciseDiary> diaries = diaryRepository.findAll(pageable);
-
-        return diaries.map(DiaryDto::from);
-    }
-
-    //다이어리 조회 - 댓글 미포함
-    @Transactional(readOnly = true)
-    public DiaryDto getDiary(Long diaryId) {
-        var diary = diaryRepository.findById(diaryId).orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : " + diaryId));
-        return DiaryDto.from(diary);
-    }
 
 
     //다이어리 조회 - 댓글 포함
     @Transactional(readOnly = true)
-    public DiaryWithCommentDto getDiaryWithComments(Long diaryId) {
+    public DiaryWithCommentDto getDiaryWithComments(Long diaryId, CustomUserDetails userDetails) {
         var diary = diaryRepository.findById(diaryId).orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : " + diaryId));
-        return DiaryWithCommentDto.from(diary);
+        Long userId = userDetails.getId();
+
+        //다이어리 소유자라면 공개 여부 상관없이 리턴
+        if (diary.getUserAccount().getId().equals(userId)){
+            return DiaryWithCommentDto.from(diary);
+        }
+        //다이어리 소유자가 아니라면 -> 공개된 다이어리만 리턴 가능
+        if (diary.getIsPublic()){
+            return DiaryWithCommentDto.from(diary);
+        } else {
+            throw new AccessDeniedException("공개된 다이어리가 아닙니다. - isPublic : false");
+        }
     }
 
-    //다이어리 조회 - 유저 인증 기반
+    //내 모든 다이어리 조회 - 인증 기반
     @Transactional(readOnly = true)
-    public Page<DiaryWithCommentDto> getDiaryWithCommentsByUserId(Long userId, Pageable pageable) {
-        var diaries = diaryRepository.findByUserAccount_Id(userId, pageable);
-        return diaries.map(DiaryWithCommentDto::from);
+    public Page<DiaryWithCommentDto> getMyDiariesWithCommentsByUserId(
+            CustomUserDetails userDetails, SearchType searchType, String keyword, Pageable pageable
+    ) {
+        var userId = userDetails.getId();
 
-    }
-
-    @Transactional(readOnly = true)
-    public Page<DiaryWithCommentDto> getDiaryWithCommentsADay(String date, Pageable pageable) {
-        // "yyyy-mm-dd" 형식의 문자열을 LocalDateTime으로 변환
-        LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE);
-        log.info("변환된 localDate : {}", localDate);
-
-        // 클라이언트에서 전달된 날짜의 최소 시각과 최대 시각 계산
-        LocalDateTime startDateTime = localDate.atStartOfDay();
-        LocalDateTime endDateTime = localDate.atTime(LocalTime.MAX);
-
-        log.info("startDateTime : {}\n", startDateTime);
-        log.info("endDateTime : {}\n", endDateTime);
-
-        Page<PersonalExerciseDiary> diaries = diaryRepository.findByCreatedAtBetween(startDateTime, endDateTime, pageable);
-        //빈 배열인지 확인
-        if (diaries == null || diaries.getContent().isEmpty()) {
-            // 빈 리스트에 대한 예외 처리 또는 다른 작업 수행
-            throw new EntityNotFoundException("해당 날짜의 다이어리가 없습니다. date: " + date);
+        if (keyword == null || keyword.isBlank()) {
+            Page<PersonalExerciseDiary> diaries = diaryRepository.findByUserAccount_Id(userId, pageable);
+            return diaries.map(DiaryWithCommentDto::from);
         }
 
+        return switch (searchType){
+            case TITLE -> diaryRepository.findByTitleContaining(userId,keyword,pageable).map(DiaryWithCommentDto::from);
+            case CONTENT -> diaryRepository.findByContentContaining(userId,keyword, pageable).map(DiaryWithCommentDto::from);
+            case HASHTAG -> diaryRepository.findByDiaryHashtag(userId,keyword, pageable).map(DiaryWithCommentDto::from);
+            case DATE -> getMyDiariesByCreatedAt(userId,keyword,pageable);
+            case NICKNAME -> throw new IllegalArgumentException("Nickname 검색은 지원되지 않습니다.");
+        };
+    }
+
+
+    //내 모든 다이어리 조회 - 인증 기반
+    private Page<DiaryWithCommentDto> getMyDiariesByCreatedAt(Long userId, String date, Pageable pageable) {
+        //문자열을 받아 db검색에 맞게 변환
+        LocalDateTime[] timeRange = DateConverter.convertDateToTimeRange(date);
+        LocalDateTime startTime = timeRange[0];
+        LocalDateTime endTime = timeRange[1];
+        var diaries = diaryRepository.findByUserAccount_IdAndCreatedAtBetween(userId,startTime, endTime, pageable);
         return diaries.map(DiaryWithCommentDto::from);
     }
+
 
     //다이어리 저장
     public DiaryDto saveDiaryWithHashtags(DiaryDto dto, Set<HashtagDto> hashtagDtoSet) {
@@ -106,10 +102,6 @@ public class PersonalExerciseDiaryService {
                 for (Hashtag hashtag : hashtags) {
                     diary.addHashtag(hashtag);
                 }
-            }
-            // 커뮤니티에 저장하기
-            if (diary.getIsPublic()) {
-                communityExerciseDiaryService.savePublicDiary(diary);
             }
             return DiaryDto.from(diary);
 
@@ -143,7 +135,7 @@ public class PersonalExerciseDiaryService {
             diaryRepository.save(diaryWithUpdatedHashtags);
         } catch (EntityNotFoundException e) {
             log.warn("다이어리 업데이트 실패. 게시글을 찾을 수 없습니다 - dto: {}", dto);
-            throw new EntityNotFoundException("다이어리를 찾을 수 없습니다 - error :  ", e);
+            throw new EntityNotFoundException("다이어리를 찾을 수 없습니다 - errorMessage : " + e.getMessage());
         }
     }
 
@@ -188,7 +180,7 @@ public class PersonalExerciseDiaryService {
             diaryRepository.delete(diary);
         } catch (EntityNotFoundException e) {
             log.warn("다이어리 삭제 실패. 다이어리를 찾을 수 없습니다. - diaryId: {}", diaryId);
-            throw new EntityNotFoundException("다이어리를 찾을 수 없습니다 - error :  ", e);
+            throw new EntityNotFoundException("다이어리를 찾을 수 없습니다 - errorMessage :  " + e.getMessage());
         }
     }
 
