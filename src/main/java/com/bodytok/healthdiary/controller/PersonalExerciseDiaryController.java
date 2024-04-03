@@ -59,7 +59,8 @@ public class PersonalExerciseDiaryController {
 
         DiaryDto diary = diaryService.saveDiaryWithHashtags(
                 request.toDto(userDetails.toDto()),
-                hashtags
+                hashtags,
+                request.imageIds()
         );
         DiaryResponse diaryResponse = DiaryResponse.from(diary);
 

@@ -11,7 +11,6 @@ import com.bodytok.healthdiary.repository.*;
 import com.bodytok.healthdiary.util.DateConverter;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +33,7 @@ public class PersonalExerciseDiaryService {
     private final PersonalExerciseDiaryHashtagRepository diaryHashtagRepository;
     private final UserAccountRepository userAccountRepository;
     private final HashtagService hashtagService;
+    private final ImageService imageService;
 
 
     //다이어리 조회 - 댓글 포함
@@ -88,12 +88,13 @@ public class PersonalExerciseDiaryService {
 
 
     //다이어리 저장
-    public DiaryDto saveDiaryWithHashtags(DiaryDto dto, Set<HashtagDto> hashtagDtoSet) {
+    public DiaryDto saveDiaryWithHashtags(DiaryDto dto, Set<HashtagDto> hashtagDtoSet, Set<Long> imageIds) {
 
         try {
             // Dto -> Entity
             UserAccount userAccount = userAccountRepository.getReferenceById(dto.userAccountDto().id());
             PersonalExerciseDiary diary = dto.toEntity(userAccount);
+            Set<DiaryImage> diaryImageSet = imageService.getImages(imageIds);
 
             diary = diaryRepository.save(diary);
 
@@ -103,6 +104,14 @@ public class PersonalExerciseDiaryService {
                     diary.addHashtag(hashtag);
                 }
             }
+
+            if(!diaryImageSet.isEmpty()){
+                for (DiaryImage diaryImage : diaryImageSet){
+                    diary.addDiaryImage(diaryImage);
+                }
+            }
+            
+
             return DiaryDto.from(diary);
 
         } catch (DataAccessException e) {

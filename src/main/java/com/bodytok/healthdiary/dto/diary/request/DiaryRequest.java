@@ -15,10 +15,13 @@ public record DiaryRequest(
     @Schema(description = "커뮤니티 공개 여부", nullable = false, example = "false")
     Boolean isPublic,
     @Schema(description = "해시태그", nullable = true)
-    Set<String> hashtags
+    Set<String> hashtags,
+
+    @Schema(description = "이미지 아이디", nullable = true)
+    Set<Long> imageIds
 ) {
-    public static DiaryRequest of(String title, String content, Boolean isPublic, Set<String> hashtags) {
-        return new DiaryRequest(title,content,isPublic, hashtags);
+    public static DiaryRequest of(String title, String content, Boolean isPublic, Set<String> hashtags,Set<Long> imageIds ) {
+        return new DiaryRequest(title,content,isPublic, hashtags, imageIds);
     }
 
     public DiaryDto toDto(UserAccountDto userAccountDto) {
