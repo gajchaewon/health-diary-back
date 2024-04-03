@@ -21,14 +21,16 @@ public record DiaryWithCommentDto(
         Boolean isPublic,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt,
-        Set<HashtagDto> hashtagDtoSet
+        Set<HashtagDto> hashtagDtoSet,
+
+        Integer likeCount
 ) {
 
     public static DiaryWithCommentDto of(Long id, UserAccountDto userAccountDto, Set<CommentDto> commentDtoSet, String title, String content, Integer totalExTime, Boolean isPublic, LocalDateTime createdAt, LocalDateTime modifiedAt) {
-        return new DiaryWithCommentDto(id, userAccountDto, commentDtoSet, title, content, totalExTime, isPublic, createdAt, modifiedAt, Set.of());
+        return new DiaryWithCommentDto(id, userAccountDto, commentDtoSet, title, content, totalExTime, isPublic, createdAt, modifiedAt, Set.of(),null);
     }
-    public static DiaryWithCommentDto of(Long id, UserAccountDto userAccountDto, Set<CommentDto> commentDtoSet, String title, String content, Integer totalExTime, Boolean isPublic, LocalDateTime createdAt, LocalDateTime modifiedAt,  Set<HashtagDto> hashtagDtoSet) {
-        return new DiaryWithCommentDto(id, userAccountDto, commentDtoSet, title, content, totalExTime, isPublic, createdAt, modifiedAt, hashtagDtoSet);
+    public static DiaryWithCommentDto of(Long id, UserAccountDto userAccountDto, Set<CommentDto> commentDtoSet, String title, String content, Integer totalExTime, Boolean isPublic, LocalDateTime createdAt, LocalDateTime modifiedAt,  Set<HashtagDto> hashtagDtoSet, Integer likeCount) {
+        return new DiaryWithCommentDto(id, userAccountDto, commentDtoSet, title, content, totalExTime, isPublic, createdAt, modifiedAt, hashtagDtoSet, likeCount);
     }
 
     public static DiaryWithCommentDto from(PersonalExerciseDiary entity) {
@@ -47,7 +49,8 @@ public record DiaryWithCommentDto(
                 entity.getDiaryHashtags().stream()
                         .map(PersonalExerciseDiaryHashtag::getHashtag)
                         .map(HashtagDto::from)
-                        .collect(Collectors.toUnmodifiableSet())
+                        .collect(Collectors.toUnmodifiableSet()),
+                entity.getLikes().size()
         );
     }
 

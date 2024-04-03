@@ -20,12 +20,12 @@ public record DiaryWithCommentResponse(
         String email,
         String nickname,
         Set<HashtagDto> hashtags,
-        Set<CommentResponse> comments
+        Set<CommentResponse> comments,
+        Integer likeCount
 ) {
 
-    public static DiaryWithCommentResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<HashtagDto> hashtags, Set<CommentResponse> comments){
-        return new DiaryWithCommentResponse(id, title, content, isPublic, totalExTime, createAt, userId, email, nickname, hashtags, comments);
-
+    public static DiaryWithCommentResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<HashtagDto> hashtags, Set<CommentResponse> comments, Integer likeCount){
+        return new DiaryWithCommentResponse(id, title, content, isPublic, totalExTime, createAt, userId, email, nickname, hashtags, comments, null);
     }
 
     public static DiaryWithCommentResponse from(DiaryWithCommentDto dto) {
@@ -48,8 +48,8 @@ public record DiaryWithCommentResponse(
                         .collect(Collectors.toUnmodifiableSet()),
                 dto.commentDtoSet().stream()
                         .map(CommentResponse::from)
-                        .collect(Collectors.toCollection(LinkedHashSet::new))
-
+                        .collect(Collectors.toCollection(LinkedHashSet::new)),
+                dto.likeCount()
         );
     }
 }

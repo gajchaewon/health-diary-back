@@ -59,7 +59,8 @@ public class PersonalExerciseDiaryController {
 
         DiaryDto diary = diaryService.saveDiaryWithHashtags(
                 request.toDto(userDetails.toDto()),
-                hashtags
+                hashtags,
+                request.imageIds()
         );
         DiaryResponse diaryResponse = DiaryResponse.from(diary);
 
@@ -135,12 +136,12 @@ public class PersonalExerciseDiaryController {
 
     @PostMapping("/{diaryId}/like")
     @Operation(summary = "다이어리 좋아요")
-    public ResponseEntity<Void> likeDiary(
+    public ResponseEntity<Integer> likeDiary(
             @PathVariable(name = "diaryId") Long diaryId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        diaryService.likeDiary(diaryId, userDetails.getId());
-        return ResponseEntity.ok().build();
+        int like_count = diaryService.likeDiary(diaryId, userDetails.getId());
+        return ResponseEntity.ok().body(like_count);
     }
 
 }

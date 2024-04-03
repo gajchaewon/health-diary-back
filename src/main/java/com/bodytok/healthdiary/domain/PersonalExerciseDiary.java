@@ -61,6 +61,20 @@ public class PersonalExerciseDiary extends AuditingFields {
     @OneToMany(mappedBy = "personalExerciseDiary", cascade = CascadeType.ALL, orphanRemoval = true)
     private  Set<DiaryLike> likes = new LinkedHashSet<>();
 
+    @ToString.Exclude
+    @OneToMany(mappedBy = "personalExerciseDiary", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<DiaryImage> diaryImages = new HashSet<>();
+
+    public void addDiaryImage(DiaryImage diaryImage) {
+        diaryImages.add(diaryImage);
+        diaryImage.setPersonalExerciseDiary(this);
+    }
+
+    public void removeDiaryImage(DiaryImage diaryImage) {
+        diaryImages.remove(diaryImage);
+        diaryImage.setPersonalExerciseDiary(null);
+    }
+
     protected PersonalExerciseDiary() {
     }
 
