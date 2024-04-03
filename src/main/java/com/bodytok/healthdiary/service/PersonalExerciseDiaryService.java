@@ -193,12 +193,17 @@ public class PersonalExerciseDiaryService {
         }
     }
 
-    public void likeDiary(Long diaryId, Long userId) {
+    public int likeDiary(Long diaryId, Long userId) {
         try {
             PersonalExerciseDiary diary = diaryRepository.findById(diaryId)
                     .orElseThrow(() -> new EntityNotFoundException("다이어리를 찾을 수 없습니다. - diaryId: " + diaryId));
             UserAccount userAccount = userAccountRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다. - userId: " + userId));
+
+            // diary가 공개되지 않으면 like 불가
+            if (!diary.getIsPublic()){
+                throw new AccessDeniedException("공개되지 않은 다이어리는 좋아요가 불가합니다.");
+            }
 
             // 다이어리의 like set 을 읽어 유저가 저장돼 있는지(눌렀던 것인지) 확인
             Optional<DiaryLike> diaryLike = diary.getLikes().stream()
@@ -213,6 +218,8 @@ public class PersonalExerciseDiaryService {
                 diary.addLike(like);
             }
             diaryRepository.save(diary);
+
+            return diary.getLikes().size();
         } catch (EntityNotFoundException e) {
             log.warn("다이어리 좋아요 실패: 다이어리 또는 사용자를 찾을 수 없습니다. - diaryId: {}, userId: {}", diaryId, userId);
             throw new EntityNotFoundException("like 실패 : 엔티티가 없습니다.", e);
