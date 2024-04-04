@@ -14,10 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -54,7 +51,7 @@ public class ImageService {
 
             return savedImage.getId();
         } catch (IOException ex) {
-            throw new RuntimeException("Failed to store image " + originalFileName + ". Please try again!", ex);
+            throw new RuntimeException("이미지 저장 실패 :" + originalFileName, ex);
         }
     }
 

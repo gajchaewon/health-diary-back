@@ -8,7 +8,8 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: trace
 
 file:
-  uploadDir: src/main/resources/diary/images
+  uploadDir: src/main/resources/static/images
+  url: http://localhost:8080/images/
 
 spring:
   datasource:
