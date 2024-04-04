@@ -6,6 +6,7 @@ import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -21,11 +22,13 @@ public record DiaryWithCommentResponse(
         String nickname,
         Set<HashtagDto> hashtags,
         Set<CommentResponse> comments,
-        Integer likeCount
+        Integer likeCount,
+
+        List<String> imageUrls
 ) {
 
-    public static DiaryWithCommentResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<HashtagDto> hashtags, Set<CommentResponse> comments, Integer likeCount){
-        return new DiaryWithCommentResponse(id, title, content, isPublic, totalExTime, createAt, userId, email, nickname, hashtags, comments, null);
+    public static DiaryWithCommentResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<HashtagDto> hashtags, Set<CommentResponse> comments){
+        return new DiaryWithCommentResponse(id, title, content, isPublic, totalExTime, createAt, userId, email, nickname, hashtags, comments, null,List.of());
     }
 
     public static DiaryWithCommentResponse from(DiaryWithCommentDto dto) {
@@ -49,7 +52,8 @@ public record DiaryWithCommentResponse(
                 dto.commentDtoSet().stream()
                         .map(CommentResponse::from)
                         .collect(Collectors.toCollection(LinkedHashSet::new)),
-                dto.likeCount()
+                dto.likeCount(),
+                dto.ImageUrls()
         );
     }
 }

@@ -54,6 +54,7 @@ public class SecurityConfig {
                         auth -> auth
                                 .requestMatchers("auth/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"diaries").permitAll()
+                                .requestMatchers(HttpMethod.GET,"images/**").permitAll() //정적리소스 이미지 경로
                                 .requestMatchers(HttpMethod.GET, "community/**").permitAll() //커뮤니티 다이어리 가져오기
                                 .anyRequest().authenticated()
                 )

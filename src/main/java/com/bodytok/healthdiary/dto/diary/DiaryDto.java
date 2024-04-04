@@ -5,9 +5,11 @@ import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.domain.PersonalExerciseDiaryHashtag;
 import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.dto.UserAccountDto;
+import com.bodytok.healthdiary.dto.diaryImage.DiaryImageDto;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,12 +25,13 @@ public record DiaryDto(
         Boolean isPublic,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt,
-        Set<HashtagDto> hashtagDtoSet
+        Set<HashtagDto> hashtagDtoSet,
+        List<DiaryImageDto> diaryImageDtoList
 
 ) {
 
     public static DiaryDto of(UserAccountDto userAccountDto, String title, String content, Boolean isPublic) {
-        return new DiaryDto(null, userAccountDto, title, content, 0, isPublic, null, null, Set.of());
+        return new DiaryDto(null, userAccountDto, title, content, 0, isPublic, null, null, Set.of(), List.of());
     }
 
     public static DiaryDto from(PersonalExerciseDiary entity) {
@@ -44,7 +47,10 @@ public record DiaryDto(
                 entity.getDiaryHashtags().stream()
                         .map(PersonalExerciseDiaryHashtag::getHashtag)
                         .map(HashtagDto::from)
-                        .collect(Collectors.toUnmodifiableSet())
+                        .collect(Collectors.toUnmodifiableSet()),
+                entity.getDiaryImages().stream()
+                        .map(DiaryImageDto::from)
+                        .collect(Collectors.toList())
         );
     }
 

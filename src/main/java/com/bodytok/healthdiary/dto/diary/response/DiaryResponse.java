@@ -1,9 +1,11 @@
 package com.bodytok.healthdiary.dto.diary.response;
 
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
+import com.bodytok.healthdiary.dto.diaryImage.DiaryImageDto;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 public record DiaryResponse(
@@ -16,12 +18,13 @@ public record DiaryResponse(
         Long userId,
         String email,
         String nickname,
-        Set<HashtagDto> hashtags
+        Set<HashtagDto> hashtags,
+        List<DiaryImageDto>  images
 
 ) {
 
     public static DiaryResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<HashtagDto> hashtags){
-        return new DiaryResponse(id, title, content, isPublic, totalExTime, createAt,userId, email, nickname, hashtags);
+        return new DiaryResponse(id, title, content, isPublic, totalExTime, createAt,userId, email, nickname, hashtags, List.of());
 
     }
 
@@ -41,7 +44,8 @@ public record DiaryResponse(
                 dto.userAccountDto().id(),
                 dto.userAccountDto().email(),
                 nickname,
-                dto.hashtagDtoSet()
+                dto.hashtagDtoSet(),
+                dto.diaryImageDtoList()
         );
     }
 }
