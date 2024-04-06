@@ -26,7 +26,7 @@ public record DiaryDto(
         LocalDateTime createdAt,
         LocalDateTime modifiedAt,
         Set<HashtagDto> hashtagDtoSet,
-        List<DiaryImageDto> diaryImageDtoList
+        List<String> imageUrls
 
 ) {
 
@@ -49,7 +49,7 @@ public record DiaryDto(
                         .map(HashtagDto::from)
                         .collect(Collectors.toUnmodifiableSet()),
                 entity.getDiaryImages().stream()
-                        .map(DiaryImageDto::from)
+                        .map(diaryImage -> "http://localhost:8080/images/".concat(diaryImage.getSavedFileName()))
                         .collect(Collectors.toList())
         );
     }

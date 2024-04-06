@@ -2,11 +2,13 @@ package com.bodytok.healthdiary.dto.diary.response;
 
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
 import com.bodytok.healthdiary.dto.diaryImage.DiaryImageDto;
+import com.bodytok.healthdiary.dto.diaryImage.DiaryImageResponse;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public record DiaryResponse(
         Long id,
@@ -19,7 +21,7 @@ public record DiaryResponse(
         String email,
         String nickname,
         Set<HashtagDto> hashtags,
-        List<DiaryImageDto>  images
+        List<String> imageUrls
 
 ) {
 
@@ -45,7 +47,7 @@ public record DiaryResponse(
                 dto.userAccountDto().email(),
                 nickname,
                 dto.hashtagDtoSet(),
-                dto.diaryImageDtoList()
+                dto.imageUrls()
         );
     }
 }

@@ -53,7 +53,7 @@ public record DiaryWithCommentResponse(
                         .map(CommentResponse::from)
                         .collect(Collectors.toCollection(LinkedHashSet::new)),
                 dto.likeCount(),
-                dto.ImageUrls()
+                dto.imageUrls()
         );
     }
 }
