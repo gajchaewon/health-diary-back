@@ -27,7 +27,7 @@ public record DiaryWithCommentDto(
         Set<HashtagDto> hashtagDtoSet,
         Integer likeCount,
 
-        List<String> ImageUrls
+        List<String> imageUrls
 ) {
 
     public static DiaryWithCommentDto of(Long id, UserAccountDto userAccountDto, Set<CommentDto> commentDtoSet, String title, String content, Integer totalExTime, Boolean isPublic, LocalDateTime createdAt, LocalDateTime modifiedAt) {

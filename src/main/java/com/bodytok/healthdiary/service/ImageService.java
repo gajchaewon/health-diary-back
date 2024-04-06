@@ -1,6 +1,7 @@
 package com.bodytok.healthdiary.service;
 
 import com.bodytok.healthdiary.domain.DiaryImage;
+import com.bodytok.healthdiary.dto.ImageUploadResponse;
 import com.bodytok.healthdiary.repository.DiaryImageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,7 @@ public class ImageService {
     @Value("${file.uploadDir}")
     private String uploadDir;
 
-    public Long storeImage(MultipartFile file) {
+    public ImageUploadResponse storeImage(MultipartFile file) {
         String originalFileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
         String fileNameWithoutExtension = StringUtils.stripFilenameExtension(originalFileName);
         String extension = StringUtils.getFilenameExtension(originalFileName);
@@ -49,7 +50,8 @@ public class ImageService {
 
             DiaryImage savedImage = diaryImageRepository.save(diaryImage);
 
-            return savedImage.getId();
+
+            return ImageUploadResponse.of(savedImage.getId(), "http://localhost:8080/images/"+savedFileName);
         } catch (IOException ex) {
             throw new RuntimeException("이미지 저장 실패 :" + originalFileName, ex);
         }
