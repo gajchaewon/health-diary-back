@@ -16,22 +16,25 @@ public record DiaryImageDto(
          PersonalExerciseDiary personalExerciseDiary
 ) {
 
-    public static DiaryImageDto of(Long id,String originalFileName, String savedFileName, String filePath, PersonalExerciseDiary personalExerciseDiary){
-        return new DiaryImageDto(id, originalFileName,savedFileName,filePath, null);
-    }
-
     public static DiaryImageDto of(String originalFileName, String savedFileName, String filePath){
-        return new DiaryImageDto(null, originalFileName,savedFileName,filePath,null);
+        return new DiaryImageDto(null, originalFileName, savedFileName, filePath, null);
     }
-
 
     public static DiaryImageDto from(DiaryImage entity){
-        return of(
+        return new DiaryImageDto(
                 entity.getId(),
                 entity.getOriginalFileName(),
                 entity.getSavedFileName(),
                 entity.getFilePath(),
                 null
+        );
+    }
+
+    public DiaryImage toEntity(){
+        return DiaryImage.of(
+                this.originalFileName,
+                this.savedFileName,
+                this.filePath
         );
     }
 

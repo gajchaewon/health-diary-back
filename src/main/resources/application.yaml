@@ -12,6 +12,8 @@ file:
   url: http://localhost:8080/images/
 
 spring:
+  profiles:
+    include: aws
   datasource:
     url: jdbc:mysql://localhost:3306/bodytok
     username: root
@@ -43,6 +45,11 @@ spring:
   h2:
     console:
       enabled: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+      resolve-lazily: true
 springdoc:
   swagger-ui:
     path: /swagger-ui

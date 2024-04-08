@@ -1,6 +1,7 @@
 package com.bodytok.healthdiary.dto.diary.response;
 
 import com.bodytok.healthdiary.dto.comment.CommentResponse;
+import com.bodytok.healthdiary.dto.diaryImage.ImageResponse;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
 
@@ -24,7 +25,7 @@ public record DiaryWithCommentResponse(
         Set<CommentResponse> comments,
         Integer likeCount,
 
-        List<String> imageUrls
+        List<ImageResponse> images
 ) {
 
     public static DiaryWithCommentResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<HashtagDto> hashtags, Set<CommentResponse> comments){
@@ -53,7 +54,7 @@ public record DiaryWithCommentResponse(
                         .map(CommentResponse::from)
                         .collect(Collectors.toCollection(LinkedHashSet::new)),
                 dto.likeCount(),
-                dto.imageUrls()
+                dto.images()
         );
     }
 }

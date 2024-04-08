@@ -12,6 +12,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -79,5 +80,19 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now()
         );
         return new ResponseEntity<>(apiError, ex.getStatus());
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<CommonApiError> handleFileUploadException(
+            MaxUploadSizeExceededException ex,
+            HttpServletRequest request){
+        CommonApiError apiError = new CommonApiError(
+                request.getRequestURI(),
+                ex.getMessage(),
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+
     }
 }
