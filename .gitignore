@@ -5,6 +5,7 @@
 ###Querydsl
 /src/main/generated
 
+application-aws.yaml
 
 # User-specific stuff
 .idea/**/workspace.xml
