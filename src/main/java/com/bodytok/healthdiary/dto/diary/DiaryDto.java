@@ -1,11 +1,8 @@
 package com.bodytok.healthdiary.dto.diary;
 
-import com.bodytok.healthdiary.domain.Hashtag;
-import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
-import com.bodytok.healthdiary.domain.PersonalExerciseDiaryHashtag;
-import com.bodytok.healthdiary.domain.UserAccount;
+import com.bodytok.healthdiary.domain.*;
 import com.bodytok.healthdiary.dto.UserAccountDto;
-import com.bodytok.healthdiary.dto.diaryImage.DiaryImageDto;
+import com.bodytok.healthdiary.dto.diaryImage.ImageResponse;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 
 import java.time.LocalDateTime;
@@ -26,7 +23,7 @@ public record DiaryDto(
         LocalDateTime createdAt,
         LocalDateTime modifiedAt,
         Set<HashtagDto> hashtagDtoSet,
-        List<String> imageUrls
+        List<ImageResponse> images
 
 ) {
 
@@ -49,7 +46,7 @@ public record DiaryDto(
                         .map(HashtagDto::from)
                         .collect(Collectors.toUnmodifiableSet()),
                 entity.getDiaryImages().stream()
-                        .map(diaryImage -> "http://localhost:8080/images/".concat(diaryImage.getSavedFileName()))
+                        .map(ImageResponse::from)
                         .collect(Collectors.toList())
         );
     }

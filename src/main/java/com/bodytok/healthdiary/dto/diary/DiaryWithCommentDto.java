@@ -1,12 +1,11 @@
 package com.bodytok.healthdiary.dto.diary;
 
-import com.bodytok.healthdiary.domain.DiaryImage;
 import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.domain.PersonalExerciseDiaryHashtag;
 import com.bodytok.healthdiary.dto.UserAccountDto;
 import com.bodytok.healthdiary.dto.comment.CommentDto;
+import com.bodytok.healthdiary.dto.diaryImage.ImageResponse;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
@@ -27,15 +26,8 @@ public record DiaryWithCommentDto(
         Set<HashtagDto> hashtagDtoSet,
         Integer likeCount,
 
-        List<String> imageUrls
+        List<ImageResponse> images
 ) {
-
-    public static DiaryWithCommentDto of(Long id, UserAccountDto userAccountDto, Set<CommentDto> commentDtoSet, String title, String content, Integer totalExTime, Boolean isPublic, LocalDateTime createdAt, LocalDateTime modifiedAt) {
-        return new DiaryWithCommentDto(id, userAccountDto, commentDtoSet, title, content, totalExTime, isPublic, createdAt, modifiedAt, Set.of(),null, List.of());
-    }
-    public static DiaryWithCommentDto of(Long id, UserAccountDto userAccountDto, Set<CommentDto> commentDtoSet, String title, String content, Integer totalExTime, Boolean isPublic, LocalDateTime createdAt, LocalDateTime modifiedAt,  Set<HashtagDto> hashtagDtoSet, Integer likeCount,List<String> imageUrls) {
-        return new DiaryWithCommentDto(id, userAccountDto, commentDtoSet, title, content, totalExTime, isPublic, createdAt, modifiedAt, hashtagDtoSet, likeCount, imageUrls);
-    }
 
     public static DiaryWithCommentDto from(PersonalExerciseDiary entity) {
         return new DiaryWithCommentDto(
@@ -56,7 +48,7 @@ public record DiaryWithCommentDto(
                         .collect(Collectors.toUnmodifiableSet()),
                 entity.getLikes().size(),
                 entity.getDiaryImages().stream()
-                        .map(diaryImage -> "http://localhost:8080/images/".concat(diaryImage.getSavedFileName()))
+                        .map(ImageResponse::from)
                         .collect(Collectors.toList())
         );
     }
