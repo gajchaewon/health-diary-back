@@ -121,7 +121,7 @@ public class PersonalExerciseDiaryService {
     }
 
     //다이어리 수정
-    public void updateDiary(Long diaryId, DiaryDto dto, Set<HashtagDto> hashtagDtoSet) {
+    public void updateDiary(Long diaryId, DiaryDto dto, Set<HashtagDto> hashtagDtoSet, Set<Long> imageIds) {
         try {
             PersonalExerciseDiary diary = diaryRepository.findById(diaryId)
                     .orElseThrow(() -> new EntityNotFoundException("다이어리를 찾을 수 없습니다. - diaryId: " + diaryId));
@@ -141,7 +141,10 @@ public class PersonalExerciseDiaryService {
 
             // 해시태그 업데이트
             PersonalExerciseDiary diaryWithUpdatedHashtags = updateHashtags(diary, hashtagDtoSet);
-            diaryRepository.save(diaryWithUpdatedHashtags);
+            PersonalExerciseDiary updatedDiary = imageService.updateImages(diaryWithUpdatedHashtags, imageIds);
+
+            // 해시태그, 이미지가 업데이트된 다이어리 저장.
+            diaryRepository.save(updatedDiary);
         } catch (EntityNotFoundException e) {
             log.warn("다이어리 업데이트 실패. 게시글을 찾을 수 없습니다 - dto: {}", dto);
             throw new EntityNotFoundException("다이어리를 찾을 수 없습니다 - errorMessage : " + e.getMessage());
@@ -169,8 +172,9 @@ public class PersonalExerciseDiaryService {
             diary.getDiaryHashtags().clear();
         }
         return diary;
-
     }
+
+
 
     public void deleteDiary(Long diaryId, CustomUserDetails userDetails) {
         try {
@@ -181,6 +185,10 @@ public class PersonalExerciseDiaryService {
             }
             //다이어리 연관 해시태그 삭제 -> entity bulk 삭제를 지원함
             diaryHashtagRepository.deleteAll(diary.getDiaryHashtags());
+            var images = diary.getDiaryImages();
+
+            //다이어리와 연관된 이미지 삭제
+            images.forEach(image -> imageService.deleteImage(image.getId()));
 
             //다이어리와 연관 댓글 모두 제거
             diary.getComments().clear();

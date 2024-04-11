@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,6 +46,15 @@ public class ImageController {
             @RequestParam("file") MultipartFile file) throws IOException
     {
         return s3Service.uploadImage(file);
+    }
+
+
+    @DeleteMapping("/{imageId}")
+    public ResponseEntity<Void> remove(
+            @PathVariable(name = "imageId") Long imageId
+    ){
+        imageService.deleteImage(imageId);
+        return ResponseEntity.ok().build();
     }
 
 }

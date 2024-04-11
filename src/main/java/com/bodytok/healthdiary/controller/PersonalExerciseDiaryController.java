@@ -105,7 +105,7 @@ public class PersonalExerciseDiaryController {
     }
 
     @PutMapping("/{diaryId}")
-    @Operation(summary = "다이어리 수정")
+    @Operation(summary = "다이어리 수정 - 이미지 먼저 저장 or 삭제 후 진행")
     public ResponseEntity<Void> updateDiary(
             @PathVariable(name = "diaryId") Long diaryId,
             @RequestBody DiaryRequest request,
@@ -119,7 +119,9 @@ public class PersonalExerciseDiaryController {
         diaryService.updateDiary(
                 diaryId,
                 request.toDto(userDetails.toDto()),
-                hashtags
+                hashtags,
+                request.imageIds()
+
         );
         return ResponseEntity.ok().build();
     }

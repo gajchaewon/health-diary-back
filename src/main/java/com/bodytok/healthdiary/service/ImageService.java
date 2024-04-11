@@ -1,8 +1,11 @@
 package com.bodytok.healthdiary.service;
 
 import com.bodytok.healthdiary.domain.DiaryImage;
+import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.dto.diaryImage.ImageResponse;
 import com.bodytok.healthdiary.repository.DiaryImageRepository;
+import com.bodytok.healthdiary.util.FileNameConverter;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,13 +28,16 @@ import java.util.stream.Collectors;
 public class ImageService {
 
     private final DiaryImageRepository diaryImageRepository;
+    private final S3Service s3Service;
+    private final FileNameConverter fileNameConverter;
+
 
     @Value("${file.uploadDir}")
     private String uploadDir;
 
     public ImageResponse storeImage(MultipartFile file) {
         String originalFileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-        String savedFileName = convertFileName(file);
+        String savedFileName = fileNameConverter.convertFileName(file);
 
         log.info("savedFileName : {}", savedFileName);
 
@@ -55,6 +61,32 @@ public class ImageService {
         }
     }
 
+    public PersonalExerciseDiary updateImages(PersonalExerciseDiary diary, Set<Long> requestImagesIds) {
+        if (!requestImagesIds.isEmpty()) {
+            //기존 이미지 id 셋
+            Set<Long> existImageIds = diary.getDiaryImages().stream()
+                    .map(DiaryImage::getId)
+                    .collect(Collectors.toUnmodifiableSet());
+
+            //새로운 이미지들
+            Set<DiaryImage> newImages = requestImagesIds.stream()
+                    .filter(imageId -> !existImageIds.contains(imageId))
+                    .flatMap(imageId -> getImages(Set.of(imageId)).stream())
+                    .collect(Collectors.toSet());
+
+            newImages.forEach(diary::addDiaryImage);
+
+            return diary;
+        }
+        return diary;
+    }
+
+    public void deleteImage(Long imageId) {
+        DiaryImage image = diaryImageRepository.findById(imageId).orElseThrow(() -> new EntityNotFoundException("이미지 정보가 없습니다. id : "+ imageId));
+        s3Service.removeImage(image);
+        diaryImageRepository.deleteById(imageId);
+    }
+
     @Transactional(readOnly = true)
     public Set<DiaryImage> getImages(Set<Long> imageIds){
         return imageIds.stream()
@@ -64,10 +96,5 @@ public class ImageService {
                 .collect(Collectors.toUnmodifiableSet());
     }
 
-    public String convertFileName(MultipartFile file){
-        String originalFileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-        String fileNameWithoutExtension = StringUtils.stripFilenameExtension(originalFileName);
-        String extension = StringUtils.getFilenameExtension(originalFileName);
-        return fileNameWithoutExtension + "_" + UUID.randomUUID() + "." + extension;
-    }
+
 }
