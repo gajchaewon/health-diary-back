@@ -1,7 +1,11 @@
 package com.bodytok.healthdiary.filter.jwt;
 
+import com.bodytok.healthdiary.domain.constant.ErrorMessage;
 import com.bodytok.healthdiary.service.jwt.JwtService;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,6 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final AntPathRequestMatcher[] permitAllMatchers = {
             new AntPathRequestMatcher("/auth/sign-up", HttpMethod.POST.name()),
             new AntPathRequestMatcher("/auth/login", HttpMethod.POST.name()),
+            new AntPathRequestMatcher("/auth/refresh-token", HttpMethod.GET.name()),
             new AntPathRequestMatcher("/diaries", HttpMethod.GET.name()),
             new AntPathRequestMatcher("/community", HttpMethod.GET.name()),
             new AntPathRequestMatcher("/swagger-ui/**"),
@@ -61,9 +66,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String userEmail;
 
 
-        try{
-            log.info("요청 정보\n->{}\n->{}",request.getMethod(),request.getRequestURI());
-            if(isPermitAllRequest(request)){ // jwt 인증이 필요없는 요청 검증 없이 넘기기
+        try {
+            log.info("요청 정보\n->{}\n->{}", request.getMethod(), request.getRequestURI());
+            if (isPermitAllRequest(request)) { // jwt 인증이 필요없는 요청 검증 없이 넘기기
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -88,8 +93,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
-        }catch(JwtException | UsernameNotFoundException exception){
+        } catch (SignatureException e) {
+            log.info("SignatureException");
+            throw new JwtException(ErrorMessage.WRONG_TYPE_TOKEN.getMsg());
+        } catch (MalformedJwtException e) {
+            log.info("MalformedJwtException");
+            throw new JwtException(ErrorMessage.UNSUPPORTED_TOKEN.getMsg());
+        } catch (ExpiredJwtException e) {
+            log.info("ExpiredJwtException");
+            throw new JwtException(ErrorMessage.EXPIRED_TOKEN.getMsg());
+        } catch (IllegalArgumentException e) {
+            log.info("IllegalArgumentException");
+            throw new JwtException(ErrorMessage.UNKNOWN_ERROR.getMsg());
+        } catch(JwtException | UsernameNotFoundException exception){
             log.error("JwtAuthentication Authentication Exception Occurs! - {}",exception.getClass());
+            throw new JwtException(ErrorMessage.UNKNOWN_ERROR.getMsg());
         }
 
         filterChain.doFilter(request, response);
