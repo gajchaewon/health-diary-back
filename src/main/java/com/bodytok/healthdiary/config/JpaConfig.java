@@ -23,7 +23,12 @@ public class JpaConfig {
                 .map(SecurityContext::getAuthentication)
                 .filter(Authentication::isAuthenticated)
                 .map(Authentication::getPrincipal)
-                .map(CustomUserDetails.class::cast)
-                .map(CustomUserDetails::getUsername);
+                .map(principal -> {
+                    if (principal instanceof CustomUserDetails) {
+                        return ((CustomUserDetails) principal).getNickname();
+                    } else {
+                        return "Unknown";
+                    }
+                });
     }
 }
