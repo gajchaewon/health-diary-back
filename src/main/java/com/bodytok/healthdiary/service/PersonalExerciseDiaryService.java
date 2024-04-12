@@ -6,6 +6,7 @@ import com.bodytok.healthdiary.domain.constant.SearchType;
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
 import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
+import com.bodytok.healthdiary.dto.diaryLike.LikeResponse;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import com.bodytok.healthdiary.repository.*;
 import com.bodytok.healthdiary.util.DateConverter;
@@ -201,7 +202,7 @@ public class PersonalExerciseDiaryService {
         }
     }
 
-    public int likeDiary(Long diaryId, Long userId) {
+    public LikeResponse likeDiary(Long diaryId, Long userId) {
         try {
             PersonalExerciseDiary diary = diaryRepository.findById(diaryId)
                     .orElseThrow(() -> new EntityNotFoundException("다이어리를 찾을 수 없습니다. - diaryId: " + diaryId));
@@ -227,7 +228,7 @@ public class PersonalExerciseDiaryService {
             }
             diaryRepository.save(diary);
 
-            return diary.getLikes().size();
+            return LikeResponse.of(diary.getLikes().size());
         } catch (EntityNotFoundException e) {
             log.warn("다이어리 좋아요 실패: 다이어리 또는 사용자를 찾을 수 없습니다. - diaryId: {}, userId: {}", diaryId, userId);
             throw new EntityNotFoundException("like 실패 : 엔티티가 없습니다.", e);

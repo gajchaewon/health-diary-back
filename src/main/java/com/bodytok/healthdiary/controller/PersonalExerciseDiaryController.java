@@ -8,6 +8,7 @@ import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
 import com.bodytok.healthdiary.dto.diary.request.DiaryRequest;
 import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
 import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
+import com.bodytok.healthdiary.dto.diaryLike.LikeResponse;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import com.bodytok.healthdiary.exepction.CommonApiError;
 import com.bodytok.healthdiary.service.PersonalExerciseDiaryService;
@@ -138,12 +139,12 @@ public class PersonalExerciseDiaryController {
 
     @PostMapping("/{diaryId}/like")
     @Operation(summary = "다이어리 좋아요")
-    public ResponseEntity<Integer> likeDiary(
+    public ResponseEntity<LikeResponse> likeDiary(
             @PathVariable(name = "diaryId") Long diaryId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        int like_count = diaryService.likeDiary(diaryId, userDetails.getId());
-        return ResponseEntity.ok().body(like_count);
+        LikeResponse response = diaryService.likeDiary(diaryId, userDetails.getId());
+        return ResponseEntity.ok().body(response);
     }
 
 }
