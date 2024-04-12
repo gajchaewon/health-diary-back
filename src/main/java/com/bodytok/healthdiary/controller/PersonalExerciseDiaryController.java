@@ -82,7 +82,7 @@ public class PersonalExerciseDiaryController {
             @AuthenticationPrincipal CustomUserDetails userDetails
 
     ){
-        var diaries = diaryService.getMyDiariesWithCommentsByUserId(userDetails,searchType, searchValue,pageable);
+        var diaries = diaryService.getMyDiariesWithComments(userDetails,searchType, searchValue,pageable);
         return ResponseEntity.ok().body(
                 diaries.map(DiaryWithCommentResponse::from)
         );
@@ -97,10 +97,9 @@ public class PersonalExerciseDiaryController {
             @Content(mediaType = "application/json", schema = @Schema(implementation = CommonApiError.class))
     })
     public ResponseEntity<DiaryWithCommentResponse> getDiaryWithComments(
-            @PathVariable(name = "diaryId") Long diaryId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @PathVariable(name = "diaryId") Long diaryId
     ) {
-        DiaryWithCommentDto diary = diaryService.getDiaryWithComments(diaryId, userDetails);
+        DiaryWithCommentDto diary = diaryService.getDiaryWithComments(diaryId);
 
         return ResponseEntity.ok(DiaryWithCommentResponse.from(diary));
     }

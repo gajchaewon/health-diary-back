@@ -31,8 +31,11 @@ public class GlobalExceptionHandler {
         if (ex instanceof EntityNotFoundException) {
             message = ex.getMessage();
             status = HttpStatus.NOT_FOUND;
-        } else if (ex instanceof BadCredentialsException || ex instanceof AccessDeniedException) {
+        } else if (ex instanceof BadCredentialsException){
             message = "Authentication failed or user is not authorized";
+            status = HttpStatus.UNAUTHORIZED;
+        }else if(ex instanceof AccessDeniedException) {
+            message = ex.getMessage();
             status = HttpStatus.UNAUTHORIZED;
         } else if (ex instanceof DuplicateKeyException) {
             message = ex.getMessage();

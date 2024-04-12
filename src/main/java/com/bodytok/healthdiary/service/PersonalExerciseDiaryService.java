@@ -39,25 +39,20 @@ public class PersonalExerciseDiaryService {
 
     //다이어리 조회 - 댓글 포함
     @Transactional(readOnly = true)
-    public DiaryWithCommentDto getDiaryWithComments(Long diaryId, CustomUserDetails userDetails) {
+    public DiaryWithCommentDto getDiaryWithComments(Long diaryId) {
         var diary = diaryRepository.findById(diaryId).orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : " + diaryId));
-        Long userId = userDetails.getId();
 
-        //다이어리 소유자라면 공개 여부 상관없이 리턴
-        if (diary.getUserAccount().getId().equals(userId)){
-            return DiaryWithCommentDto.from(diary);
+        if(!diary.getIsPublic()){
+            throw new AccessDeniedException("공개된 다이어리가 아닙니다.");
         }
-        //다이어리 소유자가 아니라면 -> 공개된 다이어리만 리턴 가능
-        if (diary.getIsPublic()){
-            return DiaryWithCommentDto.from(diary);
-        } else {
-            throw new AccessDeniedException("공개된 다이어리가 아닙니다. - isPublic : false");
-        }
+
+        return DiaryWithCommentDto.from(diary);
+
     }
 
     //내 모든 다이어리 조회 - 인증 기반
     @Transactional(readOnly = true)
-    public Page<DiaryWithCommentDto> getMyDiariesWithCommentsByUserId(
+    public Page<DiaryWithCommentDto> getMyDiariesWithComments(
             CustomUserDetails userDetails, SearchType searchType, String keyword, Pageable pageable
     ) {
         var userId = userDetails.getId();
@@ -77,7 +72,7 @@ public class PersonalExerciseDiaryService {
     }
 
 
-    //내 모든 다이어리 조회 - 인증 기반
+    //해당 날짜의 모든 내 다이어리 가져오기
     private Page<DiaryWithCommentDto> getMyDiariesByCreatedAt(Long userId, String date, Pageable pageable) {
         //문자열을 받아 db검색에 맞게 변환
         LocalDateTime[] timeRange = DateConverter.convertDateToTimeRange(date);
