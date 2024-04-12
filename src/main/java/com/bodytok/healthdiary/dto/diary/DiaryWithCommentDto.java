@@ -5,6 +5,7 @@ import com.bodytok.healthdiary.domain.PersonalExerciseDiaryHashtag;
 import com.bodytok.healthdiary.dto.UserAccountDto;
 import com.bodytok.healthdiary.dto.comment.CommentDto;
 import com.bodytok.healthdiary.dto.diaryImage.ImageResponse;
+import com.bodytok.healthdiary.dto.diaryLike.DiaryLikeInfo;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 
 import java.time.LocalDateTime;
@@ -24,7 +25,7 @@ public record DiaryWithCommentDto(
         LocalDateTime createdAt,
         LocalDateTime modifiedAt,
         Set<HashtagDto> hashtagDtoSet,
-        Integer likeCount,
+        DiaryLikeInfo likeInfo,
 
         List<ImageResponse> images
 ) {
@@ -46,7 +47,7 @@ public record DiaryWithCommentDto(
                         .map(PersonalExerciseDiaryHashtag::getHashtag)
                         .map(HashtagDto::from)
                         .collect(Collectors.toUnmodifiableSet()),
-                entity.getLikes().size(),
+                DiaryLikeInfo.from(entity),
                 entity.getDiaryImages().stream()
                         .map(ImageResponse::from)
                         .collect(Collectors.toList())
