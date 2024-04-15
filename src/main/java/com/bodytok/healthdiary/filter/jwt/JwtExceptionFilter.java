@@ -25,19 +25,19 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
         } catch (JwtException ex) {
             String message = ex.getMessage();
-            if(ErrorMessage.UNKNOWN_ERROR.getMsg().equals(message)) {
+            if(ErrorMessage.UNKNOWN_ERROR.getError().equals(message)) {
                 setResponse(response, ErrorMessage.UNKNOWN_ERROR);
             }
             //잘못된 타입의 토큰인 경우
-            else if(ErrorMessage.WRONG_TYPE_TOKEN.getMsg().equals(message)) {
+            else if(ErrorMessage.WRONG_TYPE_TOKEN.getError().equals(message)) {
                 setResponse(response, ErrorMessage.WRONG_TYPE_TOKEN);
             }
             //토큰 만료된 경우
-            else if(ErrorMessage.EXPIRED_TOKEN.getMsg().equals(message)) {
+            else if(ErrorMessage.EXPIRED_TOKEN.getError().equals(message)) {
                 setResponse(response, ErrorMessage.EXPIRED_TOKEN);
             }
             //지원되지 않는 토큰인 경우
-            else if(ErrorMessage.UNSUPPORTED_TOKEN.getMsg().equals(message)) {
+            else if(ErrorMessage.UNSUPPORTED_TOKEN.getError().equals(message)) {
                 setResponse(response, ErrorMessage.UNSUPPORTED_TOKEN);
             }
             else {
