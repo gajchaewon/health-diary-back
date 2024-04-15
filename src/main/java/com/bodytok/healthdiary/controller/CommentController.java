@@ -10,9 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -26,17 +24,17 @@ public class CommentController {
     @PostMapping("/new")
     public ResponseEntity<CommentResponse> postNewComment(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            CommentRequest commentRequest
+            @RequestBody CommentRequest commentRequest
     ) {
         CommentDto commentDto = commentService.saveDiaryComment(commentRequest.toDto(userDetails.toDto()));
 
         return ResponseEntity.ok().body(CommentResponse.from(commentDto));
     }
 
-    @PostMapping("/delete")
+    @DeleteMapping("/{commentId}")
     public ResponseEntity<String> deleteComment(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            Long commentId
+            @PathVariable(name = "commentId") Long commentId
     ) {
         commentService.deleteDiaryComment(commentId, userDetails.toDto().id());
 
