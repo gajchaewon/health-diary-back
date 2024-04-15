@@ -95,19 +95,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (SignatureException e) {
             log.info("SignatureException");
-            throw new JwtException(ErrorMessage.WRONG_TYPE_TOKEN.getMsg());
+            throw new JwtException(ErrorMessage.WRONG_TYPE_TOKEN.getError());
         } catch (MalformedJwtException e) {
             log.info("MalformedJwtException");
-            throw new JwtException(ErrorMessage.UNSUPPORTED_TOKEN.getMsg());
+            throw new JwtException(ErrorMessage.UNSUPPORTED_TOKEN.getError());
         } catch (ExpiredJwtException e) {
             log.info("ExpiredJwtException");
-            throw new JwtException(ErrorMessage.EXPIRED_TOKEN.getMsg());
+            throw new JwtException(ErrorMessage.EXPIRED_TOKEN.getError());
         } catch (IllegalArgumentException e) {
             log.info("IllegalArgumentException");
-            throw new JwtException(ErrorMessage.UNKNOWN_ERROR.getMsg());
+            throw new JwtException(ErrorMessage.UNKNOWN_ERROR.getError());
         } catch(JwtException | UsernameNotFoundException exception){
             log.error("JwtAuthentication Authentication Exception Occurs! - {}",exception.getClass());
-            throw new JwtException(ErrorMessage.UNKNOWN_ERROR.getMsg());
+            throw new JwtException(ErrorMessage.UNKNOWN_ERROR.getError());
         }
 
         filterChain.doFilter(request, response);
