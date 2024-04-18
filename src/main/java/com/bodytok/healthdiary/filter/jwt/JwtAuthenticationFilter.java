@@ -1,7 +1,10 @@
 package com.bodytok.healthdiary.filter.jwt;
 
+import com.bodytok.healthdiary.domain.JwtToken;
 import com.bodytok.healthdiary.domain.constant.ErrorMessage;
+import com.bodytok.healthdiary.domain.constant.TokenType;
 import com.bodytok.healthdiary.service.jwt.JwtService;
+import com.bodytok.healthdiary.service.jwt.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -32,13 +35,11 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+    private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final JwtService jwtService;
 
     private final AntPathRequestMatcher[] permitAllMatchers = {
-            new AntPathRequestMatcher("/auth/sign-up", HttpMethod.POST.name()),
-            new AntPathRequestMatcher("/auth/login", HttpMethod.POST.name()),
-            new AntPathRequestMatcher("/auth/refresh-token", HttpMethod.GET.name()),
             new AntPathRequestMatcher("/diaries", HttpMethod.GET.name()),
             new AntPathRequestMatcher("/community", HttpMethod.GET.name()),
             new AntPathRequestMatcher("/swagger-ui/**"),
@@ -77,11 +78,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
             jwt = authHeader.substring(7);
-            userEmail = jwtService.extractUsername(jwt);
+            userEmail = jwtUtil.extractUsername(jwt);
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-                //
-                if (jwtService.isTokenValid(jwt, userDetails)) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+                JwtToken tokenFromRedis = jwtService.getToken(jwt);
+                boolean isAccessToken = tokenFromRedis != null && tokenFromRedis.getTokenType() == TokenType.ACCESS;
+                if (jwtUtil.isTokenValid(jwt, userDetails) && isAccessToken) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
@@ -91,6 +93,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             new WebAuthenticationDetailsSource().buildDetails(request)
                     );
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    throw new SignatureException("Token is invalid");
                 }
             }
         } catch (SignatureException e) {
