@@ -6,6 +6,7 @@ import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.comment.CommentDto;
+import com.bodytok.healthdiary.dto.comment.CommentUpdateDto;
 import com.bodytok.healthdiary.dto.comment.CommentWithDiaryResponse;
 import com.bodytok.healthdiary.repository.CommentRepository;
 import com.bodytok.healthdiary.repository.PersonalExerciseDiaryRepository;
@@ -13,10 +14,13 @@ import com.bodytok.healthdiary.repository.UserAccountRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -25,7 +29,7 @@ import java.util.stream.Collectors;
 @Transactional
 @Service
 public class CommentService {
-    
+
     private final UserAccountRepository userAccountRepository;
     private final CommentRepository commentRepository;
     private final PersonalExerciseDiaryRepository diaryRepository;
@@ -46,7 +50,6 @@ public class CommentService {
     }
 
 
-
     public CommentDto saveDiaryComment(CommentDto dto) {
         try {
             PersonalExerciseDiary PersonalExerciseDiary = diaryRepository.getReferenceById(dto.personalExerciseDiaryId());
@@ -64,22 +67,29 @@ public class CommentService {
     }
 
     // 댓글 수정
-    public CommentDto updateDiaryComment(CommentDto dto) {
+    public CommentDto updateDiaryComment(Long commentId, CommentUpdateDto updateDto, CustomUserDetails userDetails){
         try {
-            Comment comment = commentRepository.getReferenceById(dto.id());
-            if (dto.content() != null) { //입력된 내용이 있으면 수정해서 저장
-                comment.setContent(dto.content());
+            Comment comment = commentRepository.findById(commentId)
+                    .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다. commentId : " + commentId));
 
-                return CommentDto.from(comment);
+            if (!Objects.equals(userDetails.getId(), comment.getUserAccount().getId())) {
+                throw new AccessDeniedException("댓글 작성자만 수정할 수 있습니다.");
             }
-        } catch (EntityNotFoundException e) {
-            log.warn("댓글 업데이트 실패. 댓글을 찾을 수 없습니다 - dto: {}", dto);
-            return null;
+
+            String content = updateDto.content();
+            if (content == null || content.trim().isEmpty()) {
+                throw new IllegalArgumentException("댓글 내용이 비어있습니다.");
+            }
+            //댓글 수정 및 저장
+            comment.setContent(content);
+            Comment updatedComment = commentRepository.save(comment);
+            return CommentDto.from(updatedComment);
+        } catch (EntityNotFoundException | AccessDeniedException | IllegalArgumentException e) {
+            throw e;
         }
-        return null;
     }
 
     public void deleteDiaryComment(Long commentId, Long userId) {
-            commentRepository.deleteByIdAndUserAccount_Id(commentId, userId);
+        commentRepository.deleteByIdAndUserAccount_Id(commentId, userId);
     }
 }
