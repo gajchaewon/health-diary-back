@@ -13,6 +13,7 @@ public enum ErrorMessage {
     WRONG_TYPE_TOKEN(400, "WRONG_TYPE_TOKEN", "잘못된 토큰 타입입니다."),
     UNSUPPORTED_TOKEN(400, "UNSUPPORTED_TOKEN", "지원되지 않는 토큰입니다."),
     EXPIRED_TOKEN(401, "EXPIRED_TOKEN", "만료된 토큰입니다."),
+    UNAUTHORIZED(401, "UNAUTHORIZED","인증이 필요합니다."),
     UNKNOWN_ERROR(500, "UNKNOWN_ERROR", "알 수 없는 오류가 발생했습니다."),
     ACCESS_DENIED(403, "ACCESS_DENIED", "접근 불가한 요청입니다.");
 
