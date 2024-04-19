@@ -2,10 +2,7 @@ package com.bodytok.healthdiary.controller;
 
 
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
-import com.bodytok.healthdiary.dto.comment.CommentDto;
-import com.bodytok.healthdiary.dto.comment.CommentRequest;
-import com.bodytok.healthdiary.dto.comment.CommentResponse;
-import com.bodytok.healthdiary.dto.comment.CommentWithDiaryResponse;
+import com.bodytok.healthdiary.dto.comment.*;
 import com.bodytok.healthdiary.service.CommentService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +43,17 @@ public class CommentController {
             @RequestBody CommentRequest commentRequest
     ) {
         CommentDto commentDto = commentService.saveDiaryComment(commentRequest.toDto(userDetails.toDto()));
+
+        return ResponseEntity.ok().body(CommentResponse.from(commentDto));
+    }
+
+    @PutMapping("/{commentId}")
+    public ResponseEntity<CommentResponse> updateComment(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable(name = "commentId") Long commentId,
+            @RequestBody CommentUpdateDto updateDto
+            ){
+        CommentDto commentDto = commentService.updateDiaryComment(commentId, updateDto, userDetails);
 
         return ResponseEntity.ok().body(CommentResponse.from(commentDto));
     }
