@@ -1,6 +1,7 @@
 package com.bodytok.healthdiary.config.security;
 
 
+import com.bodytok.healthdiary.domain.constant.ErrorMessage;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,6 +21,9 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             HttpServletResponse response,
             AuthenticationException authException
     ) throws IOException, ServletException {
+
+        response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().print(ErrorMessage.UNAUTHORIZED.toJsonString());
     }
 }
