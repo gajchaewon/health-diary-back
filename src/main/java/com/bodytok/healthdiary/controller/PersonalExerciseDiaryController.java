@@ -88,6 +88,22 @@ public class PersonalExerciseDiaryController {
         );
     }
 
+    @GetMapping("/liked")
+    @Operation(summary = "내가 좋아요 누른 다이어리 모두 조회")
+    @ApiResponse(responseCode = "200", description = "OK", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryWithCommentResponse.class))
+    })
+    public ResponseEntity<Page<DiaryWithCommentResponse>> getDiariesILiked(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @ParameterObject @PageableDefault(sort = "createdAt",direction = Sort.Direction.DESC)  Pageable pageable
+    ){
+        Page<DiaryWithCommentDto> diaries = diaryService.getDiariesByUserLiked(userDetails.getId(), pageable);
+
+        return ResponseEntity.ok().body(
+                diaries.map(DiaryWithCommentResponse::from)
+        );
+    }
+
     @GetMapping("/{diaryId}")
     @Operation(summary = "다이어리 조회 - 댓글 포함")
     @ApiResponse(responseCode = "200", description = "OK", content = {
