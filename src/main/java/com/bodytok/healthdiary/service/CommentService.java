@@ -4,7 +4,9 @@ package com.bodytok.healthdiary.service;
 import com.bodytok.healthdiary.domain.Comment;
 import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.domain.UserAccount;
+import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.comment.CommentDto;
+import com.bodytok.healthdiary.dto.comment.CommentWithDiaryResponse;
 import com.bodytok.healthdiary.repository.CommentRepository;
 import com.bodytok.healthdiary.repository.PersonalExerciseDiaryRepository;
 import com.bodytok.healthdiary.repository.UserAccountRepository;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -33,6 +36,16 @@ public class CommentService {
         return commentRepository.findByPersonalExerciseDiary_Id(diaryId)
                 .stream().map(CommentDto::from).toList();
     }
+
+    @Transactional(readOnly = true)
+    public List<CommentWithDiaryResponse> getAllCommentsByUserId(Long userId) {
+
+        return commentRepository.findByUserAccount_Id(userId).stream()
+                .map(CommentWithDiaryResponse::from)
+                .collect(Collectors.toList());
+    }
+
+
 
     public CommentDto saveDiaryComment(CommentDto dto) {
         try {

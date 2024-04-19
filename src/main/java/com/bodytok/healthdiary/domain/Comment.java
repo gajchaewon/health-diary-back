@@ -23,18 +23,21 @@ public class Comment extends AuditingFields {
     private Long id;
 
     @Setter
-    @ManyToOne(optional = false)
+    @Column(nullable = false, length = 500)
+    private String content;
+
+    @ToString.Exclude
+    @Setter
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserAccount userAccount;
 
+    @ToString.Exclude
     @Setter
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "diary_id", nullable = false)
     private PersonalExerciseDiary personalExerciseDiary;
 
-    @Setter
-    @Column(nullable = false, length = 500)
-    private String content;
 
     protected Comment() {
     }
