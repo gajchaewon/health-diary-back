@@ -20,6 +20,8 @@ public interface CommentRepository extends
 
     List<Comment> findByPersonalExerciseDiary_Id(Long diaryId);
 
+    List<Comment> findByUserAccount_Id(Long userId);
+
     void deleteByIdAndUserAccount_Id(Long commentId, Long userId);
 
     @Override

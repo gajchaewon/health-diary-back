@@ -5,12 +5,17 @@ import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.comment.CommentDto;
 import com.bodytok.healthdiary.dto.comment.CommentRequest;
 import com.bodytok.healthdiary.dto.comment.CommentResponse;
+import com.bodytok.healthdiary.dto.comment.CommentWithDiaryResponse;
 import com.bodytok.healthdiary.service.CommentService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @RestController
@@ -20,6 +25,20 @@ public class CommentController {
 
 
     private final CommentService commentService;
+
+    @GetMapping("/all/{userId}")
+    public ResponseEntity<List<CommentWithDiaryResponse>> getAllComments(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable(name = "userId") Long userId
+    ) {
+        //내 댓글만 볼 수 있게 검증
+        if (!Objects.equals(userDetails.getId(), userId)){
+            throw new AccessDeniedException("댓글 주인만 볼 수 있습니다.");
+        }
+        List<CommentWithDiaryResponse> comments = commentService.getAllCommentsByUserId(userId);
+        return ResponseEntity.ok(comments);
+    }
+
 
     @PostMapping("/new")
     public ResponseEntity<CommentResponse> postNewComment(
