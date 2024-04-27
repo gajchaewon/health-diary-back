@@ -76,12 +76,13 @@ public class AuthController {
     @GetMapping("/logout")
     public ResponseEntity<Void> logout(
             HttpServletRequest request,
+            @CookieValue(value = "refreshToken") String refreshToken,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String accessToken = authorizationHeader.substring(7);
-            authService.logout(accessToken, userDetails);
+            authService.logout(accessToken, refreshToken, userDetails);
             return ResponseEntity.ok().build();
         } else {
             // Authorization 헤더가 없거나 형식이 올바르지 않은 경우 처리

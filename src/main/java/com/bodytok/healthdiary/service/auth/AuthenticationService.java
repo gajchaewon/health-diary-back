@@ -111,12 +111,12 @@ public class AuthenticationService {
         return "REFRESH_TOKEN_FAILED";
     }
 
-    public void logout(String token, CustomUserDetails authUser) {
+    public void logout(String token, String refreshToken, CustomUserDetails authUser) {
         UserDetails userDetailsFromToken = jwtUtil.getUserDetailsFromToken(token);
         var userEmail = userDetailsFromToken.getUsername();
         if (!Objects.equals(userEmail, authUser.getUsername())){
             throw new AccessDeniedException("로그인된 유저 정보와 일치하지 않습니다.");
         }
-        jwtService.deleteToken(token);
+        jwtService.deleteToken(token, refreshToken);
     }
 }
