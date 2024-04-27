@@ -39,7 +39,8 @@ public class JwtService {
         return jwtTokenRepository.save(token);
     }
 
-    public void deleteToken(String token) {
+    public void deleteToken(String token, String refreshToken) {
         jwtTokenRepository.deleteById(token);
+        jwtTokenRepository.deleteById(refreshToken);
     }
 }
