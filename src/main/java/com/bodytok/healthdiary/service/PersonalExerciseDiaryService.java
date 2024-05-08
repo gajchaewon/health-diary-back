@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,11 +44,15 @@ public class PersonalExerciseDiaryService {
 
     //다이어리 조회 - 댓글 포함
     @Transactional(readOnly = true)
-    public DiaryWithCommentDto getDiaryWithComments(Long diaryId) {
+    public DiaryWithCommentDto getDiaryWithComments(Long diaryId, CustomUserDetails userDetails) {
         var diary = diaryRepository.findById(diaryId).orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : " + diaryId));
-
-        if (!diary.getIsPublic()) {
-            throw new AccessDeniedException("공개된 다이어리가 아닙니다.");
+        if (!diary.getIsPublic()){
+            if(userDetails == null){
+                throw new AccessDeniedException("공개된 다이어리가 아닙니다.");
+            }
+            else if(!Objects.equals(userDetails.getId(), diary.getUserAccount().getId())) {
+                throw new AccessDeniedException("공개된 다이어리가 아닙니다.");
+            }
         }
 
         return DiaryWithCommentDto.from(diary);

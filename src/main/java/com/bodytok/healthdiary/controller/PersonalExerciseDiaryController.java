@@ -113,9 +113,10 @@ public class PersonalExerciseDiaryController {
             @Content(mediaType = "application/json", schema = @Schema(implementation = CommonApiError.class))
     })
     public ResponseEntity<DiaryWithCommentResponse> getDiaryWithComments(
-            @PathVariable(name = "diaryId") Long diaryId
+            @PathVariable(name = "diaryId") Long diaryId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        DiaryWithCommentDto diary = diaryService.getDiaryWithComments(diaryId);
+        DiaryWithCommentDto diary = diaryService.getDiaryWithComments(diaryId, userDetails);
 
         return ResponseEntity.ok(DiaryWithCommentResponse.from(diary));
     }
