@@ -32,6 +32,8 @@ public interface PersonalExerciseDiaryRepository extends
     Page<PersonalExerciseDiary> findByUserAccount_Id(Long userId, Pageable pageable);
     Page<PersonalExerciseDiary> findByUserAccount_IdAndCreatedAtBetween(Long userId, LocalDateTime startDateTime, LocalDateTime endDateTime, Pageable pageable);
 
+    int countByUserAccount_Id(Long userId);
+
     @Override
     default void customize(QuerydslBindings bindings, QPersonalExerciseDiary root){
         bindings.excludeUnlistedProperties(true);
