@@ -1,6 +1,5 @@
 package com.bodytok.healthdiary.dto.exercise_routine.response;
 
-import com.bodytok.healthdiary.domain.Routine;
 import com.bodytok.healthdiary.dto.exercise_routine.RoutineDto;
 
 public record RoutineResponse(

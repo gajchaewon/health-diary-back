@@ -1,22 +1,21 @@
 package com.bodytok.healthdiary.controller;
 
-import com.bodytok.healthdiary.domain.ExerciseRoutine;
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.exercise_routine.ExerciseDto;
 import com.bodytok.healthdiary.dto.exercise_routine.RoutineDto;
 import com.bodytok.healthdiary.dto.exercise_routine.request.ExerciseCreate;
 import com.bodytok.healthdiary.dto.exercise_routine.request.RoutineCreate;
 import com.bodytok.healthdiary.dto.exercise_routine.response.ExerciseResponse;
+import com.bodytok.healthdiary.dto.exercise_routine.response.RoutineWithExerciseResponse;
 import com.bodytok.healthdiary.dto.exercise_routine.response.RoutineResponse;
 import com.bodytok.healthdiary.service.ExerciseRoutineService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,6 +24,21 @@ import org.springframework.web.bind.annotation.RestController;
 public class ExerciseRoutineController {
 
     private final ExerciseRoutineService exRoutineService;
+
+    @GetMapping
+    public ResponseEntity<List<RoutineWithExerciseResponse>> getAllRoutine(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(name = "userId", required = false) Long userId
+    ){
+        /**
+         * TODO : 루틴 공개 해야하는 지 아닌 지 확인하고 비공개 or 공개 처리 로직 추가하기
+         * 일단 공개로 만들기
+         */
+        Long requestUserId = userId == null ? userDetails.getId() : userId;
+        List<RoutineDto> routineList = exRoutineService.getAllRoutine(requestUserId);
+        var response = routineList.stream().map(RoutineWithExerciseResponse::from).toList();
+        return ResponseEntity.ok().body(response);
+    }
 
     @PostMapping
     public ResponseEntity<RoutineResponse> saveRoutine(
