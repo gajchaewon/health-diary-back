@@ -49,11 +49,29 @@ public class ExerciseRoutineController {
         return ResponseEntity.ok().body(RoutineResponse.from(dto));
     }
 
+    // TODO : 다대다 관계는 OK -> BUT, 생성된 운동을 다른 사람이 쓸 수 있게 할 것인가? OR 나만 사용?
+    //
     @PostMapping("/exercise")
     public ResponseEntity<ExerciseResponse> saveExercise(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody ExerciseCreate exerciseCreate) {
         ExerciseDto dto = exRoutineService.saveExercise(exerciseCreate);
         return ResponseEntity.ok().body(ExerciseResponse.from(dto));
+    }
+
+    @DeleteMapping("/{routineId}")
+    public Long deleteRoutine(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable(name = "routineId") Long routineId
+    ){
+        return exRoutineService.deleteRoutine(routineId, userDetails.getId());
+    }
+
+    @DeleteMapping("/exercise/{exerciseId}")
+    public Long deleteExercise(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable(name = "exerciseId") Long exerciseId
+    ){
+        return exRoutineService.deleteExercise(exerciseId,userDetails.getId());
     }
 }
