@@ -15,23 +15,22 @@ public class ExerciseRoutine {
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name="exercise_id")
-    private Exercise exercise;
-
-
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name="routine_id")
     private Routine routine;
 
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name="exercise_id")
+    private Exercise exercise;
+
     protected ExerciseRoutine() {}
 
-    private ExerciseRoutine(Exercise exercise, Routine routine) {
+    private ExerciseRoutine(Routine routine,Exercise exercise) {
         setExercise(exercise);
         setRoutine(routine);
     }
 
-    public static ExerciseRoutine of(Exercise exercise, Routine routine) {
-        return new ExerciseRoutine(exercise, routine);
+    public static ExerciseRoutine of(Routine routine, Exercise exercise) {
+        return new ExerciseRoutine(routine, exercise);
     }
 
     //setter 로 강제시킴
