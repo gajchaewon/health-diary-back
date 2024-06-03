@@ -2,12 +2,12 @@ package com.bodytok.healthdiary.domain;
 
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @Table(indexes = {
@@ -37,16 +37,31 @@ public class Routine extends AuditingFields {
     protected Routine() {
     }
 
-    private Routine(String routineName, String memo) {
+    private Routine(String routineName, String memo, UserAccount userAccount) {
+        this.routineName = routineName;
+        this.memo = memo;
+        this.userAccount = userAccount;
     }
 
-    public static Routine of(String routineName, String memo) {
-        return new Routine(routineName, memo);
+    public static Routine of(String routineName, String memo, UserAccount userAccount) {
+        return new Routine(routineName, memo, userAccount);
     }
 
     /* 연관관계 메소드 */
     public void addExercise(ExerciseRoutine exerciseRoutine) {
         exerciseRoutines.add(exerciseRoutine);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Routine that)) return false;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
 }

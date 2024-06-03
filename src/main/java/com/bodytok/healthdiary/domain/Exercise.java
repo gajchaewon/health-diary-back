@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @Table(indexes = {
@@ -34,7 +35,10 @@ public class Exercise extends AuditingFields {
     protected Exercise() {
     }
 
-    private Exercise(String exerciseName, String description) {}
+    private Exercise(String exerciseName, String description) {
+        this.exerciseName = exerciseName;
+        this.description = description;
+    }
 
     public static Exercise of(String exerciseName, String description) {
         return new Exercise(exerciseName, description);
@@ -43,5 +47,17 @@ public class Exercise extends AuditingFields {
     /* 연관관계 메소드 */
     public void addRoutine(ExerciseRoutine exerciseRoutine) {
         exerciseRoutines.add(exerciseRoutine);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Exercise that)) return false;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
