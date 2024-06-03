@@ -39,6 +39,8 @@ public class UserAccountService {
         return userAccountRepository.existsByNickname(nickname);
     }
 
+
+    // TODO : 팔로우 카운트만 조회하려면 커스텀 쿼리를 작성해야함.
     @Transactional(readOnly = true)
     public UserProfile getUserProfile(Long userId) {
         //1.유저 조회
@@ -46,8 +48,6 @@ public class UserAccountService {
         UserAccount userAccount = this.getUserById(userId);
         int diaryCount = diaryService.getDiaryCount(userId);
 
-        UserProfile userProfile = UserProfile.toProfileInfo(userAccount, diaryCount);
-        return userProfile;
+        return UserProfile.toProfileInfo(userAccount, diaryCount);
     }
-
 }
