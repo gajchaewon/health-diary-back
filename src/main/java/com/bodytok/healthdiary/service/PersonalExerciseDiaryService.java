@@ -255,5 +255,8 @@ public class PersonalExerciseDiaryService {
         }
     }
 
+    public Integer getDiaryCount(Long userId){
+        return diaryRepository.countByUserAccount_Id(userId);
+    }
 
 }
