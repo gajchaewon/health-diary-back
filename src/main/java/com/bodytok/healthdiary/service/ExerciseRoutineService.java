@@ -12,12 +12,15 @@ import com.bodytok.healthdiary.dto.exercise_routine.request.RoutineCreate;
 import com.bodytok.healthdiary.repository.ExerciseRepository;
 import com.bodytok.healthdiary.repository.ExerciseRoutineRepository;
 import com.bodytok.healthdiary.repository.RoutineRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -37,13 +40,13 @@ public class ExerciseRoutineService {
         return routines.stream().map(RoutineDto::from).collect(Collectors.toList());
     }
 
-    public RoutineDto saveRoutine(RoutineCreate routineCreate, Long userId){
-        UserAccount  userAccount = userAccountService.getUserById(userId);
+    public RoutineDto saveRoutine(RoutineCreate routineCreate, Long userId) {
+        UserAccount userAccount = userAccountService.getUserById(userId);
         Routine newRoutine = routineCreate.toEntity(userAccount);
         return RoutineDto.from(routineRepository.save(newRoutine));
     }
 
-    public ExerciseDto saveExercise(ExerciseCreate exerciseCreate){
+    public ExerciseDto saveExercise(ExerciseCreate exerciseCreate) {
         Routine routine = routineRepository.findById(exerciseCreate.routineId()).orElseThrow(
                 () -> new IllegalArgumentException("해당하는 루틴이 없습니다. id -> " + exerciseCreate.routineId())
         );
@@ -56,5 +59,21 @@ public class ExerciseRoutineService {
         return ExerciseDto.from(newExercise);
     }
 
+    public Long deleteRoutine(Long routineId, Long userId) {
+        Routine routine = routineRepository.findById(routineId).orElseThrow(
+                () -> new IllegalArgumentException("해당하는 루틴이 없습니다. id -> " + routineId));
 
+        if (!Objects.equals(routine.getUserAccount().getId(), userId)) {
+            throw new AccessDeniedException("작성자만 삭제할 수 있습니다.");
+        }
+        routineRepository.delete(routine);
+        return routineId;
+    }
+
+    public Long deleteExercise(Long exerciseId, Long userId) {
+        Exercise exercise = exerciseRepository.findById(exerciseId).orElseThrow(
+                () -> new IllegalArgumentException("해당하는 운동이 없습니다. id -> " + exerciseId));
+        exerciseRepository.delete(exercise);
+        return exerciseId;
+    }
 }
