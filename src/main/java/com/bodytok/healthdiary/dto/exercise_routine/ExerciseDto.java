@@ -1,7 +1,6 @@
 package com.bodytok.healthdiary.dto.exercise_routine;
 
 import com.bodytok.healthdiary.domain.Exercise;
-import com.bodytok.healthdiary.dto.UserAccountDto;
 
 public record ExerciseDto(
         Long id,
