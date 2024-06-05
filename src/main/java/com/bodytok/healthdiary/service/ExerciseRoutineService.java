@@ -2,17 +2,13 @@ package com.bodytok.healthdiary.service;
 
 
 import com.bodytok.healthdiary.domain.Exercise;
-import com.bodytok.healthdiary.domain.ExerciseRoutine;
 import com.bodytok.healthdiary.domain.Routine;
 import com.bodytok.healthdiary.domain.UserAccount;
-import com.bodytok.healthdiary.dto.exercise_routine.ExerciseDto;
 import com.bodytok.healthdiary.dto.exercise_routine.RoutineDto;
 import com.bodytok.healthdiary.dto.exercise_routine.request.ExerciseCreate;
 import com.bodytok.healthdiary.dto.exercise_routine.request.RoutineCreate;
-import com.bodytok.healthdiary.repository.ExerciseRepository;
-import com.bodytok.healthdiary.repository.ExerciseRoutineRepository;
+import com.bodytok.healthdiary.dto.exercise_routine.request.RoutineUpdate;
 import com.bodytok.healthdiary.repository.RoutineRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
@@ -29,9 +25,7 @@ import java.util.stream.Collectors;
 @Service
 public class ExerciseRoutineService {
 
-    private final ExerciseRepository exerciseRepository;
     private final RoutineRepository routineRepository;
-    private final ExerciseRoutineRepository exerciseRoutineRepository;
     private final UserAccountService userAccountService;
 
     @Transactional(readOnly = true)
@@ -46,17 +40,23 @@ public class ExerciseRoutineService {
         return RoutineDto.from(routineRepository.save(newRoutine));
     }
 
-    public ExerciseDto saveExercise(ExerciseCreate exerciseCreate) {
+    public RoutineDto saveExercise(ExerciseCreate exerciseCreate) {
         Routine routine = routineRepository.findById(exerciseCreate.routineId()).orElseThrow(
                 () -> new IllegalArgumentException("해당하는 루틴이 없습니다. id -> " + exerciseCreate.routineId())
         );
-        Exercise newExercise = exerciseRepository.save(exerciseCreate.toEntity());
+        Exercise exercise = exerciseCreate.toEntity();
 
-        ExerciseRoutine exerciseRoutine = ExerciseRoutine.of(routine, newExercise);
+        //운동 추가
+        routine.getExercises().add(exercise);
 
-        exerciseRoutineRepository.save(exerciseRoutine);
+        return RoutineDto.from(routineRepository.save(routine));
+    }
 
-        return ExerciseDto.from(newExercise);
+    public RoutineDto updateRoutine(Long routineId, RoutineUpdate routineUpdate) {
+        Routine routine = routineRepository.findById(routineId).orElseThrow(
+                () -> new IllegalArgumentException("해당하는 루틴이 없습니다. id -> " + routineId));
+        routine.updateRoutineInfo(routineUpdate);
+        return RoutineDto.from(routineRepository.save(routine));
     }
 
     public Long deleteRoutine(Long routineId, Long userId) {
@@ -70,10 +70,12 @@ public class ExerciseRoutineService {
         return routineId;
     }
 
-    public Long deleteExercise(Long exerciseId, Long userId) {
-        Exercise exercise = exerciseRepository.findById(exerciseId).orElseThrow(
-                () -> new IllegalArgumentException("해당하는 운동이 없습니다. id -> " + exerciseId));
-        exerciseRepository.delete(exercise);
-        return exerciseId;
+    public RoutineDto deleteExercise(Long routineId, String exerciseId, Long userId) {
+        Routine routine = routineRepository.findById(routineId).orElseThrow(
+                () -> new IllegalArgumentException("해당하는 루틴이 없습니다. id -> " + routineId));
+
+        //id 같은 운동 삭제하기
+        routine.removeExercise(exerciseId);
+        return RoutineDto.from(routineRepository.save(routine));
     }
 }
