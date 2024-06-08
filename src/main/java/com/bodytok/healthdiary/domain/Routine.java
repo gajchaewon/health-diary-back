@@ -1,10 +1,12 @@
 package com.bodytok.healthdiary.domain;
 
 
+import com.bodytok.healthdiary.dto.exercise_routine.request.RoutineUpdate;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
+import org.hibernate.annotations.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -27,12 +29,14 @@ public class Routine extends AuditingFields {
     private String memo;
 
     @Setter
+    @Type(JsonType.class)
+    @Column(columnDefinition = "json")
+    private List<Exercise> exercises = new ArrayList<>();
+
+    @Setter
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserAccount userAccount;
-
-    @OneToMany(mappedBy = "routine", cascade = CascadeType.REMOVE)
-    private List<ExerciseRoutine> exerciseRoutines = new ArrayList<>();
 
     protected Routine() {
     }
@@ -43,13 +47,21 @@ public class Routine extends AuditingFields {
         this.userAccount = userAccount;
     }
 
-    public static Routine of(String routineName, String memo, UserAccount userAccount) {
-        return new Routine(routineName, memo, userAccount);
+    public void addExercise(Exercise exercise) {
+        exercises.add(exercise);
+    }
+    public void removeExercise(String exerciseId){
+        exercises.removeIf(exercise -> Objects.equals(exercise.getId(), exerciseId));
     }
 
-    /* 연관관계 메소드 */
-    public void addExercise(ExerciseRoutine exerciseRoutine) {
-        exerciseRoutines.add(exerciseRoutine);
+    public void updateRoutineInfo(RoutineUpdate routineUpdate) {
+        this.routineName = routineUpdate.routineName();
+        this.memo = routineUpdate.memo();
+    }
+
+
+    public static Routine of(String routineName, String memo, UserAccount userAccount) {
+        return new Routine(routineName, memo, userAccount);
     }
 
     @Override

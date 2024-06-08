@@ -1,11 +1,10 @@
 package com.bodytok.healthdiary.controller;
 
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
-import com.bodytok.healthdiary.dto.exercise_routine.ExerciseDto;
 import com.bodytok.healthdiary.dto.exercise_routine.RoutineDto;
 import com.bodytok.healthdiary.dto.exercise_routine.request.ExerciseCreate;
 import com.bodytok.healthdiary.dto.exercise_routine.request.RoutineCreate;
-import com.bodytok.healthdiary.dto.exercise_routine.response.ExerciseResponse;
+import com.bodytok.healthdiary.dto.exercise_routine.request.RoutineUpdate;
 import com.bodytok.healthdiary.dto.exercise_routine.response.RoutineWithExerciseResponse;
 import com.bodytok.healthdiary.dto.exercise_routine.response.RoutineResponse;
 import com.bodytok.healthdiary.service.ExerciseRoutineService;
@@ -41,23 +40,32 @@ public class ExerciseRoutineController {
     }
 
     @PostMapping
-    public ResponseEntity<RoutineResponse> saveRoutine(
+    public ResponseEntity<RoutineWithExerciseResponse> saveRoutine(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody RoutineCreate routineCreate
     ) {
         RoutineDto dto = exRoutineService.saveRoutine(routineCreate, userDetails.getId());
-        return ResponseEntity.ok().body(RoutineResponse.from(dto));
+        return ResponseEntity.ok().body(RoutineWithExerciseResponse.from(dto));
     }
 
-    // TODO : 다대다 관계는 OK -> BUT, 생성된 운동을 다른 사람이 쓸 수 있게 할 것인가? OR 나만 사용?
-    //
     @PostMapping("/exercise")
-    public ResponseEntity<ExerciseResponse> saveExercise(
+    public ResponseEntity<RoutineWithExerciseResponse> saveExercise(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody ExerciseCreate exerciseCreate) {
-        ExerciseDto dto = exRoutineService.saveExercise(exerciseCreate);
-        return ResponseEntity.ok().body(ExerciseResponse.from(dto));
+        RoutineDto routineDto = exRoutineService.saveExercise(exerciseCreate);
+        return ResponseEntity.ok().body(RoutineWithExerciseResponse.from(routineDto));
     }
+
+    @PutMapping("/{routineId}")
+    public ResponseEntity<RoutineWithExerciseResponse> updateRoutine(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable(name = "routineId") Long routineId,
+            @RequestBody RoutineUpdate routineUpdate
+    ){
+        RoutineDto routineDto = exRoutineService.updateRoutine(routineId, routineUpdate);
+        return ResponseEntity.ok().body(RoutineWithExerciseResponse.from(routineDto));
+    }
+
 
     @DeleteMapping("/{routineId}")
     public Long deleteRoutine(
@@ -67,11 +75,14 @@ public class ExerciseRoutineController {
         return exRoutineService.deleteRoutine(routineId, userDetails.getId());
     }
 
-    @DeleteMapping("/exercise/{exerciseId}")
-    public Long deleteExercise(
+    @DeleteMapping("{routineId}/exercise/{exerciseId}")
+    public ResponseEntity<RoutineWithExerciseResponse> deleteExercise(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable(name = "exerciseId") Long exerciseId
+            @PathVariable(name = "routineId") Long routineId,
+            @PathVariable(name = "exerciseId") String exerciseId
     ){
-        return exRoutineService.deleteExercise(exerciseId,userDetails.getId());
+
+        RoutineDto routineDto = exRoutineService.deleteExercise(routineId, exerciseId, userDetails.getId());
+        return ResponseEntity.ok().body(RoutineWithExerciseResponse.from(routineDto));
     }
 }
