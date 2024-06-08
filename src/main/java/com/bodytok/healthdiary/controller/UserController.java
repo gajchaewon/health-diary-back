@@ -2,7 +2,6 @@ package com.bodytok.healthdiary.controller;
 
 
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
-import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
 import com.bodytok.healthdiary.dto.userAccount.UserProfile;
 import com.bodytok.healthdiary.service.UserAccountService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,10 +32,10 @@ public class UserController {
     })
     public UserProfile userProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Parameter(name = "userId", description = "조회하는 유저 ID")
+            @Parameter(name = "userId", description = "조회하는 유저 ID - 없으면 내 프로필 조회")
             @RequestParam(name = "userId", required = false) Long userId
     ) {
         Long requestUserId = userId == null ? userDetails.getId() : userId;
-        return userAccountService.getUserProfile(requestUserId);
+        return userAccountService.getUserProfile(userDetails.getId(), requestUserId);
     }
 }

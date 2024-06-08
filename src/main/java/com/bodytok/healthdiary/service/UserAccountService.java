@@ -2,7 +2,7 @@ package com.bodytok.healthdiary.service;
 
 
 import com.bodytok.healthdiary.domain.UserAccount;
-import com.bodytok.healthdiary.dto.UserAccountDto;
+import com.bodytok.healthdiary.domain.constant.FollowStatus;
 import com.bodytok.healthdiary.dto.userAccount.UserProfile;
 import com.bodytok.healthdiary.repository.UserAccountRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class UserAccountService {
@@ -42,12 +43,13 @@ public class UserAccountService {
 
     // TODO : 팔로우 카운트만 조회하려면 커스텀 쿼리를 작성해야함.
     @Transactional(readOnly = true)
-    public UserProfile getUserProfile(Long userId) {
+    public UserProfile getUserProfile(Long myId, Long userId) {
         //1.유저 조회
         //2. 다이어리 카운트 조회 후 profileInfo로 매핑
         UserAccount userAccount = this.getUserById(userId);
-        int diaryCount = diaryService.getDiaryCount(userId);
 
-        return UserProfile.toProfileInfo(userAccount, diaryCount);
+        Integer diaryCount = diaryService.getDiaryCount(userId);
+
+        return UserProfile.toProfileInfo(userAccount, diaryCount, myId);
     }
 }
