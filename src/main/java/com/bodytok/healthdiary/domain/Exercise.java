@@ -1,47 +1,55 @@
 package com.bodytok.healthdiary.domain;
 
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+
 
 @Getter
-@Table(indexes = {
-        @Index(columnList = "createdAt")
-})
-@Entity
-public class Exercise extends AuditingFields {
+public class Exercise {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "exercise_id", nullable = false)
-    private Long id;
+    private final String id;
 
     @Setter
-    @Column(nullable = false)
     private String exerciseName;
 
     @Setter
-    @Column
     private String description;
 
-    @OneToMany(mappedBy = "exercise", cascade = CascadeType.REMOVE)
-    private List<ExerciseRoutine> exerciseRoutines = new ArrayList<>();
-
-    protected Exercise() {
+    @JsonCreator
+    private Exercise(
+            @JsonProperty("exerciseName") String exerciseName,
+            @JsonProperty("description") String description) {
+        this.id = UUID.randomUUID().toString();
+        this.exerciseName = exerciseName;
+        this.description = description;
     }
-
-    private Exercise(String exerciseName, String description) {}
 
     public static Exercise of(String exerciseName, String description) {
         return new Exercise(exerciseName, description);
     }
 
-    /* 연관관계 메소드 */
-    public void addRoutine(ExerciseRoutine exerciseRoutine) {
-        exerciseRoutines.add(exerciseRoutine);
+    public void changeInfo(String exerciseName, String description) {
+        this.exerciseName = exerciseName;
+        this.description = description;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Exercise exercise = (Exercise) o;
+        return Objects.equals(id, exercise.id) && Objects.equals(exerciseName, exercise.exerciseName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, exerciseName);
     }
 }
