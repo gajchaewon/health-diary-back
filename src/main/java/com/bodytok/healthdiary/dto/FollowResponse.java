@@ -1,18 +1,18 @@
 package com.bodytok.healthdiary.dto;
 
 import com.bodytok.healthdiary.domain.UserAccount;
+import com.bodytok.healthdiary.domain.constant.FollowStatus;
 
-import java.time.LocalDateTime;
 
 public record FollowResponse(
         Long id,
         String email,
         String nickname,
         Byte[] profileImage,
-        String followStatus
+        FollowStatus followStatus
 ) {
 
-    public static FollowResponse fromUserEntity(UserAccount userAccount, String followStatus){
+    public static FollowResponse fromUserEntity(UserAccount userAccount, FollowStatus followStatus){
         return new FollowResponse(
                 userAccount.getId(),
                 userAccount.getEmail(),

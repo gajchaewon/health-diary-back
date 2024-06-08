@@ -3,6 +3,7 @@ package com.bodytok.healthdiary.service;
 
 import com.bodytok.healthdiary.domain.Follow;
 import com.bodytok.healthdiary.domain.UserAccount;
+import com.bodytok.healthdiary.domain.constant.FollowStatus;
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.FollowResponse;
 import com.bodytok.healthdiary.exepction.FollowException;
@@ -48,7 +49,7 @@ public class FollowService {
         return user.getFollowingList().stream()
                 .map(follow -> {
                     var followingUser = follow.getFollowing();
-                    String association = association(userDetails, userId);
+                    FollowStatus association = association(userDetails.getId(), userId);
                     return FollowResponse.fromUserEntity(followingUser, association);
                 })
                 .collect(Collectors.toList());
@@ -63,7 +64,7 @@ public class FollowService {
         return user.getFollowerList().stream()
                 .map(follow -> {
                     var usersFollower = follow.getFollower();
-                    String association = association(userDetails, userId);
+                    FollowStatus association = association(userDetails.getId(), userId);
                     return FollowResponse.fromUserEntity(usersFollower, association);
                 })
                 .collect(Collectors.toList());
@@ -82,15 +83,14 @@ public class FollowService {
     }
 
 
-    private String association(CustomUserDetails userDetails, Long userId) {
-        Long me = userDetails.getId();
-        if (userId.equals(me)){
-            return "self";
+    public FollowStatus association(Long myId, Long userId) {
+        if (userId.equals(myId)){
+            return FollowStatus.SELF;
         }
-        if (!followRepository.existsFollowByFollowerIdAndFollowingId(me, userId)){
-            return "none";
+        if (!followRepository.existsFollowByFollowerIdAndFollowingId(myId, userId)){
+            return FollowStatus.NONE;
 
         }
-        return "following";
+        return FollowStatus.FOLLOW;
     }
 }
