@@ -24,7 +24,7 @@ public class FollowController {
 
     //팔로우
     @PostMapping("/{userId}")
-    public ResponseEntity<String> follow(
+    public ResponseEntity<FollowResponse> follow(
             @PathVariable("userId") Long userId,
             @AuthenticationPrincipal CustomUserDetails userDetails
             ) {
@@ -52,7 +52,7 @@ public class FollowController {
 
     // 팔로우 끊기
     @DeleteMapping("/{userId}")
-    public ResponseEntity<String> deleteFollow(
+    public ResponseEntity<FollowResponse> deleteFollow(
             @PathVariable("userId") Long userId,
             @AuthenticationPrincipal CustomUserDetails userDetails){
 
