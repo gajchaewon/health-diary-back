@@ -24,7 +24,7 @@ public class FollowService {
     private final FollowRepository followRepository;
 
     // 팔로우
-    public String follow(CustomUserDetails userDetails, Long followingId) {
+    public FollowResponse follow(CustomUserDetails userDetails, Long followingId) {
         UserAccount followers = userAccountService.getUserById(userDetails.getId());
         UserAccount following = userAccountService.getUserById(followingId);
 
@@ -39,7 +39,7 @@ public class FollowService {
         Follow follow = Follow.of(followers, following);
 
         followRepository.save(follow);
-        return "success";
+        return FollowResponse.fromUserEntity(following, FollowStatus.FOLLOW);
     }
 
     // 유저가 팔로잉 하고 있는 유저들 조회 (유저 -> 유저)
@@ -70,16 +70,18 @@ public class FollowService {
                 .collect(Collectors.toList());
     }
 
-    public String unFollow(CustomUserDetails userDetails, Long userId) {
+    public FollowResponse unFollow(CustomUserDetails userDetails, Long userId) {
 
         final Long followerId = userDetails.getId();
 
         Follow follow = followRepository.findByFollowerIdAndFollowingId(followerId, userId)
                 .orElseThrow(() -> new FollowException(HttpStatus.NOT_FOUND, "팔로잉 하는 유저가 아닙니다."));
 
+        UserAccount user = follow.getFollowing();
+
         followRepository.delete(follow);
 
-        return "success";
+        return FollowResponse.fromUserEntity(user, FollowStatus.NONE);
     }
 
 
