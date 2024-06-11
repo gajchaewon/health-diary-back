@@ -80,6 +80,7 @@ public class PersonalExerciseDiaryService {
             case HASHTAG ->
                     diaryRepository.findByDiaryHashtag(userId, keyword, pageable).map(DiaryWithCommentDto::from);
             case DATE -> getMyDiariesByCreatedAt(userId, keyword, pageable);
+            case MONTH -> getMyDiariesByMonthly(userId, keyword, pageable);
             case NICKNAME -> throw new CustomBaseException(NICKNAME_SEARCH_UNSUPPORTED);
         };
     }
@@ -94,6 +95,17 @@ public class PersonalExerciseDiaryService {
         var diaries = diaryRepository.findByUserAccount_IdAndCreatedAtBetween(userId, startTime, endTime, pageable);
         return diaries.map(DiaryWithCommentDto::from);
     }
+
+    //해당 날짜의 모든 내 다이어리 가져오기
+    private Page<DiaryWithCommentDto> getMyDiariesByMonthly(Long userId, String date, Pageable pageable) {
+        //문자열을 받아 db검색에 맞게 변환
+        LocalDateTime[] timeRange = DateConverter.convertMonthToDateRange(date);
+        LocalDateTime startTime = timeRange[0];
+        LocalDateTime endTime = timeRange[1];
+        var diaries = diaryRepository.findByUserAccount_IdAndCreatedAtBetween(userId, startTime, endTime, pageable);
+        return diaries.map(DiaryWithCommentDto::from);
+    }
+
 
 
     //다이어리 저장

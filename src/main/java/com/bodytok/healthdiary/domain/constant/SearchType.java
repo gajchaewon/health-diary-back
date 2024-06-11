@@ -9,7 +9,9 @@ public enum SearchType {
     CONTENT("본문"),
     NICKNAME("닉네임"),
     HASHTAG("해시태그"),
-    DATE("날짜");
+    DATE("날짜"),
+    MONTH("월별");
+
 
     private final String description;
 

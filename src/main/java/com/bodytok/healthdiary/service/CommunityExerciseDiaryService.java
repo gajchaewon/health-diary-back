@@ -41,7 +41,7 @@ public class CommunityExerciseDiaryService {
             case CONTENT -> diaryRepository.findByContentContaining(null,keyword, pageable).map(DiaryDto::from);
             case HASHTAG -> diaryRepository.findByDiaryHashtag(null,keyword, pageable).map(DiaryDto::from);
             case NICKNAME -> diaryRepository.findByUserAccount_NicknameContainingAndIsPublicTrue(keyword, pageable).map(DiaryDto::from);
-            case DATE -> throw new CustomBaseException(DATE_SEARCH_UNSUPPORTED);
+            case DATE, MONTH -> throw new CustomBaseException(DATE_SEARCH_UNSUPPORTED);
         };
     }
 

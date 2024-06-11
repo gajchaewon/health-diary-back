@@ -26,7 +26,7 @@ public class PersonalExerciseDiary extends AuditingFields {
     private Long id;
 
     @Setter
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserAccount userAccount;
 
