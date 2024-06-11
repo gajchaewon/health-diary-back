@@ -6,15 +6,17 @@ import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.domain.constant.FollowStatus;
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.FollowResponse;
-import com.bodytok.healthdiary.exepction.FollowException;
+import com.bodytok.healthdiary.exepction.CustomBaseException;
+import com.bodytok.healthdiary.exepction.CustomError;
 import com.bodytok.healthdiary.repository.FollowRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.bodytok.healthdiary.exepction.CustomError.*;
 
 @Transactional
 @RequiredArgsConstructor
@@ -30,11 +32,13 @@ public class FollowService {
 
         // 자기 자신은 팔로우 X
         if (followers.getId().equals(following.getId())) {
-            throw new FollowException(HttpStatus.BAD_REQUEST, "자기 자신을 follow할 수 없습니다.");
+            throw new CustomBaseException(FOLLOW_SELF);
+//            throw new FollowException(HttpStatus.BAD_REQUEST, "자기 자신을 follow할 수 없습니다.");
         }
         // 중복 팔로우 x
         if (followRepository.existsFollowByFollowerIdAndFollowingId(followers.getId(), following.getId())) {
-            throw new FollowException(HttpStatus.BAD_REQUEST, "이미 follow했습니다.");
+            throw new CustomBaseException(FOLLOW_DUPLICATED);
+//            throw new FollowException(HttpStatus.BAD_REQUEST, "이미 follow했습니다.");
         }
         Follow follow = Follow.of(followers, following);
 
@@ -81,7 +85,7 @@ public class FollowService {
         final Long followerId = userDetails.getId();
 
         Follow follow = followRepository.findByFollowerIdAndFollowingId(followerId, userId)
-                .orElseThrow(() -> new FollowException(HttpStatus.NOT_FOUND, "팔로잉 하는 유저가 아닙니다."));
+                .orElseThrow(() -> new CustomBaseException(FOLLOW_NOT_FOUND));
 
         UserAccount user = follow.getFollowing();
 

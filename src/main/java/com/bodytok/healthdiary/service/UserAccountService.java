@@ -4,11 +4,15 @@ package com.bodytok.healthdiary.service;
 import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.domain.constant.FollowStatus;
 import com.bodytok.healthdiary.dto.userAccount.UserProfile;
+import com.bodytok.healthdiary.exepction.CustomBaseException;
+import com.bodytok.healthdiary.exepction.CustomError;
 import com.bodytok.healthdiary.repository.UserAccountRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.bodytok.healthdiary.exepction.CustomError.*;
 
 @Transactional
 @Service
@@ -21,13 +25,13 @@ public class UserAccountService {
     @Transactional(readOnly = true)
     public UserAccount getUserById(Long id) {
         return userAccountRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("유저 없음"));
+                .orElseThrow(() -> new CustomBaseException(USER_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
     public UserAccount getUserByEmail(String email) {
         return userAccountRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("유저 없음"));
+                .orElseThrow(() -> new CustomBaseException(USER_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)

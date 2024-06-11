@@ -5,6 +5,8 @@ import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.domain.constant.SearchType;
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
 import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
+import com.bodytok.healthdiary.exepction.CustomBaseException;
+import com.bodytok.healthdiary.exepction.CustomError;
 import com.bodytok.healthdiary.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.bodytok.healthdiary.exepction.CustomError.*;
 
 
 @Slf4j
@@ -38,7 +41,7 @@ public class CommunityExerciseDiaryService {
             case CONTENT -> diaryRepository.findByContentContaining(null,keyword, pageable).map(DiaryDto::from);
             case HASHTAG -> diaryRepository.findByDiaryHashtag(null,keyword, pageable).map(DiaryDto::from);
             case NICKNAME -> diaryRepository.findByUserAccount_NicknameContainingAndIsPublicTrue(keyword, pageable).map(DiaryDto::from);
-            case DATE -> throw new IllegalArgumentException("커뮤니티 DATE 검색은 지원되지 않습니다.");
+            case DATE -> throw new CustomBaseException(DATE_SEARCH_UNSUPPORTED);
         };
     }
 
@@ -46,8 +49,9 @@ public class CommunityExerciseDiaryService {
     //유저가 작성한 모든 다이어리 조회
     @Transactional(readOnly = true)
     public Page<DiaryWithCommentDto> getUserDiariesWithCommentsByUserId(Long userId, Pageable pageable) {
-        var diaries = diaryRepository.findByUserAccount_IdAndIsPublicTrue(userId, pageable);
-        return diaries.map(DiaryWithCommentDto::from);
+        return diaryRepository.findByUserAccount_IdAndIsPublicTrue(userId, pageable)
+                .orElseThrow(() -> new CustomBaseException(DIARY_NOT_FOUND))
+                .map(DiaryWithCommentDto::from);
     }
 
 

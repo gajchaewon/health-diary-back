@@ -8,15 +8,14 @@ import com.bodytok.healthdiary.dto.diary.DiaryDto;
 import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
 import com.bodytok.healthdiary.dto.diaryLike.LikeResponse;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
+import com.bodytok.healthdiary.exepction.CustomBaseException;
+import com.bodytok.healthdiary.exepction.CustomError;
 import com.bodytok.healthdiary.repository.*;
 import com.bodytok.healthdiary.util.DateConverter;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +25,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import static com.bodytok.healthdiary.exepction.CustomError.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -45,13 +45,14 @@ public class PersonalExerciseDiaryService {
     //다이어리 조회 - 댓글 포함
     @Transactional(readOnly = true)
     public DiaryWithCommentDto getDiaryWithComments(Long diaryId, CustomUserDetails userDetails) {
-        var diary = diaryRepository.findById(diaryId).orElseThrow(() -> new EntityNotFoundException("다이어리가 없습니다. - diaryId : " + diaryId));
+        var diary = diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new CustomBaseException(DIARY_NOT_FOUND));
         if (!diary.getIsPublic()){
             if(userDetails == null){
-                throw new AccessDeniedException("공개된 다이어리가 아닙니다.");
+                throw new CustomBaseException(DIARY_PRIVATE);
             }
             else if(!Objects.equals(userDetails.getId(), diary.getUserAccount().getId())) {
-                throw new AccessDeniedException("공개된 다이어리가 아닙니다.");
+                throw new CustomBaseException(DIARY_PRIVATE);
             }
         }
 
@@ -79,7 +80,7 @@ public class PersonalExerciseDiaryService {
             case HASHTAG ->
                     diaryRepository.findByDiaryHashtag(userId, keyword, pageable).map(DiaryWithCommentDto::from);
             case DATE -> getMyDiariesByCreatedAt(userId, keyword, pageable);
-            case NICKNAME -> throw new IllegalArgumentException("Nickname 검색은 지원되지 않습니다.");
+            case NICKNAME -> throw new CustomBaseException(NICKNAME_SEARCH_UNSUPPORTED);
         };
     }
 
@@ -97,15 +98,14 @@ public class PersonalExerciseDiaryService {
 
     //다이어리 저장
     public DiaryDto saveDiaryWithHashtags(DiaryDto dto, Set<HashtagDto> hashtagDtoSet, Set<Long> imageIds) {
-
-        try {
             // Dto -> Entity
             UserAccount userAccount = userAccountRepository.getReferenceById(dto.userAccountDto().id());
             PersonalExerciseDiary diary = dto.toEntity(userAccount);
-            Set<DiaryImage> diaryImageSet = imageService.getImages(imageIds);
+            Set<DiaryImage> diaryImageSet = imageService.searchImages(imageIds);
 
             diary = diaryRepository.save(diary);
 
+            //새 해시태그만 생성
             if (!hashtagDtoSet.isEmpty()) {
                 Set<Hashtag> hashtags = hashtagService.renewHashtagsFromRequest(hashtagDtoSet);
                 for (Hashtag hashtag : hashtags) {
@@ -113,28 +113,21 @@ public class PersonalExerciseDiaryService {
                 }
             }
 
+            //이미지 연결
             if (!diaryImageSet.isEmpty()) {
                 for (DiaryImage diaryImage : diaryImageSet) {
                     diary.addDiaryImage(diaryImage);
                 }
             }
-
-
             return DiaryDto.from(diary);
-
-        } catch (DataAccessException e) {
-            log.warn("다이어리 저장 실패. dto : {}\n error-message : {}", dto, e.getLocalizedMessage());
-            throw e;
-        }
     }
 
     //다이어리 수정
     public void updateDiary(Long diaryId, DiaryDto dto, Set<HashtagDto> hashtagDtoSet, Set<Long> imageIds) {
-        try {
             PersonalExerciseDiary diary = diaryRepository.findById(diaryId)
-                    .orElseThrow(() -> new EntityNotFoundException("다이어리를 찾을 수 없습니다. - diaryId: " + diaryId));
+                    .orElseThrow(()-> new CustomBaseException(DIARY_NOT_FOUND));
             if (!dto.userAccountDto().id().equals(diary.getUserAccount().getId())) {
-                throw new AccessDeniedException("다이어리 소유자가 아닙니다. - 다이어리의 userId : " + diary.getUserAccount().getId());
+                throw new CustomBaseException(DIARY_NOT_OWNER);
             }
             // 업데이트할 필드가 존재 & 다를 경우에만 필드업데이트 진행
             if (dto.title() != null && !dto.title().equals(diary.getTitle())) {
@@ -153,42 +146,37 @@ public class PersonalExerciseDiaryService {
 
             // 해시태그, 이미지가 업데이트된 다이어리 저장.
             diaryRepository.save(updatedDiary);
-        } catch (EntityNotFoundException e) {
-            log.warn("다이어리 업데이트 실패. 게시글을 찾을 수 없습니다 - dto: {}", dto);
-            throw new EntityNotFoundException("다이어리를 찾을 수 없습니다 - errorMessage : " + e.getMessage());
-        }
     }
 
     //새로운 해시태그는 저장하고 있던 것은 제거하는 메서드
     private PersonalExerciseDiary updateHashtags(PersonalExerciseDiary diary, Set<HashtagDto> hashtagDtoSet) {
-        if (!hashtagDtoSet.isEmpty()) {
-            //기존 해시태그 엔티티에 있는 해시태그는 그대로 사용
-            Set<Hashtag> updatedHashtags = hashtagService.renewHashtagsFromRequest(hashtagDtoSet);
+            if (!hashtagDtoSet.isEmpty()) {
+                //기존 해시태그 엔티티에 있는 해시태그는 그대로 사용
+                Set<Hashtag> updatedHashtags = hashtagService.renewHashtagsFromRequest(hashtagDtoSet);
 
-            //기존 해시태그 중 업데이트 해시태그셋에 포함되지 않는 해시태그를 제거
-            diary.getDiaryHashtags().removeIf(diaryHashtag -> !updatedHashtags.contains(diaryHashtag.getHashtag()));
+                //기존 해시태그 중 업데이트 해시태그셋에 포함되지 않는 해시태그를 제거
+                diary.getDiaryHashtags().removeIf(diaryHashtag -> !updatedHashtags.contains(diaryHashtag.getHashtag()));
 
-            // 새로운 해시태그를 추가
-            for (Hashtag hashtag : updatedHashtags) {
-                if (diary.getDiaryHashtags().stream().noneMatch(diaryHashtag -> diaryHashtag.getHashtag().equals(hashtag))) {
-                    diary.addHashtag(hashtag);
+                // 새로운 해시태그를 추가
+                for (Hashtag hashtag : updatedHashtags) {
+                    if (diary.getDiaryHashtags().stream().noneMatch(diaryHashtag -> diaryHashtag.getHashtag().equals(hashtag))) {
+                        diary.addHashtag(hashtag);
+                    }
                 }
+                return diary;
+            } else {
+                //업데이트된 해시태그 셋이 비어있으면 모두 제거
+                diary.getDiaryHashtags().clear();
             }
             return diary;
-        } else {
-            //업데이트된 해시태그 셋이 비어있으면 모두 제거
-            diary.getDiaryHashtags().clear();
-        }
-        return diary;
     }
 
 
     public void deleteDiary(Long diaryId, CustomUserDetails userDetails) {
-        try {
             PersonalExerciseDiary diary = diaryRepository.findById(diaryId)
-                    .orElseThrow(() -> new EntityNotFoundException("다이어리를 찾을 수 없습니다. - diaryId: " + diaryId));
+                    .orElseThrow(() -> new CustomBaseException(DIARY_NOT_FOUND));
             if (!diary.getUserAccount().getId().equals(userDetails.getId())) {
-                throw new AccessDeniedException("다이어리 소유자가 아닙니다. - 다이어리의 userId : " + diary.getUserAccount().getId());
+                throw new CustomBaseException(DIARY_NOT_OWNER);
             }
             //다이어리 연관 해시태그 삭제 -> entity bulk 삭제를 지원함
             diaryHashtagRepository.deleteAll(diary.getDiaryHashtags());
@@ -202,23 +190,18 @@ public class PersonalExerciseDiaryService {
 
             // 다이어리 삭제
             diaryRepository.delete(diary);
-        } catch (EntityNotFoundException e) {
-            log.warn("다이어리 삭제 실패. 다이어리를 찾을 수 없습니다. - diaryId: {}", diaryId);
-            throw new EntityNotFoundException("다이어리를 찾을 수 없습니다 - errorMessage :  " + e.getMessage());
-        }
     }
 
     //TODO : 좋아요 서비스 클래스 쪽으로 옮기기
     public LikeResponse likeDiary(Long diaryId, Long userId) {
-        try {
             PersonalExerciseDiary diary = diaryRepository.findById(diaryId)
-                    .orElseThrow(() -> new EntityNotFoundException("다이어리를 찾을 수 없습니다. - diaryId: " + diaryId));
+                    .orElseThrow(() -> new CustomBaseException(DIARY_NOT_FOUND));
             UserAccount userAccount = userAccountRepository.findById(userId)
-                    .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다. - userId: " + userId));
+                    .orElseThrow(() -> new CustomBaseException(USER_NOT_FOUND));
 
             // diary가 공개되지 않으면 like 불가
             if (!diary.getIsPublic()) {
-                throw new AccessDeniedException("공개되지 않은 다이어리는 좋아요가 불가합니다.");
+                throw new CustomBaseException(DIARY_PRIVATE);
             }
 
             // 다이어리의 like set 을 읽어 유저가 저장돼 있는지(눌렀던 것인지) 확인
@@ -236,23 +219,14 @@ public class PersonalExerciseDiaryService {
             diaryRepository.save(diary);
 
             return LikeResponse.of(diary.getLikes().size());
-        } catch (EntityNotFoundException e) {
-            log.warn("다이어리 좋아요 실패: 다이어리 또는 사용자를 찾을 수 없습니다. - diaryId: {}, userId: {}", diaryId, userId);
-            throw new EntityNotFoundException("like 실패 : 엔티티가 없습니다.", e);
-        }
     }
 
     public Page<DiaryWithCommentDto> getDiariesByUserLiked(Long userId, Pageable pageable) {
-        try {
             Page<DiaryLike> myLikes = likeService.getLikesByUserId(userId, pageable);
             List<DiaryWithCommentDto> dtoList = myLikes.getContent().stream()
                     .map(like -> DiaryWithCommentDto.from(like.getPersonalExerciseDiary()))
                     .toList();
             return new PageImpl<>(dtoList, pageable, myLikes.getTotalElements());
-        } catch (EntityNotFoundException e) {
-            log.info("유저가 누른 좋아요를 찾을 수 없습니다.");
-            throw e;
-        }
     }
 
     public Integer getDiaryCount(Long userId){

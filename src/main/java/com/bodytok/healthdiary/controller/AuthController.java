@@ -7,8 +7,7 @@ import com.bodytok.healthdiary.dto.auth.request.RegisterRequest;
 import com.bodytok.healthdiary.dto.auth.response.LoginResponse;
 import com.bodytok.healthdiary.dto.auth.response.RefreshTokenResponse;
 import com.bodytok.healthdiary.dto.auth.response.RegisterResponse;
-import com.bodytok.healthdiary.exepction.CommonApiError;
-import com.bodytok.healthdiary.exepction.ValidationError;
+import com.bodytok.healthdiary.exepction.ApiErrorResponse;
 import com.bodytok.healthdiary.service.UserAccountService;
 import com.bodytok.healthdiary.service.auth.AuthenticationService;
 import com.bodytok.healthdiary.service.jwt.JwtUtil;
@@ -25,9 +24,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -49,7 +46,7 @@ public class AuthController {
             @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponse.class))
     })
     @ApiResponse(responseCode = "401", description = "Bad Credentials", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = CommonApiError.class))
+            @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
     })
     public ResponseEntity<LoginResponse> login(@RequestBody AuthenticationRequest request, HttpServletResponse response) {
         LoginResponse loginResponse = authService.authenticate(request);
@@ -66,7 +63,7 @@ public class AuthController {
             @Content(mediaType = "application/json", schema = @Schema(implementation = RegisterResponse.class))
     })
     @ApiResponse(responseCode = "400", description = "Bad request", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = ValidationError.class))
+            @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
     })
     public ResponseEntity<RegisterResponse> singUp(@RequestBody @Valid RegisterRequest request) {
         RegisterResponse response = authService.register(request);

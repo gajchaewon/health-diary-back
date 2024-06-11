@@ -12,6 +12,7 @@ import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 public interface PersonalExerciseDiaryRepository extends
         JpaRepository<PersonalExerciseDiary, Long>,
@@ -23,7 +24,7 @@ public interface PersonalExerciseDiaryRepository extends
 
     //커뮤니티용 (IsPublic = true)
     Page<PersonalExerciseDiary> findAllByIsPublicTrue(Pageable pageable);
-    Page<PersonalExerciseDiary> findByUserAccount_IdAndIsPublicTrue(Long userId, Pageable pageable);
+    Optional<Page<PersonalExerciseDiary>> findByUserAccount_IdAndIsPublicTrue(Long userId, Pageable pageable);
     Page<PersonalExerciseDiary> findByUserAccount_NicknameContainingAndIsPublicTrue(String nickname, Pageable pageable);
 
     //----------------------//

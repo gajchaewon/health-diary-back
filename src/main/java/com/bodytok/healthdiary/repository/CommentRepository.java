@@ -11,6 +11,7 @@ import org.springframework.data.querydsl.binding.QuerydslBindings;
 
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface CommentRepository extends
@@ -20,7 +21,7 @@ public interface CommentRepository extends
 
     List<Comment> findByPersonalExerciseDiary_Id(Long diaryId);
 
-    List<Comment> findByUserAccount_Id(Long userId);
+    Optional<List<Comment>> findByUserAccount_Id(Long userId);
 
     void deleteByIdAndUserAccount_Id(Long commentId, Long userId);
 

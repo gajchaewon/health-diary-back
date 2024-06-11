@@ -6,10 +6,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 
+import java.util.Optional;
+
 
 public interface DiaryLikeRepository extends
         JpaRepository<DiaryLike, Long>,
         QuerydslPredicateExecutor<DiaryLike>
 {
-    Page<DiaryLike> findByUserAccount_Id(Long userId, Pageable pageable);
+    Optional<Page<DiaryLike>> findByUserAccount_Id(Long userId, Pageable pageable);
 }
