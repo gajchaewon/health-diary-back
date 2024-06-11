@@ -1,10 +1,10 @@
 package com.bodytok.healthdiary.domain;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.ToString;
 
 
-@ToString(callSuper = true)
 @Getter
 @Entity
 public class Follow extends AuditingFields {
