@@ -45,11 +45,14 @@ public class FollowService {
     // 유저가 팔로잉 하고 있는 유저들 조회 (유저 -> 유저)
     @Transactional(readOnly = true)
     public List<FollowResponse> followingList(CustomUserDetails userDetails, Long userId) {
+        Long myId = userDetails.getId();
+        boolean isMyId = myId.equals(userId);
+
         UserAccount user = userAccountService.getUserById(userId);
         return user.getFollowingList().stream()
                 .map(follow -> {
                     var followingUser = follow.getFollowing();
-                    FollowStatus association = association(userDetails.getId(), userId);
+                    FollowStatus association = isMyId ? FollowStatus.FOLLOW : association(myId, userId);
                     return FollowResponse.fromUserEntity(followingUser, association);
                 })
                 .collect(Collectors.toList());
@@ -60,11 +63,14 @@ public class FollowService {
     //유저를 팔로잉 하고 있는 유저들 조회 (유저 <- 유저)
     @Transactional(readOnly = true)
     public List<FollowResponse> followerList(CustomUserDetails userDetails, Long userId) {
+        Long myId = userDetails.getId();
+        boolean isMyId = myId.equals(userId);
+
         UserAccount user = userAccountService.getUserById(userId);
         return user.getFollowerList().stream()
                 .map(follow -> {
                     var usersFollower = follow.getFollower();
-                    FollowStatus association = association(userDetails.getId(), userId);
+                    FollowStatus association = isMyId ? FollowStatus.FOLLOW :association(myId, userId);
                     return FollowResponse.fromUserEntity(usersFollower, association);
                 })
                 .collect(Collectors.toList());
@@ -89,10 +95,10 @@ public class FollowService {
         if (userId.equals(myId)){
             return FollowStatus.SELF;
         }
-        if (!followRepository.existsFollowByFollowerIdAndFollowingId(myId, userId)){
-            return FollowStatus.NONE;
+        if (followRepository.existsFollowByFollowerIdAndFollowingId(myId, userId)){
+            return FollowStatus.FOLLOW;
 
         }
-        return FollowStatus.FOLLOW;
+        return FollowStatus.NONE;
     }
 }
