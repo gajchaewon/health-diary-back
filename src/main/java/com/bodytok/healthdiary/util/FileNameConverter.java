@@ -13,9 +13,9 @@ import java.util.UUID;
 public class FileNameConverter {
 
     public String convertFileName(MultipartFile file){
-        String originalFileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-        String fileNameWithoutExtension = StringUtils.stripFilenameExtension(originalFileName);
-        String extension = StringUtils.getFilenameExtension(originalFileName);
-        return fileNameWithoutExtension + "_" + UUID.randomUUID() + "." + extension;
+            String originalFileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
+            String fileNameWithoutExtension = StringUtils.stripFilenameExtension(originalFileName);
+            String extension = StringUtils.getFilenameExtension(originalFileName);
+            return fileNameWithoutExtension + "_" + UUID.randomUUID() + "." + extension;
     }
 }

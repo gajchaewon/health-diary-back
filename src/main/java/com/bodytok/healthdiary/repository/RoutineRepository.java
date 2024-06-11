@@ -9,13 +9,14 @@ import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface RoutineRepository extends
         JpaRepository<Routine, Long>,
         QuerydslPredicateExecutor<Routine>,
         QuerydslBinderCustomizer<QRoutine>
 {
-    List<Routine> findAllByUserAccount_Id(Long userId);
+    Optional<List<Routine>> findAllByUserAccount_Id(Long userId);
 
     @Override
     default void customize(QuerydslBindings bindings, QRoutine root) {

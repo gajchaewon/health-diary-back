@@ -10,7 +10,7 @@ import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
 import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
 import com.bodytok.healthdiary.dto.diaryLike.LikeResponse;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
-import com.bodytok.healthdiary.exepction.CommonApiError;
+import com.bodytok.healthdiary.exepction.ApiErrorResponse;
 import com.bodytok.healthdiary.service.PersonalExerciseDiaryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -110,7 +110,7 @@ public class PersonalExerciseDiaryController {
             @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryWithCommentResponse.class))
     })
     @ApiResponse(responseCode = "404", description = "NOT FOUND", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = CommonApiError.class))
+            @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
     })
     public ResponseEntity<DiaryWithCommentResponse> getDiaryWithComments(
             @PathVariable(name = "diaryId") Long diaryId,

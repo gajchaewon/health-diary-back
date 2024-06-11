@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -47,54 +45,52 @@ public class GlobalExceptionHandler {
             message = ex.getMessage();
             status = HttpStatus.BAD_REQUEST;
         } else if (ex instanceof MethodArgumentNotValidException) {
-            Map<String, String> errors = new HashMap<>();
 
+            ApiErrorResponse errorResponse = ApiErrorResponse.builder()
+                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                    .message(ex.getMessage())
+                    .build();
             ((MethodArgumentNotValidException) ex).getBindingResult().getFieldErrors().forEach(error -> {
-                String fieldName = error.getField();
-                String errorMessage = error.getDefaultMessage();
-                errors.put(fieldName, errorMessage);
+                errorResponse.addValidation(error.getField(), error.getDefaultMessage());
             });
-            var valError = new ValidationError(
-                    errors.get("email"),
-                    errors.get("password"),
-                    errors.get("nickname")
-            );
-            return new ResponseEntity<>(valError, HttpStatus.BAD_REQUEST);
+
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
 
-        CommonApiError apiError = new CommonApiError(
-                request.getRequestURI(),
-                message,
-                status.value(),
-                LocalDateTime.now()
-        );
+        ApiErrorResponse apiError = ApiErrorResponse.builder()
+                .message(message)
+                .statusCode(status.value())
+                .localDateTime(LocalDateTime.now())
+                .build();
         return new ResponseEntity<>(apiError, status);
     }
 
-
-    @ExceptionHandler(FollowException.class)
-    public ResponseEntity<CommonApiError> handleFollowException(
-            FollowException ex,
+    @ExceptionHandler(CustomBaseException.class)
+    public ResponseEntity<ApiErrorResponse> customBaseException(
+            CustomBaseException e,
             HttpServletRequest request) {
-        CommonApiError apiError = new CommonApiError(
-                request.getRequestURI(),
-                ex.getMessage(),
-                ex.getStatus().value(),
-                LocalDateTime.now()
-        );
-        return new ResponseEntity<>(apiError, ex.getStatus());
+        int statusCode = e.getError().getStatusCode();
+        var response = ApiErrorResponse.builder()
+                .message(e.getError().getMessage())
+                .statusCode(statusCode)
+                .errorCode(e.getError().getErrorCode())
+                .localDateTime(LocalDateTime.now())
+                .validation(e.getValidation())
+                .build();
+        return ResponseEntity.status(statusCode).body(response);
     }
 
+
+    // 업로드 에러
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<CommonApiError> handleFileUploadException(
+    public ResponseEntity<ApiErrorResponse> handleFileUploadException(
             MaxUploadSizeExceededException ex,
             HttpServletRequest request){
-        CommonApiError apiError = new CommonApiError(
-                request.getRequestURI(),
-                ex.getMessage(),
-                HttpStatus.BAD_REQUEST.value(),
-                LocalDateTime.now()
-        );
+        ApiErrorResponse apiError = ApiErrorResponse.builder()
+                .statusCode(ex.getStatusCode().value())
+                .message(ex.getMessage())
+                .localDateTime(LocalDateTime.now())
+                .build();
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
 
     }

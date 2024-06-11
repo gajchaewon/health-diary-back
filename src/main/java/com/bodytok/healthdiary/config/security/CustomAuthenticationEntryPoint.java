@@ -1,7 +1,7 @@
 package com.bodytok.healthdiary.config.security;
 
 
-import com.bodytok.healthdiary.domain.constant.ErrorMessage;
+import com.bodytok.healthdiary.domain.constant.JwtAuthErrorType;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,6 +24,6 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().print(ErrorMessage.UNAUTHORIZED.toJsonString());
+        response.getWriter().print(JwtAuthErrorType.UNAUTHORIZED.toJsonString());
     }
 }

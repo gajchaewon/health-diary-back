@@ -3,6 +3,8 @@ package com.bodytok.healthdiary.config.security;
 
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.UserAccountDto;
+import com.bodytok.healthdiary.exepction.CustomBaseException;
+import com.bodytok.healthdiary.exepction.CustomError;
 import com.bodytok.healthdiary.repository.UserAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -28,7 +30,7 @@ public class AuthConfig {
         return username -> userAccountRepository.findByEmail(username)
                 .map(UserAccountDto::from)
                 .map(CustomUserDetails::from)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found - username :" + username));
+                .orElseThrow(() -> new CustomBaseException(CustomError.USER_NOT_FOUND));
     }
 
     @Bean

@@ -1,6 +1,6 @@
 package com.bodytok.healthdiary.filter.jwt;
 
-import com.bodytok.healthdiary.domain.constant.ErrorMessage;
+import com.bodytok.healthdiary.domain.constant.JwtAuthErrorType;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -25,30 +25,30 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
         } catch (JwtException ex) {
             String message = ex.getMessage();
-            if(ErrorMessage.UNKNOWN_ERROR.getError().equals(message)) {
-                setResponse(response, ErrorMessage.UNKNOWN_ERROR);
+            if(JwtAuthErrorType.ILLEGAL_ARGUMENT.getErrorCode().equals(message)) {
+                setResponse(response, JwtAuthErrorType.ILLEGAL_ARGUMENT);
             }
             //잘못된 타입의 토큰인 경우
-            else if(ErrorMessage.WRONG_TYPE_TOKEN.getError().equals(message)) {
-                setResponse(response, ErrorMessage.WRONG_TYPE_TOKEN);
+            else if(JwtAuthErrorType.WRONG_TYPE_TOKEN.getErrorCode().equals(message)) {
+                setResponse(response, JwtAuthErrorType.WRONG_TYPE_TOKEN);
             }
             //토큰 만료된 경우
-            else if(ErrorMessage.EXPIRED_TOKEN.getError().equals(message)) {
-                setResponse(response, ErrorMessage.EXPIRED_TOKEN);
+            else if(JwtAuthErrorType.EXPIRED_TOKEN.getErrorCode().equals(message)) {
+                setResponse(response, JwtAuthErrorType.EXPIRED_TOKEN);
             }
             //지원되지 않는 토큰인 경우
-            else if(ErrorMessage.UNSUPPORTED_TOKEN.getError().equals(message)) {
-                setResponse(response, ErrorMessage.UNSUPPORTED_TOKEN);
+            else if(JwtAuthErrorType.UNSUPPORTED_TOKEN.getErrorCode().equals(message)) {
+                setResponse(response, JwtAuthErrorType.UNSUPPORTED_TOKEN);
             }
             else {
-                setResponse(response, ErrorMessage.ACCESS_DENIED);
+                setResponse(response, JwtAuthErrorType.UNKNOWN_ERROR);
             }
         }
     }
 
-    private void setResponse(HttpServletResponse response, ErrorMessage errorMessage) throws RuntimeException, IOException {
+    private void setResponse(HttpServletResponse response, JwtAuthErrorType jwtAuthErrorType) throws RuntimeException, IOException {
         response.setContentType("application/json;charset=UTF-8");
-        response.setStatus(errorMessage.getCode());
-        response.getWriter().print(errorMessage.toJsonString());
+        response.setStatus(jwtAuthErrorType.getStatusCode());
+        response.getWriter().print(jwtAuthErrorType.toJsonString());
     }
 }

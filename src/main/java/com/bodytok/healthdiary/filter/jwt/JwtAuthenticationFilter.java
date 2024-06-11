@@ -1,7 +1,6 @@
 package com.bodytok.healthdiary.filter.jwt;
 
 import com.bodytok.healthdiary.domain.JwtToken;
-import com.bodytok.healthdiary.domain.constant.ErrorMessage;
 import com.bodytok.healthdiary.domain.constant.TokenType;
 import com.bodytok.healthdiary.service.jwt.JwtService;
 import com.bodytok.healthdiary.service.jwt.JwtUtil;
@@ -29,6 +28,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
+
+import static com.bodytok.healthdiary.domain.constant.JwtAuthErrorType.*;
 
 @Slf4j
 @Component
@@ -99,19 +100,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (SignatureException e) {
             log.info("SignatureException");
-            throw new JwtException(ErrorMessage.WRONG_TYPE_TOKEN.getError());
+            throw new JwtException(WRONG_TYPE_TOKEN.getErrorCode());
         } catch (MalformedJwtException e) {
             log.info("MalformedJwtException");
-            throw new JwtException(ErrorMessage.UNSUPPORTED_TOKEN.getError());
+            throw new JwtException(UNSUPPORTED_TOKEN.getErrorCode());
         } catch (ExpiredJwtException e) {
             log.info("ExpiredJwtException");
-            throw new JwtException(ErrorMessage.EXPIRED_TOKEN.getError());
+            throw new JwtException(EXPIRED_TOKEN.getErrorCode());
         } catch (IllegalArgumentException e) {
             log.info("IllegalArgumentException");
-            throw new JwtException(ErrorMessage.UNKNOWN_ERROR.getError());
+            throw new JwtException(ILLEGAL_ARGUMENT.getErrorCode());
         } catch(JwtException | UsernameNotFoundException exception){
             log.error("JwtAuthentication Authentication Exception Occurs! - {}",exception.getClass());
-            throw new JwtException(ErrorMessage.UNKNOWN_ERROR.getError());
+            throw new JwtException(UNKNOWN_ERROR.getErrorCode());
         }
 
         filterChain.doFilter(request, response);

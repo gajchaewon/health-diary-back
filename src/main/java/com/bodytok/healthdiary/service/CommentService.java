@@ -8,6 +8,8 @@ import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.comment.CommentDto;
 import com.bodytok.healthdiary.dto.comment.CommentUpdateDto;
 import com.bodytok.healthdiary.dto.comment.CommentWithDiaryResponse;
+import com.bodytok.healthdiary.exepction.CustomBaseException;
+import com.bodytok.healthdiary.exepction.CustomError;
 import com.bodytok.healthdiary.repository.CommentRepository;
 import com.bodytok.healthdiary.repository.PersonalExerciseDiaryRepository;
 import com.bodytok.healthdiary.repository.UserAccountRepository;
@@ -22,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.bodytok.healthdiary.exepction.CustomError.*;
 
 
 @Slf4j
@@ -43,50 +47,41 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<CommentWithDiaryResponse> getAllCommentsByUserId(Long userId) {
-
-        return commentRepository.findByUserAccount_Id(userId).stream()
-                .map(CommentWithDiaryResponse::from)
+        return commentRepository.findByUserAccount_Id(userId)
+                .orElseThrow(() -> new CustomBaseException(COMMENT_NOT_FOUND))
+                .stream().map(CommentWithDiaryResponse::from)
                 .collect(Collectors.toList());
     }
 
 
     public CommentDto saveDiaryComment(CommentDto dto) {
-        try {
-            PersonalExerciseDiary PersonalExerciseDiary = diaryRepository.getReferenceById(dto.personalExerciseDiaryId());
-            UserAccount userAccount = userAccountRepository.getReferenceById(dto.userAccountDto().id());
+        PersonalExerciseDiary PersonalExerciseDiary = diaryRepository.getReferenceById(dto.personalExerciseDiaryId());
+        UserAccount userAccount = userAccountRepository.getReferenceById(dto.userAccountDto().id());
 
-            Comment savedComment = commentRepository.save(
-                    dto.toEntity(PersonalExerciseDiary, userAccount)
-            );
-            return CommentDto.from(savedComment);
-
-        } catch (EntityNotFoundException e) {
-            log.warn("댓글 저장 실패. 댓글에 필요한 정보를 찾을 수 없습니다 - dto: {}", e.getLocalizedMessage());
-            return null;
-        }
+        Comment savedComment = commentRepository.save(
+                dto.toEntity(PersonalExerciseDiary, userAccount)
+        );
+        return CommentDto.from(savedComment);
     }
 
     // 댓글 수정
-    public CommentDto updateDiaryComment(Long commentId, CommentUpdateDto updateDto, CustomUserDetails userDetails){
-        try {
-            Comment comment = commentRepository.findById(commentId)
-                    .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다. commentId : " + commentId));
+    public CommentDto updateDiaryComment(Long commentId, CommentUpdateDto updateDto, CustomUserDetails userDetails) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomBaseException(COMMENT_NOT_FOUND));
 
-            if (!Objects.equals(userDetails.getId(), comment.getUserAccount().getId())) {
-                throw new AccessDeniedException("댓글 작성자만 수정할 수 있습니다.");
-            }
-
-            String content = updateDto.content();
-            if (content == null || content.trim().isEmpty()) {
-                throw new IllegalArgumentException("댓글 내용이 비어있습니다.");
-            }
-            //댓글 수정 및 저장
-            comment.setContent(content);
-            Comment updatedComment = commentRepository.save(comment);
-            return CommentDto.from(updatedComment);
-        } catch (EntityNotFoundException | AccessDeniedException | IllegalArgumentException e) {
-            throw e;
+        if (!userDetails.getId().equals(comment.getUserAccount().getId())) {
+            throw new CustomBaseException(COMMENT_NOT_OWNER);
         }
+
+        String content = updateDto.content();
+        // TODO : dto refactoring 할 때 validation 라이브러리로 검증하기
+        if (content == null || content.trim().isEmpty()) {
+            throw new IllegalArgumentException("댓글 내용이 비어있습니다.");
+        }
+        //댓글 수정 및 저장
+        comment.setContent(content);
+        Comment updatedComment = commentRepository.save(comment);
+        return CommentDto.from(updatedComment);
     }
 
     public void deleteDiaryComment(Long commentId, Long userId) {

@@ -3,13 +3,11 @@ package com.bodytok.healthdiary.controller;
 
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.comment.*;
-import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
-import com.bodytok.healthdiary.exepction.CommonApiError;
+import com.bodytok.healthdiary.exepction.ApiErrorResponse;
 import com.bodytok.healthdiary.service.CommentService;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +32,7 @@ public class CommentController {
             @Content(mediaType = "application/json", schema = @Schema(implementation = CommentWithDiaryResponse.class))
     })
     @ApiResponse(responseCode = "401, 404", description = "UNAUTHORIZED, NOT FOUND", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = CommonApiError.class))
+            @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
     })
     public ResponseEntity<List<CommentWithDiaryResponse>> getAllComments(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -54,7 +52,7 @@ public class CommentController {
             @Content(mediaType = "application/json", schema = @Schema(implementation = CommentResponse.class))
     })
     @ApiResponse(responseCode = "404", description = "NOT FOUND", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = CommonApiError.class))
+            @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
     })
     public ResponseEntity<CommentResponse> postNewComment(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -70,7 +68,7 @@ public class CommentController {
             @Content(mediaType = "application/json", schema = @Schema(implementation = CommentResponse.class))
     })
     @ApiResponse(responseCode = "400,401,404", description = "BAD REQUEST, UNAUTHORIZED, NOT FOUND", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = CommonApiError.class))
+            @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
     })
     public ResponseEntity<CommentResponse> updateComment(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -87,7 +85,7 @@ public class CommentController {
             @Content(mediaType = "application/json", schema = @Schema(example = "Successfully deleted"))
     })
     @ApiResponse(responseCode = "404", description = "NOT FOUND", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = CommonApiError.class))
+            @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
     })
     public ResponseEntity<String> deleteComment(
             @AuthenticationPrincipal CustomUserDetails userDetails,

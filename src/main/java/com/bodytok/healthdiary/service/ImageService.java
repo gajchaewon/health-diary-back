@@ -3,9 +3,10 @@ package com.bodytok.healthdiary.service;
 import com.bodytok.healthdiary.domain.DiaryImage;
 import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.dto.diaryImage.ImageResponse;
+import com.bodytok.healthdiary.exepction.CustomBaseException;
+import com.bodytok.healthdiary.exepction.CustomError;
 import com.bodytok.healthdiary.repository.DiaryImageRepository;
 import com.bodytok.healthdiary.util.FileNameConverter;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.bodytok.healthdiary.exepction.CustomError.*;
 
 @Slf4j
 @Transactional
@@ -62,33 +65,34 @@ public class ImageService {
     }
 
     public PersonalExerciseDiary updateImages(PersonalExerciseDiary diary, Set<Long> requestImagesIds) {
-        if (!requestImagesIds.isEmpty()) {
-            //기존 이미지 id 셋
-            Set<Long> existImageIds = diary.getDiaryImages().stream()
-                    .map(DiaryImage::getId)
-                    .collect(Collectors.toUnmodifiableSet());
+            if (!requestImagesIds.isEmpty()) {
+                //기존 이미지 id 셋
+                Set<Long> existImageIds = diary.getDiaryImages().stream()
+                        .map(DiaryImage::getId)
+                        .collect(Collectors.toUnmodifiableSet());
 
-            //새로운 이미지들
-            Set<DiaryImage> newImages = requestImagesIds.stream()
-                    .filter(imageId -> !existImageIds.contains(imageId))
-                    .flatMap(imageId -> getImages(Set.of(imageId)).stream())
-                    .collect(Collectors.toSet());
+                //새로운 이미지들
+                Set<DiaryImage> newImages = requestImagesIds.stream()
+                        .filter(imageId -> !existImageIds.contains(imageId))
+                        .flatMap(imageId -> searchImages(Set.of(imageId)).stream())
+                        .collect(Collectors.toSet());
 
-            newImages.forEach(diary::addDiaryImage);
+                newImages.forEach(diary::addDiaryImage);
 
+                return diary;
+            }
             return diary;
-        }
-        return diary;
     }
 
     public void deleteImage(Long imageId) {
-        DiaryImage image = diaryImageRepository.findById(imageId).orElseThrow(() -> new EntityNotFoundException("이미지 정보가 없습니다. id : "+ imageId));
+        DiaryImage image = diaryImageRepository.findById(imageId)
+                .orElseThrow(() -> new CustomBaseException(IMAGE_NOT_FOUND));
         s3Service.removeImage(image);
         diaryImageRepository.deleteById(imageId);
     }
 
     @Transactional(readOnly = true)
-    public Set<DiaryImage> getImages(Set<Long> imageIds){
+    public Set<DiaryImage> searchImages(Set<Long> imageIds){
         return imageIds.stream()
                 .map(diaryImageRepository::findById)
                 .filter(Optional::isPresent)
