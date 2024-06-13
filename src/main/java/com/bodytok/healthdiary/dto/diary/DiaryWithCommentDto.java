@@ -2,9 +2,9 @@ package com.bodytok.healthdiary.dto.diary;
 
 import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.domain.PersonalExerciseDiaryHashtag;
-import com.bodytok.healthdiary.dto.UserAccountDto;
+import com.bodytok.healthdiary.dto.userAccount.UserAccountDto;
 import com.bodytok.healthdiary.dto.comment.CommentDto;
-import com.bodytok.healthdiary.dto.diaryImage.ImageResponse;
+import com.bodytok.healthdiary.dto.diaryImage.DiaryImageDto;
 import com.bodytok.healthdiary.dto.diaryLike.DiaryLikeInfo;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 
@@ -27,7 +27,7 @@ public record DiaryWithCommentDto(
         Set<HashtagDto> hashtagDtoSet,
         DiaryLikeInfo likeInfo,
 
-        List<ImageResponse> images
+        List<DiaryImageDto> imagesDtoSet
 ) {
 
     public static DiaryWithCommentDto from(PersonalExerciseDiary entity) {
@@ -49,7 +49,7 @@ public record DiaryWithCommentDto(
                         .collect(Collectors.toUnmodifiableSet()),
                 DiaryLikeInfo.from(entity),
                 entity.getDiaryImages().stream()
-                        .map(ImageResponse::from)
+                        .map(DiaryImageDto::from)
                         .collect(Collectors.toList())
         );
     }

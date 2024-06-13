@@ -2,8 +2,7 @@ package com.bodytok.healthdiary.controller;
 
 
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
-import com.bodytok.healthdiary.dto.FollowResponse;
-import com.bodytok.healthdiary.dto.auth.response.UserResponse;
+import com.bodytok.healthdiary.dto.userAccount.FollowResponse;
 import com.bodytok.healthdiary.service.FollowService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

@@ -2,9 +2,8 @@ package com.bodytok.healthdiary.service;
 
 import com.bodytok.healthdiary.domain.DiaryImage;
 import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
-import com.bodytok.healthdiary.dto.diaryImage.ImageResponse;
+import com.bodytok.healthdiary.dto.diaryImage.DiaryImageDto;
 import com.bodytok.healthdiary.exepction.CustomBaseException;
-import com.bodytok.healthdiary.exepction.CustomError;
 import com.bodytok.healthdiary.repository.DiaryImageRepository;
 import com.bodytok.healthdiary.util.FileNameConverter;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +18,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.bodytok.healthdiary.exepction.CustomError.*;
+import static com.bodytok.healthdiary.exepction.CustomError.IMAGE_NOT_FOUND;
 
 @Slf4j
 @Transactional
@@ -38,7 +39,7 @@ public class ImageService {
     @Value("${file.uploadDir}")
     private String uploadDir;
 
-    public ImageResponse storeImage(MultipartFile file) {
+    public DiaryImageDto storeImage(MultipartFile file) {
         String originalFileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
         String savedFileName = fileNameConverter.convertFileName(file);
 
@@ -57,8 +58,7 @@ public class ImageService {
 
             DiaryImage savedImage = diaryImageRepository.save(diaryImage);
 
-
-            return ImageResponse.of(savedImage.getId(), "http://localhost:8080/images/"+savedFileName);
+            return DiaryImageDto.from(savedImage);
         } catch (IOException ex) {
             throw new RuntimeException("이미지 저장 실패 :" + originalFileName, ex);
         }

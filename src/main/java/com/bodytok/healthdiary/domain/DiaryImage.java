@@ -4,7 +4,6 @@ package com.bodytok.healthdiary.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 
 @Getter
@@ -23,7 +22,7 @@ public class DiaryImage extends AuditingFields {
     private String savedFileName;
 
     @Column(nullable = false)
-    private String filePath;
+    private String imageUrl;
 
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)
@@ -33,14 +32,14 @@ public class DiaryImage extends AuditingFields {
 
     protected DiaryImage(){}
 
-    private DiaryImage(String originalFileName, String savedFileName, String filePath){
+    private DiaryImage(String originalFileName, String savedFileName, String imageUrl){
         this.originalFileName = originalFileName;
         this.savedFileName = savedFileName;
-        this.filePath = filePath;
+        this.imageUrl = imageUrl;
     }
 
-    public static DiaryImage of(String originalFileName, String savedFileName, String filePath){
-        return new DiaryImage(originalFileName, savedFileName, filePath);
+    public static DiaryImage of(String originalFileName, String savedFileName, String imageUrl){
+        return new DiaryImage(originalFileName, savedFileName, imageUrl);
     }
 
 }

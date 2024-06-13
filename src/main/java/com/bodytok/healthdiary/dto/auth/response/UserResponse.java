@@ -1,6 +1,6 @@
 package com.bodytok.healthdiary.dto.auth.response;
 
-import com.bodytok.healthdiary.dto.UserAccountDto;
+import com.bodytok.healthdiary.dto.userAccount.UserAccountDto;
 
 import java.time.LocalDateTime;
 

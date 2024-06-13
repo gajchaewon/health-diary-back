@@ -1,10 +1,13 @@
 package com.bodytok.healthdiary.dto.diary;
 
-import com.bodytok.healthdiary.domain.*;
-import com.bodytok.healthdiary.dto.UserAccountDto;
-import com.bodytok.healthdiary.dto.diaryImage.ImageResponse;
+import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
+import com.bodytok.healthdiary.domain.PersonalExerciseDiaryHashtag;
+import com.bodytok.healthdiary.domain.UserAccount;
+import com.bodytok.healthdiary.dto.userAccount.UserAccountDto;
+import com.bodytok.healthdiary.dto.diaryImage.DiaryImageDto;
 import com.bodytok.healthdiary.dto.diaryLike.DiaryLikeInfo;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
+import lombok.Builder;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,6 +17,7 @@ import java.util.stream.Collectors;
 /**
  * DTO for {@link PersonalExerciseDiary}
  */
+@Builder
 public record DiaryDto(
         Long id,
         UserAccountDto userAccountDto,
@@ -26,7 +30,7 @@ public record DiaryDto(
         Set<HashtagDto> hashtagDtoSet,
 
         DiaryLikeInfo likeInfo,
-        List<ImageResponse> images
+        List<DiaryImageDto> imageDtoSet
 
 ) {
 
@@ -50,7 +54,7 @@ public record DiaryDto(
                         .collect(Collectors.toUnmodifiableSet()),
                 DiaryLikeInfo.from(entity),
                 entity.getDiaryImages().stream()
-                        .map(ImageResponse::from)
+                        .map(DiaryImageDto::from)
                         .collect(Collectors.toList())
         );
     }

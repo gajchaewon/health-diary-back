@@ -8,6 +8,7 @@ import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public record DiaryResponse(
         Long id,
@@ -48,7 +49,9 @@ public record DiaryResponse(
                 nickname,
                 dto.hashtagDtoSet(),
                 dto.likeInfo(),
-                dto.images()
+                dto.imageDtoSet().stream()
+                        .map(ImageResponse::from)
+                        .collect(Collectors.toList())
         );
     }
 }

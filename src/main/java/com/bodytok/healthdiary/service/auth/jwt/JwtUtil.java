@@ -1,4 +1,4 @@
-package com.bodytok.healthdiary.service.jwt;
+package com.bodytok.healthdiary.service.auth.jwt;
 
 
 import io.jsonwebtoken.Claims;

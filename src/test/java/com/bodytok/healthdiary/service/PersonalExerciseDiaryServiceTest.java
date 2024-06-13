@@ -4,7 +4,7 @@ import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.domain.PersonalExerciseDiaryHashtag;
 import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
-import com.bodytok.healthdiary.dto.UserAccountDto;
+import com.bodytok.healthdiary.dto.userAccount.UserAccountDto;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import com.bodytok.healthdiary.repository.PersonalExerciseDiaryHashtagRepository;
 import com.bodytok.healthdiary.repository.PersonalExerciseDiaryRepository;

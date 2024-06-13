@@ -1,7 +1,7 @@
 package com.bodytok.healthdiary.domain.security;
 
 import com.bodytok.healthdiary.domain.UserAccount;
-import com.bodytok.healthdiary.dto.UserAccountDto;
+import com.bodytok.healthdiary.dto.userAccount.UserAccountDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

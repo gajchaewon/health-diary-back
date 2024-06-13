@@ -1,9 +1,8 @@
-package com.bodytok.healthdiary.dto.userAccount;
+package com.bodytok.healthdiary.dto.userAccount.response;
 
 
 import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.domain.constant.FollowStatus;
-import com.bodytok.healthdiary.dto.UserAccountDto;
 
 import java.util.Objects;
 

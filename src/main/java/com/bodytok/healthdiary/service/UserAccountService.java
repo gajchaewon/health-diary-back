@@ -2,12 +2,9 @@ package com.bodytok.healthdiary.service;
 
 
 import com.bodytok.healthdiary.domain.UserAccount;
-import com.bodytok.healthdiary.domain.constant.FollowStatus;
-import com.bodytok.healthdiary.dto.userAccount.UserProfile;
+import com.bodytok.healthdiary.dto.userAccount.response.UserProfile;
 import com.bodytok.healthdiary.exepction.CustomBaseException;
-import com.bodytok.healthdiary.exepction.CustomError;
 import com.bodytok.healthdiary.repository.UserAccountRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

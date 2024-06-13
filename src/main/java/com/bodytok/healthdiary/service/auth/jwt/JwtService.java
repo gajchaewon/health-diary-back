@@ -1,4 +1,4 @@
-package com.bodytok.healthdiary.service.jwt;
+package com.bodytok.healthdiary.service.auth.jwt;
 
 import com.bodytok.healthdiary.domain.constant.TokenType;
 import com.bodytok.healthdiary.domain.JwtToken;

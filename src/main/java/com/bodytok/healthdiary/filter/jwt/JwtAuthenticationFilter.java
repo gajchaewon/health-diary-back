@@ -2,8 +2,8 @@ package com.bodytok.healthdiary.filter.jwt;
 
 import com.bodytok.healthdiary.domain.JwtToken;
 import com.bodytok.healthdiary.domain.constant.TokenType;
-import com.bodytok.healthdiary.service.jwt.JwtService;
-import com.bodytok.healthdiary.service.jwt.JwtUtil;
+import com.bodytok.healthdiary.service.auth.jwt.JwtService;
+import com.bodytok.healthdiary.service.auth.jwt.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.MalformedJwtException;
