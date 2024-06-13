@@ -55,6 +55,10 @@ dependencies {
 	//유효성 검사
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+	//객체 매핑
+	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
 	//querydsl 설정 추가
 	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
 	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
