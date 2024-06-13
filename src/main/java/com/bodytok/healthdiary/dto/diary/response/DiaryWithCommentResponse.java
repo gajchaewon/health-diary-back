@@ -56,7 +56,9 @@ public record DiaryWithCommentResponse(
                         .map(CommentResponse::from)
                         .collect(Collectors.toCollection(LinkedHashSet::new)),
                 dto.likeInfo(),
-                dto.images()
+                dto.imagesDtoSet().stream()
+                        .map(ImageResponse::from)
+                        .collect(Collectors.toList())
         );
     }
 }

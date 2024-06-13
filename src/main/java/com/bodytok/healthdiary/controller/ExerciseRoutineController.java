@@ -2,11 +2,11 @@ package com.bodytok.healthdiary.controller;
 
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.exercise_routine.RoutineDto;
+import com.bodytok.healthdiary.dto.exercise_routine.RoutineMapper;
 import com.bodytok.healthdiary.dto.exercise_routine.request.ExerciseCreate;
 import com.bodytok.healthdiary.dto.exercise_routine.request.RoutineCreate;
 import com.bodytok.healthdiary.dto.exercise_routine.request.RoutineUpdate;
 import com.bodytok.healthdiary.dto.exercise_routine.response.RoutineWithExerciseResponse;
-import com.bodytok.healthdiary.dto.exercise_routine.response.RoutineResponse;
 import com.bodytok.healthdiary.service.ExerciseRoutineService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import java.util.List;
 @RequestMapping("/routines")
 @Tag(name = "ExerciseRoutine")
 public class ExerciseRoutineController {
-
+    private final RoutineMapper routineMapper = RoutineMapper.INSTANCE;
     private final ExerciseRoutineService exRoutineService;
 
     @GetMapping
@@ -44,7 +44,8 @@ public class ExerciseRoutineController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody RoutineCreate routineCreate
     ) {
-        RoutineDto dto = exRoutineService.saveRoutine(routineCreate, userDetails.getId());
+        var toDto = routineMapper.toDtoFromCreate(routineCreate);
+        RoutineDto dto = exRoutineService.saveRoutine(toDto, userDetails.getId());
         return ResponseEntity.ok().body(RoutineWithExerciseResponse.from(dto));
     }
 
@@ -52,7 +53,8 @@ public class ExerciseRoutineController {
     public ResponseEntity<RoutineWithExerciseResponse> saveExercise(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody ExerciseCreate exerciseCreate) {
-        RoutineDto routineDto = exRoutineService.saveExercise(exerciseCreate);
+        var toDto = exerciseCreate.toRoutineDto();
+        RoutineDto routineDto = exRoutineService.saveExercise(toDto);
         return ResponseEntity.ok().body(RoutineWithExerciseResponse.from(routineDto));
     }
 
@@ -62,17 +64,20 @@ public class ExerciseRoutineController {
             @PathVariable(name = "routineId") Long routineId,
             @RequestBody RoutineUpdate routineUpdate
     ){
-        RoutineDto routineDto = exRoutineService.updateRoutine(routineId, routineUpdate);
+        var toDto = routineMapper.toDtoFromUpdate(routineUpdate, routineId, userDetails.toDto());
+        RoutineDto routineDto = exRoutineService.updateRoutine(toDto);
         return ResponseEntity.ok().body(RoutineWithExerciseResponse.from(routineDto));
     }
 
 
     @DeleteMapping("/{routineId}")
-    public Long deleteRoutine(
+    public ResponseEntity<Void> deleteRoutine(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable(name = "routineId") Long routineId
     ){
-        return exRoutineService.deleteRoutine(routineId, userDetails.getId());
+        var toDto = routineMapper.toDtoFromDelete(routineId, userDetails.toDto());
+        exRoutineService.deleteRoutine(toDto);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("{routineId}/exercise/{exerciseId}")
@@ -81,8 +86,8 @@ public class ExerciseRoutineController {
             @PathVariable(name = "routineId") Long routineId,
             @PathVariable(name = "exerciseId") String exerciseId
     ){
-
-        RoutineDto routineDto = exRoutineService.deleteExercise(routineId, exerciseId, userDetails.getId());
+        var toDto = routineMapper.toDtoFromDelete(routineId, userDetails.toDto());
+        RoutineDto routineDto = exRoutineService.deleteExercise(toDto, exerciseId);
         return ResponseEntity.ok().body(RoutineWithExerciseResponse.from(routineDto));
     }
 }

@@ -1,7 +1,6 @@
 package com.bodytok.healthdiary.dto.diaryImage;
 
 
-import com.bodytok.healthdiary.domain.DiaryImage;
 
 public record ImageResponse(
         Long imageId,
@@ -12,10 +11,16 @@ public record ImageResponse(
         return new ImageResponse(imageId, url);
     }
 
-    public static ImageResponse from(DiaryImage image){
+    public static ImageResponse toLocalFrom(DiaryImageDto dto){
         return of(
-                image.getId(),
-                image.getFilePath()
+                dto.id(),
+                "http://localhost:8080/images/"+dto.savedFileName()
+        );
+    }
+    public static ImageResponse from(DiaryImageDto imageDto){
+        return of(
+                imageDto.id(),
+                imageDto.imageUrl()
         );
     }
 }

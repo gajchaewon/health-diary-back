@@ -4,20 +4,18 @@ import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.domain.constant.TokenType;
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.domain.JwtToken;
-import com.bodytok.healthdiary.dto.UserAccountDto;
-import com.bodytok.healthdiary.dto.auth.request.AuthenticationRequest;
-import com.bodytok.healthdiary.dto.auth.request.RegisterRequest;
+import com.bodytok.healthdiary.dto.userAccount.UserAccountDto;
 import com.bodytok.healthdiary.dto.auth.response.LoginResponse;
 import com.bodytok.healthdiary.dto.auth.response.RegisterResponse;
 import com.bodytok.healthdiary.dto.auth.response.TokenResponse;
 import com.bodytok.healthdiary.dto.auth.response.UserResponse;
+import com.bodytok.healthdiary.exepction.CustomBaseException;
+import com.bodytok.healthdiary.exepction.CustomError;
 import com.bodytok.healthdiary.repository.UserAccountRepository;
-import com.bodytok.healthdiary.service.jwt.JwtService;
-import com.bodytok.healthdiary.service.jwt.JwtUtil;
-import jakarta.persistence.EntityNotFoundException;
+import com.bodytok.healthdiary.service.auth.jwt.JwtService;
+import com.bodytok.healthdiary.service.auth.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,7 +24,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -43,14 +40,14 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public RegisterResponse register(RegisterRequest request) {
-        userAccountRepository.findByEmail(request.email()).ifPresent(userAccount -> {
-            throw new DuplicateKeyException("User already exists -> User's Email : " + userAccount.getEmail());
+    public RegisterResponse register(UserAccountDto dto) {
+        userAccountRepository.findByEmail(dto.email()).ifPresent(userAccount -> {
+            throw new CustomBaseException(CustomError.USER_NOT_FOUND);
         });
         CustomUserDetails userDetails = CustomUserDetails.of(
-                request.email(),
-                request.nickname(),
-                passwordEncoder.encode(request.password())
+                dto.email(),
+                dto.nickname(),
+                passwordEncoder.encode(dto.userPassword())
         );
         UserAccount user = CustomUserDetails.toUserEntity(userDetails);
         userAccountRepository.save(user);
@@ -60,14 +57,14 @@ public class AuthenticationService {
     }
 
 
-    public LoginResponse authenticate(AuthenticationRequest request) {
+    public LoginResponse authenticate(UserAccountDto dto) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.email(),
-                        request.password()
+                        dto.email(),
+                        dto.userPassword()
                 )
         );
-        Optional<UserAccountDto> userAccountDto = userAccountRepository.findByEmail(request.email())
+        Optional<UserAccountDto> userAccountDto = userAccountRepository.findByEmail(dto.email())
                 .map(UserAccountDto::from);
         CustomUserDetails userDetails = userAccountDto
                 .map(CustomUserDetails::from)

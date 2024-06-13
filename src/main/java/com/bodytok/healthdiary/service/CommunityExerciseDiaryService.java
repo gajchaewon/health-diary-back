@@ -6,8 +6,7 @@ import com.bodytok.healthdiary.domain.constant.SearchType;
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
 import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
 import com.bodytok.healthdiary.exepction.CustomBaseException;
-import com.bodytok.healthdiary.exepction.CustomError;
-import com.bodytok.healthdiary.repository.*;
+import com.bodytok.healthdiary.repository.PersonalExerciseDiaryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -15,7 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.bodytok.healthdiary.exepction.CustomError.*;
+import static com.bodytok.healthdiary.exepction.CustomError.DATE_SEARCH_UNSUPPORTED;
+import static com.bodytok.healthdiary.exepction.CustomError.DIARY_NOT_FOUND;
 
 
 @Slf4j

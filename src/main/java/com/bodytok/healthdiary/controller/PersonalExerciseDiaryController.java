@@ -4,6 +4,7 @@ package com.bodytok.healthdiary.controller;
 import com.bodytok.healthdiary.domain.constant.SearchType;
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
+import com.bodytok.healthdiary.dto.diary.DiaryMapper;
 import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
 import com.bodytok.healthdiary.dto.diary.request.DiaryRequest;
 import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
@@ -57,9 +58,9 @@ public class PersonalExerciseDiaryController {
         Set<HashtagDto> hashtags = request.hashtags() != null ?
                 request.hashtags().stream().map(HashtagDto::of).collect(Collectors.toUnmodifiableSet()) :
                 Collections.emptySet();
-
+        DiaryDto diaryDto = DiaryMapper.INSTANCE.toDtoFromRequest(request, userDetails.toDto());
         DiaryDto diary = diaryService.saveDiaryWithHashtags(
-                request.toDto(userDetails.toDto()),
+                diaryDto,
                 hashtags,
                 request.imageIds()
         );

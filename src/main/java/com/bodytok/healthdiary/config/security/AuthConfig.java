@@ -2,7 +2,7 @@ package com.bodytok.healthdiary.config.security;
 
 
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
-import com.bodytok.healthdiary.dto.UserAccountDto;
+import com.bodytok.healthdiary.dto.userAccount.UserAccountDto;
 import com.bodytok.healthdiary.exepction.CustomBaseException;
 import com.bodytok.healthdiary.exepction.CustomError;
 import com.bodytok.healthdiary.repository.UserAccountRepository;
@@ -14,7 +14,6 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 

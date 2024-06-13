@@ -5,6 +5,7 @@ import com.bodytok.healthdiary.domain.Exercise;
 import com.bodytok.healthdiary.domain.Routine;
 import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.dto.exercise_routine.RoutineDto;
+import com.bodytok.healthdiary.dto.exercise_routine.RoutineMapper;
 import com.bodytok.healthdiary.dto.exercise_routine.request.ExerciseCreate;
 import com.bodytok.healthdiary.dto.exercise_routine.request.RoutineCreate;
 import com.bodytok.healthdiary.dto.exercise_routine.request.RoutineUpdate;
@@ -40,48 +41,58 @@ public class ExerciseRoutineService {
                 .collect(Collectors.toList());
     }
 
-    public RoutineDto saveRoutine(RoutineCreate routineCreate, Long userId) {
-            UserAccount userAccount = userAccountService.getUserById(userId);
-            Routine newRoutine = routineCreate.toEntity(userAccount);
-            return RoutineDto.from(routineRepository.save(newRoutine));
+    public RoutineDto saveRoutine(RoutineDto dto, Long userId) {
+        UserAccount userAccount = userAccountService.getUserById(userId);
+        Routine newRoutine = dto.toEntity(userAccount);
+        return RoutineDto.from(routineRepository.save(newRoutine));
     }
 
-    public RoutineDto saveExercise(ExerciseCreate exerciseCreate) {
-            Routine routine = routineRepository.findById(exerciseCreate.routineId())
-                    .orElseThrow(() -> new CustomBaseException(ROUTINE_NOT_FOUND));
+    public RoutineDto saveExercise(RoutineDto dto) {
+        Routine routine = routineRepository.findById(dto.id())
+                .orElseThrow(() -> new CustomBaseException(ROUTINE_NOT_FOUND));
+        if (!routine.getUserAccount().getId().equals(dto.userAccountDto().id())) {
+            throw new CustomBaseException(ROUTINE_NOT_OWNER);
+        }
+        //저장할 운동
+        Exercise exercise = dto.exercises().get(0);
 
-            Exercise exercise = exerciseCreate.toEntity();
+        //운동 추가
+        routine.getExercises().add(exercise);
 
-            //운동 추가
-            routine.getExercises().add(exercise);
-
-            return RoutineDto.from(routineRepository.save(routine));
+        return RoutineDto.from(routineRepository.save(routine));
     }
 
-    public RoutineDto updateRoutine(Long routineId, RoutineUpdate routineUpdate) {
-            Routine routine = routineRepository.findById(routineId)
-                    .orElseThrow(() -> new CustomBaseException(ROUTINE_NOT_FOUND));
-            // TODO : dto 변환 후 업데이트
-            routine.updateRoutineInfo(routineUpdate);
-            return RoutineDto.from(routineRepository.save(routine));
+    public RoutineDto updateRoutine(RoutineDto dto) {
+        Long userId = dto.userAccountDto().id();
+
+        Routine routine = routineRepository.findById(dto.id())
+                .orElseThrow(() -> new CustomBaseException(ROUTINE_NOT_FOUND));
+        if (!routine.getUserAccount().getId().equals(userId)) {
+            throw new CustomBaseException(ROUTINE_NOT_OWNER);
+        }
+        //정보 업데이트
+        routine.updateRoutineInfo(dto);
+        return RoutineDto.from(routineRepository.save(routine));
     }
 
-    public Long deleteRoutine(Long routineId, Long userId) {
-            Routine routine = routineRepository.findById(routineId).orElseThrow(
-                    () -> new CustomBaseException(ROUTINE_NOT_FOUND));
-            if (!routine.getUserAccount().getId().equals(userId)) {
-                throw new CustomBaseException(ROUTINE_NOT_OWNER);
-            }
-            routineRepository.delete(routine);
-            return routineId;
+    public void deleteRoutine(RoutineDto dto) {
+        Long userId = dto.userAccountDto().id();
+        Routine routine = routineRepository.findById(dto.id()).orElseThrow(
+                () -> new CustomBaseException(ROUTINE_NOT_FOUND));
+        if (!routine.getUserAccount().getId().equals(userId)) {
+            throw new CustomBaseException(ROUTINE_NOT_OWNER);
+        }
+        routineRepository.delete(routine);
     }
 
-    public RoutineDto deleteExercise(Long routineId, String exerciseId, Long userId) {
-            Routine routine = routineRepository.findById(routineId).orElseThrow(
-                    () -> new CustomBaseException(ROUTINE_NOT_FOUND));
-
-            //id 같은 운동 삭제하기
-            routine.removeExercise(exerciseId);
-            return RoutineDto.from(routineRepository.save(routine));
+    public RoutineDto deleteExercise(RoutineDto dto, String exerciseId) {
+        Routine routine = routineRepository.findById(dto.id()).orElseThrow(
+                () -> new CustomBaseException(ROUTINE_NOT_FOUND));
+        if (!routine.getUserAccount().getId().equals(dto.userAccountDto().id())) {
+            throw new CustomBaseException(ROUTINE_NOT_OWNER);
+        }
+        //id 같은 운동 삭제하기
+        routine.removeExercise(exerciseId);
+        return RoutineDto.from(routineRepository.save(routine));
     }
 }

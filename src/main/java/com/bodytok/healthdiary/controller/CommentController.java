@@ -3,6 +3,7 @@ package com.bodytok.healthdiary.controller;
 
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.comment.*;
+import com.bodytok.healthdiary.dto.comment.request.CommentCreate;
 import com.bodytok.healthdiary.exepction.ApiErrorResponse;
 import com.bodytok.healthdiary.service.CommentService;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,14 +18,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/comment")
 @Tag(name = "Comment")
 public class CommentController {
-
-
+    private final CommentMapper commentMapper = CommentMapper.INSTANCE;
     private final CommentService commentService;
 
     @GetMapping("/all/{userId}")
@@ -39,11 +40,14 @@ public class CommentController {
             @PathVariable(name = "userId") Long userId
     ) {
         //내 댓글만 볼 수 있게 검증
-        if (!Objects.equals(userDetails.getId(), userId)){
+        if (!userDetails.getId().equals(userId)) {
             throw new AccessDeniedException("댓글 주인만 볼 수 있습니다.");
         }
-        List<CommentWithDiaryResponse> comments = commentService.getAllCommentsByUserId(userId);
-        return ResponseEntity.ok(comments);
+        List<CommentDto> commentDtoList = commentService.getAllCommentsByUserId(userId);
+        List<CommentWithDiaryResponse> response = commentDtoList.stream()
+                .map(commentMapper::toCommentWithDiaryResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(response);
     }
 
 
@@ -51,16 +55,16 @@ public class CommentController {
     @ApiResponse(responseCode = "200", description = "OK", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = CommentResponse.class))
     })
-    @ApiResponse(responseCode = "404", description = "NOT FOUND", content = {
+    @ApiResponse(content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
     })
     public ResponseEntity<CommentResponse> postNewComment(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody CommentRequest commentRequest
+            @RequestBody CommentCreate commentCreate
     ) {
-        CommentDto commentDto = commentService.saveDiaryComment(commentRequest.toDto(userDetails.toDto()));
-
-        return ResponseEntity.ok().body(CommentResponse.from(commentDto));
+        var toDto = commentMapper.toDtoFromCreate(commentCreate, userDetails.toDto());
+        CommentDto commentDto = commentService.saveDiaryComment(toDto);
+        return ResponseEntity.ok().body(commentMapper.toResponse(commentDto));
     }
 
     @PutMapping("/{commentId}")
@@ -73,27 +77,27 @@ public class CommentController {
     public ResponseEntity<CommentResponse> updateComment(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable(name = "commentId") Long commentId,
-            @RequestBody CommentUpdateDto updateDto
-            ){
-        CommentDto commentDto = commentService.updateDiaryComment(commentId, updateDto, userDetails);
+            @RequestBody CommentUpdate commentUpdate
+    ) {
 
-        return ResponseEntity.ok().body(CommentResponse.from(commentDto));
+        var toDto = commentMapper.toDtoFromUpdate(commentId, commentUpdate, userDetails.toDto());
+        CommentDto commentDto = commentService.updateDiaryComment(toDto);
+
+        return ResponseEntity.ok().body(commentMapper.toResponse(commentDto));
     }
 
     @DeleteMapping("/{commentId}")
-    @ApiResponse(responseCode = "200", description = "OK", content = {
-            @Content(mediaType = "application/json", schema = @Schema(example = "Successfully deleted"))
-    })
-    @ApiResponse(responseCode = "404", description = "NOT FOUND", content = {
+    @ApiResponse(responseCode = "204", description = "No content")
+    @ApiResponse(content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
     })
-    public ResponseEntity<String> deleteComment(
+    public ResponseEntity<Void> deleteComment(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable(name = "commentId") Long commentId
     ) {
         commentService.deleteDiaryComment(commentId, userDetails.toDto().id());
 
-        return ResponseEntity.ok().body("Successfully deleted");
+        return ResponseEntity.noContent().build();
     }
 
 }

@@ -2,15 +2,16 @@ package com.bodytok.healthdiary.controller;
 
 
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
-import com.bodytok.healthdiary.dto.auth.request.AuthenticationRequest;
-import com.bodytok.healthdiary.dto.auth.request.RegisterRequest;
+import com.bodytok.healthdiary.dto.auth.request.UserLogin;
+import com.bodytok.healthdiary.dto.auth.request.UserRegister;
 import com.bodytok.healthdiary.dto.auth.response.LoginResponse;
 import com.bodytok.healthdiary.dto.auth.response.RefreshTokenResponse;
 import com.bodytok.healthdiary.dto.auth.response.RegisterResponse;
+import com.bodytok.healthdiary.dto.userAccount.UserAccountMapper;
 import com.bodytok.healthdiary.exepction.ApiErrorResponse;
 import com.bodytok.healthdiary.service.UserAccountService;
 import com.bodytok.healthdiary.service.auth.AuthenticationService;
-import com.bodytok.healthdiary.service.jwt.JwtUtil;
+import com.bodytok.healthdiary.service.auth.jwt.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,7 +37,7 @@ import java.util.Objects;
 @RequestMapping("/auth")
 @Tag(name = "Auth")
 public class AuthController {
-
+    private final UserAccountMapper userAccountMapper = UserAccountMapper.INSTANCE;
     private final AuthenticationService authService;
     private final UserAccountService userAccountService;
     private final JwtUtil jwtUtil;
@@ -48,8 +49,13 @@ public class AuthController {
     @ApiResponse(responseCode = "401", description = "Bad Credentials", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
     })
-    public ResponseEntity<LoginResponse> login(@RequestBody AuthenticationRequest request, HttpServletResponse response) {
-        LoginResponse loginResponse = authService.authenticate(request);
+    public ResponseEntity<LoginResponse> login(
+            @RequestBody UserLogin request,
+            HttpServletResponse response
+    ) {
+        var toDto = userAccountMapper.toDtoFromLogin(request);
+
+        LoginResponse loginResponse = authService.authenticate(toDto);
 
         String refreshToken = loginResponse.tokenResponse().refreshToken();
         // refreshToken을 쿠키에 담아서 반환
@@ -65,8 +71,9 @@ public class AuthController {
     @ApiResponse(responseCode = "400", description = "Bad request", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
     })
-    public ResponseEntity<RegisterResponse> singUp(@RequestBody @Valid RegisterRequest request) {
-        RegisterResponse response = authService.register(request);
+    public ResponseEntity<RegisterResponse> singUp(@RequestBody @Valid UserRegister request) {
+        var toDto = userAccountMapper.toDtoFromRegister(request);
+        RegisterResponse response = authService.register(toDto);
         return ResponseEntity.ok(response);
     }
 

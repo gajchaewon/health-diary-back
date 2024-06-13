@@ -11,13 +11,13 @@ public record DiaryImageDto(
 
          String savedFileName,
 
-         String filePath,
+         String imageUrl,
 
          PersonalExerciseDiary personalExerciseDiary
 ) {
 
-    public static DiaryImageDto of(String originalFileName, String savedFileName, String filePath){
-        return new DiaryImageDto(null, originalFileName, savedFileName, filePath, null);
+    public static DiaryImageDto of(String originalFileName, String savedFileName, String imageUrl){
+        return new DiaryImageDto(null, originalFileName, savedFileName, imageUrl, null);
     }
 
     public static DiaryImageDto from(DiaryImage entity){
@@ -25,7 +25,7 @@ public record DiaryImageDto(
                 entity.getId(),
                 entity.getOriginalFileName(),
                 entity.getSavedFileName(),
-                entity.getFilePath(),
+                entity.getImageUrl(),
                 null
         );
     }
@@ -34,7 +34,7 @@ public record DiaryImageDto(
         return DiaryImage.of(
                 this.originalFileName,
                 this.savedFileName,
-                this.filePath
+                this.imageUrl
         );
     }
 

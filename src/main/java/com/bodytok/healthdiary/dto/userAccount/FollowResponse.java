@@ -1,4 +1,4 @@
-package com.bodytok.healthdiary.dto;
+package com.bodytok.healthdiary.dto.userAccount;
 
 import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.domain.constant.FollowStatus;

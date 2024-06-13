@@ -2,7 +2,7 @@ package com.bodytok.healthdiary.controller;
 
 
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
-import com.bodytok.healthdiary.dto.userAccount.UserProfile;
+import com.bodytok.healthdiary.dto.userAccount.response.UserProfile;
 import com.bodytok.healthdiary.service.UserAccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

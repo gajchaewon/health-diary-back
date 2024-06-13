@@ -33,7 +33,7 @@ public class S3Service {
     @Value("${s3.bucket}")
     String bucketName;
 
-    public ImageResponse uploadImage(MultipartFile file) throws IOException {
+    public DiaryImageDto uploadImage(MultipartFile file) throws IOException {
         //저장될 이미지 이름
         String savedFileName = fileNameConverter.convertFileName(file);
         String originalFileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
@@ -52,8 +52,7 @@ public class S3Service {
         DiaryImageDto dto = DiaryImageDto.of(originalFileName, savedFileName, imageUrl);
 
         DiaryImage savedImage = diaryImageRepository.save(dto.toEntity());
-
-        return ImageResponse.of(savedImage.getId(), imageUrl);
+        return DiaryImageDto.from(savedImage);
     }
 
     public void removeImage(DiaryImage image){

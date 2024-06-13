@@ -2,9 +2,9 @@ package com.bodytok.healthdiary.controller;
 
 import com.bodytok.healthdiary.config.TestSecurityConfig;
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
-import com.bodytok.healthdiary.dto.UserAccountDto;
+import com.bodytok.healthdiary.dto.userAccount.UserAccountDto;
 import com.bodytok.healthdiary.service.PersonalExerciseDiaryService;
-import com.bodytok.healthdiary.service.jwt.JwtService;
+import com.bodytok.healthdiary.service.auth.jwt.JwtService;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

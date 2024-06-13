@@ -2,6 +2,9 @@ package com.bodytok.healthdiary.dto.exercise_routine.request;
 
 
 import com.bodytok.healthdiary.domain.Exercise;
+import com.bodytok.healthdiary.dto.exercise_routine.RoutineDto;
+
+import java.util.List;
 
 public record ExerciseCreate(
         Long routineId,
@@ -20,4 +23,13 @@ public record ExerciseCreate(
         );
     }
 
+    public RoutineDto toRoutineDto() {
+        return RoutineDto.of(
+                routineId,
+                null,
+                null,
+                null,
+                List.of(toEntity())
+        );
+    }
 }

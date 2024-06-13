@@ -1,6 +1,7 @@
 package com.bodytok.healthdiary.domain;
 
 
+import com.bodytok.healthdiary.dto.exercise_routine.RoutineDto;
 import com.bodytok.healthdiary.dto.exercise_routine.request.RoutineUpdate;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
@@ -54,9 +55,9 @@ public class Routine extends AuditingFields {
         exercises.removeIf(exercise -> Objects.equals(exercise.getId(), exerciseId));
     }
 
-    public void updateRoutineInfo(RoutineUpdate routineUpdate) {
-        this.routineName = routineUpdate.routineName();
-        this.memo = routineUpdate.memo();
+    public void updateRoutineInfo(RoutineDto dto) {
+        this.routineName = dto.routineName();
+        this.memo = dto.memo();
     }
 
 
