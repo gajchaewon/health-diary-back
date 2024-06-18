@@ -1,34 +1,49 @@
 package com.bodytok.healthdiary.config;
 
 
-import com.bodytok.healthdiary.config.security.AuthConfig;
-import com.bodytok.healthdiary.config.security.SecurityConfig;
-import com.bodytok.healthdiary.domain.UserAccount;
-import com.bodytok.healthdiary.repository.UserAccountRepository;
+import com.bodytok.healthdiary.filter.jwt.JwtAuthenticationFilter;
+import com.bodytok.healthdiary.filter.jwt.JwtExceptionFilter;
+import com.bodytok.healthdiary.service.auth.jwt.JwtService;
+import com.bodytok.healthdiary.service.auth.jwt.JwtUtil;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.event.annotation.BeforeTestMethod;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import java.util.Optional;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.given;
-
-@Import({SecurityConfig.class, AuthConfig.class})
+@TestConfiguration
+@EnableWebSecurity
+@Import({JwtAuthenticationFilter.class,JwtExceptionFilter.class })
 public class TestSecurityConfig {
-    // security 적용에서 테스트를 위한 user 레포지토리를 빈으로 등록하고, 테스트 계정을 하나 생성해준다.
     @MockBean
-    private UserAccountRepository userAccountRepository;
+    private JwtUtil jwtUtil;
+    @MockBean
+    private JwtService jwtService;
 
-
-    @BeforeTestMethod //각 테스트 메소드가 실행되기 직전에 실행시켜줌
-    public void securitySetUp() {
-        given(userAccountRepository.findById(anyLong())).willReturn(Optional.of(UserAccount.of(
-                        "test@email.com",
-                        "testuser",
-                        "testpwd",
-                        null
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers("auth/**").permitAll()
+                            .requestMatchers(HttpMethod.GET, "images/**").permitAll() //정적리소스 이미지 경로
+                            .requestMatchers(HttpMethod.GET, "community/**").permitAll() //커뮤니티 다이어리 가져오기
+                            .requestMatchers(HttpMethod.GET, "diaries/my").authenticated()
+                            .requestMatchers(HttpMethod.GET, "diaries/{diaryId}").permitAll()
+                            .anyRequest().authenticated();
+                })
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-        ));
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
     }
+
+
 }
