@@ -2,6 +2,7 @@ package com.bodytok.healthdiary.domain;
 
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -51,7 +52,9 @@ public class UserAccount extends AuditingFields {
 
     protected UserAccount() {}
 
-    private UserAccount(String email,String nickname, String userPassword, Byte[] profileImage) {
+    @Builder
+    private UserAccount(Long id, String email,String nickname, String userPassword, Byte[] profileImage) {
+        this.id = id;
         this.email = email;
         this.nickname = nickname;
         this.userPassword = userPassword;
@@ -59,7 +62,9 @@ public class UserAccount extends AuditingFields {
     }
 
     public static UserAccount of(String email,String nickname, String userPassword, Byte[] profileImage) {
-        return new UserAccount(email,nickname,userPassword,profileImage);
+        return UserAccount.builder()
+                .email(email).nickname(nickname).userPassword(userPassword).profileImage(profileImage)
+                .build();
     }
 
 
