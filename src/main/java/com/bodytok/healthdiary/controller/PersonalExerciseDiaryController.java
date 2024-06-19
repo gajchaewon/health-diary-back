@@ -26,6 +26,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -43,10 +45,11 @@ import java.util.stream.Collectors;
 public class PersonalExerciseDiaryController {
 
     private final PersonalExerciseDiaryService diaryService;
+    private final DiaryMapper diaryMapper = DiaryMapper.INSTANCE;
 
     @PostMapping
     @Operation(summary = "새로운 다이어리 생성하기")
-    @ApiResponse(responseCode = "200", description = "OK", content = {
+    @ApiResponse(responseCode = "201", description = "Diary Created", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryResponse.class))
     })
     public ResponseEntity<DiaryResponse> createDiary(
@@ -55,10 +58,13 @@ public class PersonalExerciseDiaryController {
     ) {
 
         // 해시태그가 비어 있는 경우에 대비하여 빈 Set으로 전달
-        Set<HashtagDto> hashtags = request.hashtags() != null ?
-                request.hashtags().stream().map(HashtagDto::of).collect(Collectors.toUnmodifiableSet()) :
-                Collections.emptySet();
-        DiaryDto diaryDto = DiaryMapper.INSTANCE.toDtoFromRequest(request, userDetails.toDto());
+        Set<HashtagDto> hashtags = HashtagDto.mapFromHashtagString(request.hashtags());
+
+        /**
+         * mapper가 WebMvCTest에 적용이 안 돼서 직접 매핑으로 일단 변경
+         */
+//        DiaryDto diaryDto = diaryMapper.toDtoFromRequest(request, userDetails.toDto());
+        DiaryDto diaryDto = DiaryDto.of(userDetails.toDto(), request.title(), request.content(), request.isPublic());
         DiaryDto diary = diaryService.saveDiaryWithHashtags(
                 diaryDto,
                 hashtags,
@@ -66,7 +72,7 @@ public class PersonalExerciseDiaryController {
         );
         DiaryResponse diaryResponse = DiaryResponse.from(diary);
 
-        return ResponseEntity.ok(diaryResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(diaryResponse);
     }
 
     @GetMapping("/my")
@@ -83,8 +89,9 @@ public class PersonalExerciseDiaryController {
             @AuthenticationPrincipal CustomUserDetails userDetails
 
     ){
-        var diaries = diaryService.getMyDiariesWithComments(userDetails,searchType, searchValue,pageable);
-        return ResponseEntity.ok().body(
+        Long userId = userDetails.getId();
+        var diaries = diaryService.getMyDiariesWithComments(userId,searchType, searchValue,pageable);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(
                 diaries.map(DiaryWithCommentResponse::from)
         );
     }
@@ -117,7 +124,8 @@ public class PersonalExerciseDiaryController {
             @PathVariable(name = "diaryId") Long diaryId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        DiaryWithCommentDto diary = diaryService.getDiaryWithComments(diaryId, userDetails);
+        Long userId = userDetails.getId();
+        DiaryWithCommentDto diary = diaryService.getDiaryWithComments(diaryId, userId);
 
         return ResponseEntity.ok(DiaryWithCommentResponse.from(diary));
     }
@@ -150,7 +158,8 @@ public class PersonalExerciseDiaryController {
             @PathVariable(name = "diaryId") Long diaryId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        diaryService.deleteDiary(diaryId, userDetails);
+        Long userId = userDetails.getId();
+        diaryService.deleteDiary(diaryId, userId);
         return ResponseEntity.ok().build();
     }
 
