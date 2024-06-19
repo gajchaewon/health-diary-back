@@ -27,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.bodytok.healthdiary.exepction.CustomError.*;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -42,7 +44,7 @@ public class AuthenticationService {
 
     public RegisterResponse register(UserAccountDto dto) {
         userAccountRepository.findByEmail(dto.email()).ifPresent(userAccount -> {
-            throw new CustomBaseException(CustomError.USER_NOT_FOUND);
+            throw new CustomBaseException(USER_NOT_FOUND);
         });
         CustomUserDetails userDetails = CustomUserDetails.of(
                 dto.email(),
@@ -64,11 +66,12 @@ public class AuthenticationService {
                         dto.userPassword()
                 )
         );
-        Optional<UserAccountDto> userAccountDto = userAccountRepository.findByEmail(dto.email())
-                .map(UserAccountDto::from);
-        CustomUserDetails userDetails = userAccountDto
-                .map(CustomUserDetails::from)
-                .orElseThrow();
+        UserAccountDto userAccountDto = userAccountRepository.findByEmail(dto.email())
+                .map(UserAccountDto::from)
+                .orElseThrow(() -> new CustomBaseException(USER_NOT_FOUND));
+
+        CustomUserDetails userDetails = CustomUserDetails.from(userAccountDto);
+
         String jwtToken = jwtUtil.generateToken(userDetails);
         String refreshToken = jwtUtil.generateRefreshToken(userDetails);
 
@@ -81,7 +84,7 @@ public class AuthenticationService {
 
 
         TokenResponse tokenResponse = TokenResponse.of(jwtToken, refreshToken);
-        UserResponse userResponse = UserResponse.from(userAccountDto.get());
+        UserResponse userResponse = UserResponse.from(userAccountDto);
         return new LoginResponse(tokenResponse,userResponse);
     }
 

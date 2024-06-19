@@ -30,6 +30,8 @@ public record DiaryWithCommentDto(
         List<DiaryImageDto> imagesDtoSet
 ) {
 
+
+
     public static DiaryWithCommentDto from(PersonalExerciseDiary entity) {
         return new DiaryWithCommentDto(
                 entity.getId(),
