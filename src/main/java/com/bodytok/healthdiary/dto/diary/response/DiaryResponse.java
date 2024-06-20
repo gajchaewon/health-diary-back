@@ -6,6 +6,7 @@ import com.bodytok.healthdiary.dto.diaryLike.DiaryLikeInfo;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -22,11 +23,11 @@ public record DiaryResponse(
         String nickname,
         Set<HashtagDto> hashtags,
         DiaryLikeInfo likeInfo,
-        List<ImageResponse> images
+        Set<ImageResponse> images
 
 ) {
 
-    public static DiaryResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<HashtagDto> hashtags, DiaryLikeInfo likeInfo, List<ImageResponse> images){
+    public static DiaryResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<HashtagDto> hashtags, DiaryLikeInfo likeInfo, Set<ImageResponse> images){
         return new DiaryResponse(id, title, content, isPublic, totalExTime, createAt,userId, email, nickname, hashtags,likeInfo ,images);
 
     }
@@ -51,7 +52,7 @@ public record DiaryResponse(
                 dto.likeInfo(),
                 dto.imageDtoSet().stream()
                         .map(ImageResponse::from)
-                        .collect(Collectors.toList())
+                        .collect(Collectors.toCollection(LinkedHashSet::new))
         );
     }
 }

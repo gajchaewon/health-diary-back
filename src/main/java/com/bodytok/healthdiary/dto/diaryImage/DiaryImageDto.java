@@ -2,8 +2,10 @@ package com.bodytok.healthdiary.dto.diaryImage;
 
 import com.bodytok.healthdiary.domain.DiaryImage;
 import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
+import lombok.Builder;
 
 
+@Builder
 public record DiaryImageDto(
          Long id,
 

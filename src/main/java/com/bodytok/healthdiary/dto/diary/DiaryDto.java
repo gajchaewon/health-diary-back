@@ -10,6 +10,7 @@ import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,13 +31,9 @@ public record DiaryDto(
         Set<HashtagDto> hashtagDtoSet,
 
         DiaryLikeInfo likeInfo,
-        List<DiaryImageDto> imageDtoSet
+        Set<DiaryImageDto> imageDtoSet
 
 ) {
-
-    public static DiaryDto of(UserAccountDto userAccountDto, String title, String content, Boolean isPublic) {
-        return new DiaryDto(null, userAccountDto, title, content, 0, isPublic, null, null, Set.of(), null, List.of());
-    }
 
     public static DiaryDto from(PersonalExerciseDiary entity) {
         return new DiaryDto(
@@ -55,7 +52,7 @@ public record DiaryDto(
                 DiaryLikeInfo.from(entity),
                 entity.getDiaryImages().stream()
                         .map(DiaryImageDto::from)
-                        .collect(Collectors.toList())
+                        .collect(Collectors.toCollection(LinkedHashSet::new))
         );
     }
 

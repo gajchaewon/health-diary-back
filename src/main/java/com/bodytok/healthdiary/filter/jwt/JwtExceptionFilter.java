@@ -1,6 +1,8 @@
 package com.bodytok.healthdiary.filter.jwt;
 
 import com.bodytok.healthdiary.domain.constant.JwtAuthErrorType;
+import com.bodytok.healthdiary.exepction.ApiErrorResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,15 +10,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class JwtExceptionFilter extends OncePerRequestFilter {
+    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
@@ -46,9 +52,18 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
         }
     }
 
-    private void setResponse(HttpServletResponse response, JwtAuthErrorType jwtAuthErrorType) throws RuntimeException, IOException {
-        response.setContentType("application/json;charset=UTF-8");
-        response.setStatus(jwtAuthErrorType.getStatusCode());
-        response.getWriter().print(jwtAuthErrorType.toJsonString());
+    private void setResponse(HttpServletResponse response, JwtAuthErrorType ex) throws RuntimeException, IOException {
+
+        var errorResponse = ApiErrorResponse.builder()
+                .statusCode(ex.getStatusCode())
+                .errorCode(ex.getErrorCode())
+                .message(ex.getMessage())
+                .localDateTime(LocalDateTime.now())
+                .build();
+
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        objectMapper.writeValue(response.getWriter(), errorResponse);
     }
 }

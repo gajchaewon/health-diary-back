@@ -4,7 +4,7 @@ import com.bodytok.healthdiary.config.TestSecurityConfig;
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
 import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
-import com.bodytok.healthdiary.dto.diary.request.DiaryRequest;
+import com.bodytok.healthdiary.dto.diary.request.DiaryCreate;
 import com.bodytok.healthdiary.dto.diaryLike.DiaryLikeInfo;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import com.bodytok.healthdiary.dto.userAccount.UserAccountDto;
@@ -125,13 +125,12 @@ class PersonalExerciseDiaryControllerTest {
         var userDetails = setUpMockUser();
 
         Set<String> hashtags = Set.of("테스트 코드 어려워", "왜 되지?");
-        DiaryRequest request = DiaryRequest.of("title", "content", true, hashtags, Set.of());
-        Set<HashtagDto> hashtagDtoSet = mapHashtagsStringSet(hashtags);
+        DiaryCreate request = new DiaryCreate("title", "content", true, hashtags, Set.of());
+        var requestDto = request.toDtoFromCreate(userDetails.toDto());
 
-        var requestDto = request.toDto(userDetails.toDto());
         var responseDto = createReturnDiaryDto(userDetails);
 
-        given(diaryService.saveDiaryWithHashtags(eq(requestDto), eq(hashtagDtoSet), eq(Set.of()))).willReturn(responseDto);
+        given(diaryService.saveDiaryWithHashtags(eq(requestDto), eq(Set.of()))).willReturn(responseDto);
 
         var json = objectMapper.writeValueAsString(request);
 
@@ -144,7 +143,7 @@ class PersonalExerciseDiaryControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andDo(print());
 
-        then(diaryService).should().saveDiaryWithHashtags(eq(requestDto), eq(hashtagDtoSet), eq(Set.of()));
+        then(diaryService).should().saveDiaryWithHashtags(eq(requestDto), eq(Set.of()));
 
     }
 
@@ -162,7 +161,7 @@ class PersonalExerciseDiaryControllerTest {
                 LocalDateTime.now(),
                 Set.of(HashtagDto.of(1L,"테스트 코드 어려워" ), HashtagDto.of(2L,"왜 되지?")),
                 null,
-                List.of()
+                Set.of()
 
         );
     }

@@ -5,6 +5,8 @@ import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.comment.*;
 import com.bodytok.healthdiary.dto.comment.request.CommentCreate;
 import com.bodytok.healthdiary.exepction.ApiErrorResponse;
+import com.bodytok.healthdiary.exepction.CustomBaseException;
+import com.bodytok.healthdiary.exepction.CustomError;
 import com.bodytok.healthdiary.service.CommentService;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,12 +14,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -41,7 +42,7 @@ public class CommentController {
     ) {
         //내 댓글만 볼 수 있게 검증
         if (!userDetails.getId().equals(userId)) {
-            throw new AccessDeniedException("댓글 주인만 볼 수 있습니다.");
+            throw new CustomBaseException(CustomError.COMMENT_NOT_OWNER);
         }
         List<CommentDto> commentDtoList = commentService.getAllCommentsByUserId(userId);
         List<CommentWithDiaryResponse> response = commentDtoList.stream()
@@ -67,6 +68,7 @@ public class CommentController {
         return ResponseEntity.ok().body(commentMapper.toResponse(commentDto));
     }
 
+    @PreAuthorize("hasPermission(#commentId, 'COMMENT', 'UPDATE')")
     @PutMapping("/{commentId}")
     @ApiResponse(responseCode = "200", description = "OK", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = CommentResponse.class))
@@ -86,6 +88,7 @@ public class CommentController {
         return ResponseEntity.ok().body(commentMapper.toResponse(commentDto));
     }
 
+    @PreAuthorize("hasPermission(#commentId, 'COMMENT', 'DELETE')")
     @DeleteMapping("/{commentId}")
     @ApiResponse(responseCode = "204", description = "No content")
     @ApiResponse(content = {
@@ -95,7 +98,7 @@ public class CommentController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable(name = "commentId") Long commentId
     ) {
-        commentService.deleteDiaryComment(commentId, userDetails.toDto().id());
+        commentService.deleteDiaryComment(commentId, userDetails.getId());
 
         return ResponseEntity.noContent().build();
     }

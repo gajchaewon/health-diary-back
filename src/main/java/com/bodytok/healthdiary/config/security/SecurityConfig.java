@@ -1,6 +1,7 @@
 package com.bodytok.healthdiary.config.security;
 
 
+import com.bodytok.healthdiary.config.security.handler.CustomAuthenticationEntryPoint;
 import com.bodytok.healthdiary.filter.jwt.JwtAuthenticationFilter;
 import com.bodytok.healthdiary.filter.jwt.JwtExceptionFilter;
 import org.springframework.context.annotation.Bean;
@@ -19,14 +20,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final JwtExceptionFilter jwtExceptionFilter;
 
     private final AuthenticationProvider authenticationProvider;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter,JwtExceptionFilter jwtExceptionFilter, AuthenticationProvider authenticationProvider, CustomAuthenticationEntryPoint authenticationEntryPoint) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, JwtExceptionFilter jwtExceptionFilter, AuthenticationProvider authenticationProvider, CustomAuthenticationEntryPoint authenticationEntryPoint) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.jwtExceptionFilter = jwtExceptionFilter;
         this.authenticationProvider = authenticationProvider;
@@ -34,7 +34,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .cors(cors -> cors
                         .configurationSource(corsConfigurationSource())
@@ -57,10 +57,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         auth -> auth
                                 .requestMatchers("auth/**").permitAll()
-                                .requestMatchers(HttpMethod.GET,"images/**").permitAll() //정적리소스 이미지 경로
+                                .requestMatchers(HttpMethod.GET, "images/**").permitAll() //정적리소스 이미지 경로
                                 .requestMatchers(HttpMethod.GET, "community/**").permitAll() //커뮤니티 다이어리 가져오기
                                 .requestMatchers(HttpMethod.GET, "diaries/my").authenticated()
-                                .requestMatchers(HttpMethod.GET,"diaries/{diaryId}").permitAll()
+                                .requestMatchers(HttpMethod.GET, "diaries/{diaryId}").permitAll()
                                 .anyRequest().authenticated()
                 )
                 //Authentication Entry Point -> Exception Handler

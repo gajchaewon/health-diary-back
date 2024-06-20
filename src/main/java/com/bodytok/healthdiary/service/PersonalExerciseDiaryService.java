@@ -3,7 +3,6 @@ package com.bodytok.healthdiary.service;
 
 import com.bodytok.healthdiary.domain.*;
 import com.bodytok.healthdiary.domain.constant.SearchType;
-import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
 import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
 import com.bodytok.healthdiary.dto.diaryLike.LikeResponse;
@@ -23,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -43,7 +41,7 @@ public class PersonalExerciseDiaryService {
     private final LikeService likeService;
 
 
-    //다이어리 조회 - 댓글 포함
+    //다이어리 조회 - 댓글 포함, private 은 주인만 조회 가능
     @Transactional(readOnly = true)
     public DiaryWithCommentDto getDiaryWithComments(Long diaryId, Long userId) {
         var diary = diaryRepository.findById(diaryId)
@@ -103,7 +101,7 @@ public class PersonalExerciseDiaryService {
 
 
     //다이어리 저장
-    public DiaryDto saveDiaryWithHashtags(DiaryDto dto, Set<HashtagDto> hashtagDtoSet, Set<Long> imageIds) {
+    public DiaryDto saveDiaryWithHashtagsAndImages(DiaryDto dto, Set<Long> imageIds) {
         // Dto -> Entity
         UserAccount userAccount = userAccountRepository.getReferenceById(dto.userAccountDto().id());
         PersonalExerciseDiary diary = dto.toEntity(userAccount);
@@ -112,8 +110,8 @@ public class PersonalExerciseDiaryService {
         diary = diaryRepository.save(diary);
 
         //새 해시태그만 생성
-        if (!hashtagDtoSet.isEmpty()) {
-            Set<Hashtag> hashtags = hashtagService.renewHashtagsFromRequest(hashtagDtoSet);
+        if (!dto.hashtagDtoSet().isEmpty()) {
+            Set<Hashtag> hashtags = hashtagService.renewHashtagsFromRequest(dto.hashtagDtoSet());
             for (Hashtag hashtag : hashtags) {
                 diary.addHashtag(hashtag);
             }
@@ -129,8 +127,8 @@ public class PersonalExerciseDiaryService {
     }
 
     //다이어리 수정
-    public void updateDiary(Long diaryId, DiaryDto dto, Set<HashtagDto> hashtagDtoSet, Set<Long> imageIds) {
-        PersonalExerciseDiary diary = diaryRepository.findById(diaryId)
+    public void updateDiary(DiaryDto dto, Set<Long> imageIds) {
+        PersonalExerciseDiary diary = diaryRepository.findById(dto.id())
                 .orElseThrow(() -> new CustomBaseException(DIARY_NOT_FOUND));
         if (!dto.userAccountDto().id().equals(diary.getUserAccount().getId())) {
             throw new CustomBaseException(DIARY_NOT_OWNER);
@@ -147,7 +145,8 @@ public class PersonalExerciseDiaryService {
         }
 
         // 해시태그 업데이트
-        PersonalExerciseDiary diaryWithUpdatedHashtags = updateHashtags(diary, hashtagDtoSet);
+        PersonalExerciseDiary diaryWithUpdatedHashtags = updateHashtags(diary, dto.hashtagDtoSet());
+        //image 정보 업데이트
         PersonalExerciseDiary updatedDiary = imageService.updateImages(diaryWithUpdatedHashtags, imageIds);
 
         // 해시태그, 이미지가 업데이트된 다이어리 저장.
@@ -178,12 +177,9 @@ public class PersonalExerciseDiaryService {
     }
 
 
-    public void deleteDiary(Long diaryId, Long userId) {
+    public void deleteDiary(Long diaryId) {
         PersonalExerciseDiary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new CustomBaseException(DIARY_NOT_FOUND));
-        if (!diary.getUserAccount().getId().equals(userId)) {
-            throw new CustomBaseException(DIARY_NOT_OWNER);
-        }
         //다이어리 연관 해시태그 삭제 -> entity bulk 삭제를 지원함
         diaryHashtagRepository.deleteAll(diary.getDiaryHashtags());
         var images = diary.getDiaryImages();
@@ -204,23 +200,19 @@ public class PersonalExerciseDiaryService {
                 .orElseThrow(() -> new CustomBaseException(DIARY_NOT_FOUND));
         UserAccount userAccount = userAccountRepository.findById(userId)
                 .orElseThrow(() -> new CustomBaseException(USER_NOT_FOUND));
-
         // diary가 공개되지 않으면 like 불가
         if (!diary.getIsPublic()) {
             throw new CustomBaseException(DIARY_PRIVATE);
         }
-
         // 다이어리의 like set 을 읽어 유저가 저장돼 있는지(눌렀던 것인지) 확인
         Optional<DiaryLike> diaryLike = diary.getLikes().stream()
                 .filter(like -> like.getUserAccount().equals(userAccount)).findFirst();
-
         if (diaryLike.isPresent()) {
             //좋아요 취소
             diary.removeLike(diaryLike.get());
         } else {
             // 좋아요 생성
-            DiaryLike like = DiaryLike.of(userAccount, diary);
-            diary.addLike(like);
+            diary.addLike(DiaryLike.of(userAccount, diary));
         }
         diaryRepository.save(diary);
 

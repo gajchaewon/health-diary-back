@@ -27,11 +27,11 @@ public record DiaryWithCommentResponse(
 
         DiaryLikeInfo likeInfo,
 
-        List<ImageResponse> images
+        Set<ImageResponse> images
 ) {
 
     public static DiaryWithCommentResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<HashtagDto> hashtags, Set<CommentResponse> comments){
-        return new DiaryWithCommentResponse(id, title, content, isPublic, totalExTime, createAt, userId, email, nickname, hashtags, comments, null, List.of());
+        return new DiaryWithCommentResponse(id, title, content, isPublic, totalExTime, createAt, userId, email, nickname, hashtags, comments, null, Set.of());
     }
 
     public static DiaryWithCommentResponse from(DiaryWithCommentDto dto) {
@@ -58,7 +58,7 @@ public record DiaryWithCommentResponse(
                 dto.likeInfo(),
                 dto.imagesDtoSet().stream()
                         .map(ImageResponse::from)
-                        .collect(Collectors.toList())
+                        .collect(Collectors.toCollection(LinkedHashSet::new))
         );
     }
 }
