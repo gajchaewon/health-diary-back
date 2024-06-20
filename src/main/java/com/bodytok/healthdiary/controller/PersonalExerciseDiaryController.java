@@ -4,18 +4,16 @@ package com.bodytok.healthdiary.controller;
 import com.bodytok.healthdiary.domain.constant.SearchType;
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
-import com.bodytok.healthdiary.dto.diary.DiaryMapper;
 import com.bodytok.healthdiary.dto.diary.DiaryWithCommentDto;
-import com.bodytok.healthdiary.dto.diary.request.DiaryRequest;
+import com.bodytok.healthdiary.dto.diary.request.DiaryCreate;
+import com.bodytok.healthdiary.dto.diary.request.DiaryUpdate;
 import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
 import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
 import com.bodytok.healthdiary.dto.diaryLike.LikeResponse;
-import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
 import com.bodytok.healthdiary.exepction.ApiErrorResponse;
 import com.bodytok.healthdiary.service.PersonalExerciseDiaryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -29,13 +27,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-
-import java.util.Collections;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor
@@ -45,7 +39,7 @@ import java.util.stream.Collectors;
 public class PersonalExerciseDiaryController {
 
     private final PersonalExerciseDiaryService diaryService;
-    private final DiaryMapper diaryMapper = DiaryMapper.INSTANCE;
+//    private final DiaryMapper diaryMapper = DiaryMapper.INSTANCE;
 
     @PostMapping
     @Operation(summary = "새로운 다이어리 생성하기")
@@ -53,26 +47,17 @@ public class PersonalExerciseDiaryController {
             @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryResponse.class))
     })
     public ResponseEntity<DiaryResponse> createDiary(
-            @RequestBody DiaryRequest request,
+            @RequestBody DiaryCreate request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+         //mapper가 WebMvCTest에 적용이 안 돼서 직접 매핑으로 일단 변경
+         //DiaryDto diaryDto = diaryMapper.toDtoFromRequest(request, userDetails.toDto());
+        var diaryDto = request.toDtoFromCreate(userDetails.toDto());
+        //저장
+        //TODO : Image 의 아이디만을 request 로 받는 것은 좋지 않아 보인다. Client 작업 시에 어떻게 할 지 확인
+        DiaryDto diary = diaryService.saveDiaryWithHashtagsAndImages(diaryDto, request.imageIds());
 
-        // 해시태그가 비어 있는 경우에 대비하여 빈 Set으로 전달
-        Set<HashtagDto> hashtags = HashtagDto.mapFromHashtagString(request.hashtags());
-
-        /**
-         * mapper가 WebMvCTest에 적용이 안 돼서 직접 매핑으로 일단 변경
-         */
-//        DiaryDto diaryDto = diaryMapper.toDtoFromRequest(request, userDetails.toDto());
-        DiaryDto diaryDto = DiaryDto.of(userDetails.toDto(), request.title(), request.content(), request.isPublic());
-        DiaryDto diary = diaryService.saveDiaryWithHashtags(
-                diaryDto,
-                hashtags,
-                request.imageIds()
-        );
-        DiaryResponse diaryResponse = DiaryResponse.from(diary);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(diaryResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(DiaryResponse.from(diary));
     }
 
     @GetMapping("/my")
@@ -89,6 +74,7 @@ public class PersonalExerciseDiaryController {
             @AuthenticationPrincipal CustomUserDetails userDetails
 
     ){
+        // TODO : 로그인 안됐을 때 NullPointer 에러가 왜 나는 지 확인, SecurityConfig 확인 or 분기처리
         Long userId = userDetails.getId();
         var diaries = diaryService.getMyDiariesWithComments(userId,searchType, searchValue,pageable);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(
@@ -130,36 +116,30 @@ public class PersonalExerciseDiaryController {
         return ResponseEntity.ok(DiaryWithCommentResponse.from(diary));
     }
 
+    @PreAuthorize("hasPermission(#diaryId, 'DIARY', 'UPDATE')")
     @PutMapping("/{diaryId}")
     @Operation(summary = "다이어리 수정 - 이미지 먼저 저장 or 삭제 후 진행")
     public ResponseEntity<Void> updateDiary(
             @PathVariable(name = "diaryId") Long diaryId,
-            @RequestBody DiaryRequest request,
+            @RequestBody DiaryUpdate request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        // 해시태그가 비어 있는 경우에 대비하여 빈 Set으로 전달
-        Set<HashtagDto> hashtags = request.hashtags() != null ?
-                request.hashtags().stream().map(HashtagDto::of).collect(Collectors.toSet()) :
-                Collections.emptySet();
-
+        //dto 로 변환
+        var diaryDto = request.toDtoFromUpdate(diaryId, userDetails.toDto());
         diaryService.updateDiary(
-                diaryId,
-                request.toDto(userDetails.toDto()),
-                hashtags,
+                diaryDto,
                 request.imageIds()
-
         );
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("hasPermission(#diaryId, 'DIARY', 'DELETE')")
     @DeleteMapping("/{diaryId}")
     @Operation(summary = "다이어리 삭제")
     public ResponseEntity<Void> deleteDiary(
-            @PathVariable(name = "diaryId") Long diaryId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @PathVariable(name = "diaryId") Long diaryId
     ) {
-        Long userId = userDetails.getId();
-        diaryService.deleteDiary(diaryId, userId);
+        diaryService.deleteDiary(diaryId);
         return ResponseEntity.ok().build();
     }
 

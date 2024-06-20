@@ -27,7 +27,7 @@ public record DiaryWithCommentDto(
         Set<HashtagDto> hashtagDtoSet,
         DiaryLikeInfo likeInfo,
 
-        List<DiaryImageDto> imagesDtoSet
+        Set<DiaryImageDto> imagesDtoSet
 ) {
 
 
@@ -52,7 +52,7 @@ public record DiaryWithCommentDto(
                 DiaryLikeInfo.from(entity),
                 entity.getDiaryImages().stream()
                         .map(DiaryImageDto::from)
-                        .collect(Collectors.toList())
+                        .collect(Collectors.toCollection(LinkedHashSet::new))
         );
     }
 

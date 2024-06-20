@@ -25,13 +25,6 @@ public record HashtagDto(
                 entity.getHashtag()
         );
     }
-
-    public static Set<HashtagDto> mapFromHashtagString(Set<String> hashtags) {
-        return hashtags != null ?
-                hashtags.stream().map(HashtagDto::of).collect(Collectors.toUnmodifiableSet()) :
-                Collections.emptySet();
-    }
-
     public Hashtag toEntity(){
         return Hashtag.of(hashtag);
     }
