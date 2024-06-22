@@ -43,9 +43,6 @@ public class PersonalExerciseDiaryController {
 
     @PostMapping
     @Operation(summary = "새로운 다이어리 생성하기")
-    @ApiResponse(responseCode = "201", description = "Diary Created", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryResponse.class))
-    })
     public ResponseEntity<DiaryResponse> createDiary(
             @RequestBody DiaryCreate request,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -62,9 +59,6 @@ public class PersonalExerciseDiaryController {
 
     @GetMapping("/my")
     @Operation(summary = "나의 모든 다이어리 조회 - 날짜검색(optional) | ")
-    @ApiResponse(responseCode = "200", description = "OK", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryWithCommentResponse.class))
-    })
     public ResponseEntity<Page<DiaryWithCommentResponse>> getDiariesWithCommentsByUserId(
             @Parameter(name = "searchType",description = "검색하고자 하는 필드")
             @RequestParam(required = false,name = "searchType") SearchType searchType,
@@ -84,9 +78,6 @@ public class PersonalExerciseDiaryController {
 
     @GetMapping("/liked")
     @Operation(summary = "내가 좋아요 누른 다이어리 모두 조회")
-    @ApiResponse(responseCode = "200", description = "OK", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryWithCommentResponse.class))
-    })
     public ResponseEntity<Page<DiaryWithCommentResponse>> getDiariesILiked(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @ParameterObject @PageableDefault(sort = "createdAt",direction = Sort.Direction.DESC)  Pageable pageable
@@ -100,9 +91,6 @@ public class PersonalExerciseDiaryController {
 
     @GetMapping("/{diaryId}")
     @Operation(summary = "다이어리 조회 - 댓글 포함")
-    @ApiResponse(responseCode = "200", description = "OK", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = DiaryWithCommentResponse.class))
-    })
     @ApiResponse(responseCode = "404", description = "NOT FOUND", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
     })

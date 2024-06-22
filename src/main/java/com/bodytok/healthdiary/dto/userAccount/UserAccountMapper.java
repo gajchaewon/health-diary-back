@@ -8,7 +8,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-@Mapper(unmappedTargetPolicy = ReportingPolicy.WARN)
+@Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserAccountMapper {
 
     UserAccountMapper INSTANCE = Mappers.getMapper(UserAccountMapper.class);

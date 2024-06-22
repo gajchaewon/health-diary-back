@@ -1,22 +1,13 @@
 package com.bodytok.healthdiary.dto.diary;
 
 
-import com.bodytok.healthdiary.dto.diaryImage.DiaryImageDto;
-import com.bodytok.healthdiary.dto.hashtag.HashtagMapper;
-import com.bodytok.healthdiary.dto.userAccount.UserAccountDto;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 
 @Mapper(
-        unmappedTargetPolicy = ReportingPolicy.WARN,
-        uses = {HashtagMapper.class}
+        unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface DiaryMapper {
 

@@ -8,15 +8,11 @@ import com.bodytok.healthdiary.dto.auth.response.LoginResponse;
 import com.bodytok.healthdiary.dto.auth.response.RefreshTokenResponse;
 import com.bodytok.healthdiary.dto.auth.response.RegisterResponse;
 import com.bodytok.healthdiary.dto.userAccount.UserAccountMapper;
-import com.bodytok.healthdiary.exepction.ApiErrorResponse;
 import com.bodytok.healthdiary.service.UserAccountService;
 import com.bodytok.healthdiary.service.auth.AuthenticationService;
 import com.bodytok.healthdiary.service.auth.jwt.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,12 +39,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
-    @ApiResponse(responseCode = "200", description = "OK", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponse.class))
-    })
-    @ApiResponse(responseCode = "401", description = "Bad Credentials", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
-    })
+    @Operation(summary = "로그인")
     public ResponseEntity<LoginResponse> login(
             @RequestBody UserLogin request,
             HttpServletResponse response
@@ -65,12 +56,7 @@ public class AuthController {
     }
 
     @PostMapping("/sign-up")
-    @ApiResponse(responseCode = "200", description = "OK", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = RegisterResponse.class))
-    })
-    @ApiResponse(responseCode = "400", description = "Bad request", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
-    })
+    @Operation(summary = "회원가입")
     public ResponseEntity<RegisterResponse> singUp(@RequestBody @Valid UserRegister request) {
         var toDto = userAccountMapper.toDtoFromRegister(request);
         RegisterResponse response = authService.register(toDto);
@@ -78,6 +64,7 @@ public class AuthController {
     }
 
     @GetMapping("/logout")
+    @Operation(summary = "로그아웃")
     public ResponseEntity<Void> logout(
             HttpServletRequest request,
             @CookieValue(value = "refreshToken") String refreshToken,
@@ -95,6 +82,7 @@ public class AuthController {
     }
 
     @GetMapping("/refresh-token")
+    @Operation(summary = "리프레시 토큰 발급", description = "쿠키에 있는 리프레시 토큰을 통해 발급")
     public ResponseEntity<RefreshTokenResponse> refreshToken(
             @CookieValue(value = "refreshToken") String refreshToken
     ) throws IOException {
@@ -109,7 +97,7 @@ public class AuthController {
     }
 
     @GetMapping("/check-email")
-    @Operation(summary = "Check if email is available")
+    @Operation(summary = "이메일 중복 확인")
     public ResponseEntity<Boolean> checkEmail(
             @Parameter(name = "email", description = "email 중복 확인")
             @RequestParam(name = "email") String email) {
@@ -117,7 +105,7 @@ public class AuthController {
     }
 
     @GetMapping("/check-nickname")
-    @Operation(summary = "Check if nickname is available")
+    @Operation(summary = "닉네임 중복 확인")
     public ResponseEntity<Boolean> checkNickname(
             @Parameter(name = "nickname", description = "nickname 중복 확인")
             @RequestParam(name = "nickname") String nickname) {

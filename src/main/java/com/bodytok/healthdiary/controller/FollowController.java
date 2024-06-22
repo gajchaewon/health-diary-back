@@ -4,6 +4,7 @@ package com.bodytok.healthdiary.controller;
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.userAccount.FollowResponse;
 import com.bodytok.healthdiary.service.FollowService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ public class FollowController {
 
     //팔로우
     @PostMapping("/{userId}")
+    @Operation(summary = "유저 팔로우 신청")
     public ResponseEntity<FollowResponse> follow(
             @PathVariable("userId") Long userId,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -32,6 +34,7 @@ public class FollowController {
 
     // 유저의 팔로잉 조회
     @GetMapping("/{userId}/following")
+    @Operation(summary = "유저 팔로우 조회")
     public ResponseEntity<List<FollowResponse>> getFollowingList(
             @PathVariable("userId") Long userId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -41,6 +44,7 @@ public class FollowController {
 
     // 유저의 팔로워 조회
     @GetMapping("/{userId}/follower")
+    @Operation(summary = "유저 팔로워 조회")
     public ResponseEntity<List<FollowResponse>> getFollowerList(
             @PathVariable("userId") Long userId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -51,6 +55,7 @@ public class FollowController {
 
     // 팔로우 끊기
     @DeleteMapping("/{userId}")
+    @Operation(summary = "팔로잉 취소")
     public ResponseEntity<FollowResponse> deleteFollow(
             @PathVariable("userId") Long userId,
             @AuthenticationPrincipal CustomUserDetails userDetails){
