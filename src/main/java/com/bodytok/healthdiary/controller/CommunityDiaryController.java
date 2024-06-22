@@ -8,7 +8,6 @@ import com.bodytok.healthdiary.dto.diary.response.DiaryWithCommentResponse;
 import com.bodytok.healthdiary.service.CommunityExerciseDiaryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
@@ -28,8 +27,7 @@ public class CommunityDiaryController {
     private final CommunityExerciseDiaryService communityDiaryService;
 
     @GetMapping
-    @Operation(summary = "모든 커뮤니티 다이어리 가져오기(댓글 미포함) / title, content, nickname, 해시태그 검색 가능")
-    @SecurityRequirements(value = {}) // Swagger 글로벌 security 설정 지우기
+    @Operation(summary = "모든 커뮤니티 다이어리 가져오기(댓글 미포함) / title, content, nickname, hashtag 검색 가능")
     public ResponseEntity<Page<DiaryResponse>> getAllDiaries(
             @Parameter(name = "searchType",description = "검색하고자 하는 필드")
             @RequestParam(required = false,name = "searchType") SearchType searchType,

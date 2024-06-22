@@ -44,7 +44,7 @@ public class AuthenticationService {
 
     public RegisterResponse register(UserAccountDto dto) {
         userAccountRepository.findByEmail(dto.email()).ifPresent(userAccount -> {
-            throw new CustomBaseException(USER_NOT_FOUND);
+            throw new CustomBaseException(USER_ALREADY_EXISTS);
         });
         CustomUserDetails userDetails = CustomUserDetails.of(
                 dto.email(),

@@ -1,12 +1,13 @@
 package com.bodytok.healthdiary.config.security;
 
 
+import com.bodytok.healthdiary.config.security.handler.CustomAccessDeniedHandler;
+import com.bodytok.healthdiary.config.security.handler.CustomAuthenticationEntryPoint;
 import com.bodytok.healthdiary.filter.jwt.JwtAuthenticationFilter;
 import com.bodytok.healthdiary.filter.jwt.JwtExceptionFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -19,22 +20,20 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final JwtExceptionFilter jwtExceptionFilter;
-
-    private final AuthenticationProvider authenticationProvider;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter,JwtExceptionFilter jwtExceptionFilter, AuthenticationProvider authenticationProvider, CustomAuthenticationEntryPoint authenticationEntryPoint) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, JwtExceptionFilter jwtExceptionFilter, CustomAuthenticationEntryPoint authenticationEntryPoint, CustomAccessDeniedHandler accessDeniedHandler) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.jwtExceptionFilter = jwtExceptionFilter;
-        this.authenticationProvider = authenticationProvider;
         this.authenticationEntryPoint = authenticationEntryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .cors(cors -> cors
                         .configurationSource(corsConfigurationSource())
@@ -57,21 +56,21 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         auth -> auth
                                 .requestMatchers("auth/**").permitAll()
-                                .requestMatchers(HttpMethod.GET,"images/**").permitAll() //정적리소스 이미지 경로
+                                .requestMatchers(HttpMethod.GET, "images/**").permitAll() //정적리소스 이미지 경로
                                 .requestMatchers(HttpMethod.GET, "community/**").permitAll() //커뮤니티 다이어리 가져오기
                                 .requestMatchers(HttpMethod.GET, "diaries/my").authenticated()
-                                .requestMatchers(HttpMethod.GET,"diaries/{diaryId}").permitAll()
+                                .requestMatchers(HttpMethod.GET, "diaries/{diaryId}").permitAll()
                                 .anyRequest().authenticated()
                 )
                 //Authentication Entry Point -> Exception Handler
                 .exceptionHandling(
                         config -> config.authenticationEntryPoint(authenticationEntryPoint)
+                                .accessDeniedHandler(accessDeniedHandler)
                 )
                 // Set Session policy = STATELESS
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class)
                 .build();

@@ -48,7 +48,7 @@ public class PersonalExerciseDiary extends AuditingFields {
 
     @ToString.Exclude
     @OrderBy("createdAt DESC")
-    @OneToMany(mappedBy = "personalExerciseDiary", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "personalExerciseDiary", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Comment> comments = new LinkedHashSet<>();
 
     @ToString.Exclude
@@ -58,11 +58,11 @@ public class PersonalExerciseDiary extends AuditingFields {
     // 좋아요 필드 추가
     @ToString.Exclude
     @OneToMany(mappedBy = "personalExerciseDiary", cascade = CascadeType.ALL, orphanRemoval = true)
-    private  Set<DiaryLike> likes = new LinkedHashSet<>();
+    private  Set<DiaryLike> likes = new HashSet<>();
 
     @ToString.Exclude
     @OneToMany(mappedBy = "personalExerciseDiary", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<DiaryImage> diaryImages = new HashSet<>();
+    private Set<DiaryImage> diaryImages = new LinkedHashSet<>();
 
     public void addDiaryImage(DiaryImage diaryImage) {
         diaryImages.add(diaryImage);

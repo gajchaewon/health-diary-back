@@ -1,14 +1,15 @@
 package com.bodytok.healthdiary.exepction;
 
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.authorization.AuthorizationResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -16,26 +17,26 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({RuntimeException.class, Exception.class})
+    @ExceptionHandler({RuntimeException.class})
     public ResponseEntity<?> handleException(
             Exception ex,
             HttpServletRequest request) {
         String message = "Internal Server Error";
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
-        if (ex instanceof EntityNotFoundException) {
-            message = ex.getMessage();
-            status = HttpStatus.NOT_FOUND;
-        } else if (ex instanceof BadCredentialsException){
+        if (ex instanceof BadCredentialsException){
             message = "Authentication failed or user is not authorized";
             status = HttpStatus.UNAUTHORIZED;
-        }else if(ex instanceof AccessDeniedException) {
+        }else if (ex instanceof AuthorizationDeniedException){
             message = ex.getMessage();
-            status = HttpStatus.UNAUTHORIZED;
-        } else if (ex instanceof DuplicateKeyException) {
+            AuthorizationResult denied = ((AuthorizationDeniedException) ex).getAuthorizationResult();
+            log.error("AuthorizationResult - , {}", denied);
+            status = HttpStatus.FORBIDDEN;
+        }else if (ex instanceof DuplicateKeyException) {
             message = ex.getMessage();
             status = HttpStatus.CONFLICT;
         } else if (ex instanceof HttpMessageNotReadableException) {
@@ -67,15 +68,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CustomBaseException.class)
     public ResponseEntity<ApiErrorResponse> customBaseException(
-            CustomBaseException e,
+            CustomBaseException ex,
             HttpServletRequest request) {
-        int statusCode = e.getError().getStatusCode();
+        int statusCode = ex.getError().getStatusCode();
         var response = ApiErrorResponse.builder()
-                .message(e.getError().getMessage())
+                .message(ex.getError().getMessage())
                 .statusCode(statusCode)
-                .errorCode(e.getError().getErrorCode())
+                .errorCode(ex.getError().getErrorCode())
                 .localDateTime(LocalDateTime.now())
-                .validation(e.getValidation())
+                .validation(ex.getValidation())
                 .build();
         return ResponseEntity.status(statusCode).body(response);
     }

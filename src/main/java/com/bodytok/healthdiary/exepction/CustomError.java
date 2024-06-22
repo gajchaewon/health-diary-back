@@ -11,7 +11,7 @@ public enum CustomError {
      * User
      */
     USER_NOT_FOUND(404, "USER_001", "유저를 찾을 수 없습니다."),
-
+    USER_ALREADY_EXISTS(400, "USER_002", "이미 존재하는 유저입니다."),
     /**
      * Diary
      */
