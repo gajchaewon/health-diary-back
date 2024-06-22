@@ -130,7 +130,7 @@ class PersonalExerciseDiaryControllerTest {
 
         var responseDto = createReturnDiaryDto(userDetails);
 
-        given(diaryService.saveDiaryWithHashtags(eq(requestDto), eq(Set.of()))).willReturn(responseDto);
+        given(diaryService.saveDiaryWithHashtagsAndImages(eq(requestDto), eq(Set.of()))).willReturn(responseDto);
 
         var json = objectMapper.writeValueAsString(request);
 
@@ -143,7 +143,7 @@ class PersonalExerciseDiaryControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andDo(print());
 
-        then(diaryService).should().saveDiaryWithHashtags(eq(requestDto), eq(Set.of()));
+        then(diaryService).should().saveDiaryWithHashtagsAndImages(eq(requestDto), eq(Set.of()));
 
     }
 
@@ -170,7 +170,7 @@ class PersonalExerciseDiaryControllerTest {
         var user = createUserAccountDto();
         return new DiaryWithCommentDto(1L, user, Set.of(), "title", "content",
                 0, true, LocalDateTime.now(), LocalDateTime.now(),
-                Set.of(HashtagDto.of("test")), new DiaryLikeInfo(Set.of(), 0), List.of());
+                Set.of(HashtagDto.of("test")), new DiaryLikeInfo(Set.of(), 0), Set.of());
     }
 
     private Page<DiaryWithCommentDto> createDiaryWithCommentDtoPage(int count, Pageable pageable) {
