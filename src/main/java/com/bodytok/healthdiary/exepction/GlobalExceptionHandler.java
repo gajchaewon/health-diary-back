@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.authorization.AuthorizationResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -19,18 +21,21 @@ import java.time.LocalDateTime;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({RuntimeException.class, Exception.class})
+    @ExceptionHandler({RuntimeException.class})
     public ResponseEntity<?> handleException(
             Exception ex,
             HttpServletRequest request) {
         String message = "Internal Server Error";
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-        log.error(">>>Class : {}", ex.getClass());
-        log.error(">>>Cause : {}", ex.getCause().toString());
 
         if (ex instanceof BadCredentialsException){
             message = "Authentication failed or user is not authorized";
             status = HttpStatus.UNAUTHORIZED;
+        }else if (ex instanceof AuthorizationDeniedException){
+            message = ex.getMessage();
+            AuthorizationResult denied = ((AuthorizationDeniedException) ex).getAuthorizationResult();
+            log.error("AuthorizationResult - , {}", denied);
+            status = HttpStatus.FORBIDDEN;
         }else if (ex instanceof DuplicateKeyException) {
             message = ex.getMessage();
             status = HttpStatus.CONFLICT;
