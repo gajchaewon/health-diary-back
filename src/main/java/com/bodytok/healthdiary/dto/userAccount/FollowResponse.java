@@ -2,13 +2,15 @@ package com.bodytok.healthdiary.dto.userAccount;
 
 import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.domain.constant.FollowStatus;
+import com.bodytok.healthdiary.dto.Image.ProfileImageDtoImpl;
+import com.bodytok.healthdiary.dto.Image.ImageResponse;
 
 
 public record FollowResponse(
         Long id,
         String email,
         String nickname,
-        Byte[] profileImage,
+        ImageResponse profileImage,
         FollowStatus followStatus
 ) {
 
@@ -17,7 +19,9 @@ public record FollowResponse(
                 userAccount.getId(),
                 userAccount.getEmail(),
                 userAccount.getNickname(),
-                userAccount.getProfileImage(),
+                ImageResponse.from(
+                        ProfileImageDtoImpl.from(userAccount.getProfileImage())
+                ),
                 followStatus
         );
     }

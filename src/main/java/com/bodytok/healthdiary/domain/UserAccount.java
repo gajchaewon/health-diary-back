@@ -37,8 +37,8 @@ public class UserAccount extends AuditingFields {
     private String userPassword;
 
     @Setter
-    @Lob
-    private Byte[] profileImage;
+    @OneToOne(mappedBy = "userAccount", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ProfileImage profileImage;
 
 
     //팔로우
@@ -53,18 +53,12 @@ public class UserAccount extends AuditingFields {
     protected UserAccount() {}
 
     @Builder
-    private UserAccount(Long id, String email,String nickname, String userPassword, Byte[] profileImage) {
+    private UserAccount(Long id, String email,String nickname, String userPassword, ProfileImage profileImage) {
         this.id = id;
         this.email = email;
         this.nickname = nickname;
         this.userPassword = userPassword;
         this.profileImage = profileImage;
-    }
-
-    public static UserAccount of(String email,String nickname, String userPassword, Byte[] profileImage) {
-        return UserAccount.builder()
-                .email(email).nickname(nickname).userPassword(userPassword).profileImage(profileImage)
-                .build();
     }
 
 
