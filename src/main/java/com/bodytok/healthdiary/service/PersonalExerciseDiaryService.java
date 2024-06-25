@@ -37,7 +37,7 @@ public class PersonalExerciseDiaryService {
     private final PersonalExerciseDiaryHashtagRepository diaryHashtagRepository;
     private final UserAccountRepository userAccountRepository;
     private final HashtagService hashtagService;
-    private final ImageService imageService;
+    private final DiaryImageService diaryImageService;
     private final LikeService likeService;
 
 
@@ -105,7 +105,7 @@ public class PersonalExerciseDiaryService {
         // Dto -> Entity
         UserAccount userAccount = userAccountRepository.getReferenceById(dto.userAccountDto().id());
         PersonalExerciseDiary diary = dto.toEntity(userAccount);
-        Set<DiaryImage> diaryImageSet = imageService.searchImages(imageIds);
+        Set<DiaryImage> diaryImageSet = diaryImageService.searchImages(imageIds);
 
         diary = diaryRepository.save(diary);
 
@@ -147,7 +147,7 @@ public class PersonalExerciseDiaryService {
         // 해시태그 업데이트
         PersonalExerciseDiary diaryWithUpdatedHashtags = updateHashtags(diary, dto.hashtagDtoSet());
         //image 정보 업데이트
-        PersonalExerciseDiary updatedDiary = imageService.updateImages(diaryWithUpdatedHashtags, imageIds);
+        PersonalExerciseDiary updatedDiary = diaryImageService.updateImages(diaryWithUpdatedHashtags, imageIds);
 
         // 해시태그, 이미지가 업데이트된 다이어리 저장.
         diaryRepository.save(updatedDiary);
@@ -185,7 +185,7 @@ public class PersonalExerciseDiaryService {
         var images = diary.getDiaryImages();
 
         //다이어리와 연관된 이미지 삭제
-        images.forEach(image -> imageService.deleteImage(image.getId()));
+        images.forEach(image -> diaryImageService.deleteImage(image.getId()));
 
         //다이어리와 연관 댓글 모두 제거
         diary.getComments().clear();

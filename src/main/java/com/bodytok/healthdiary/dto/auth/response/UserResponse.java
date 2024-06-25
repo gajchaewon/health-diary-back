@@ -1,5 +1,6 @@
 package com.bodytok.healthdiary.dto.auth.response;
 
+import com.bodytok.healthdiary.dto.Image.ImageResponse;
 import com.bodytok.healthdiary.dto.userAccount.UserAccountDto;
 
 import java.time.LocalDateTime;
@@ -8,7 +9,7 @@ public record UserResponse(
         Long id,
         String email,
         String nickname,
-        Byte[] profileImage,
+        ImageResponse profileImage,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt
 ) {
@@ -23,7 +24,9 @@ public record UserResponse(
                 dto.id(),
                 dto.email(),
                 nickname,
-                dto.profileImage(),
+                ImageResponse.from(
+                        dto.profileImage()
+                ),
                 dto.createdAt(),
                 dto.modifiedAt()
         );

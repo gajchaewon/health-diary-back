@@ -63,21 +63,18 @@ public class CustomUserDetails implements UserDetails {
     }
 
     public static UserAccount toUserEntity(CustomUserDetails userDetails){
-        return UserAccount.of(
-                userDetails.getEmail(),
-                userDetails.getNickname(),
-                userDetails.getPassword(),
-                null
-        );
+        return UserAccount.builder()
+                .email(userDetails.getEmail())
+                .nickname(userDetails.getNickname())
+                .userPassword(userDetails.getPassword())
+                .build();
     }
     public UserAccountDto toDto() {
-        return UserAccountDto.of(
-                id,
-                email,
-                nickname,
-                userPassword,
-                null
-        );
+        return UserAccountDto.builder()
+                .id(id)
+                .email(email)
+                .nickname(nickname)
+                .build();
     }
 
 

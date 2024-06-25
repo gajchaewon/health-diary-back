@@ -182,12 +182,12 @@ class PersonalExerciseDiaryControllerTest {
 
 
     private UserAccountDto createUserAccountDto() {
-        return UserAccountDto.of(
-                "210@mail.com",
-                "이원영",
-                "password1234!",
-                null
-        );
+        return UserAccountDto.builder()
+                .email("210@mail.com")
+                .nickname("이원영")
+                .userPassword("password1234!")
+                .profileImage(null)
+                .build();
     }
 
     private static Set<HashtagDto> mapHashtagsStringSet(Set<String> hashtags) {

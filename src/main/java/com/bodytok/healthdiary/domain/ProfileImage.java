@@ -1,15 +1,13 @@
 package com.bodytok.healthdiary.domain;
 
-
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-
 @Getter
 @Entity
-public class DiaryImage extends AuditingFields implements IBaseImage {
+public class ProfileImage extends AuditingFields implements IBaseImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,15 +27,15 @@ public class DiaryImage extends AuditingFields implements IBaseImage {
     private String imageUrl;
 
     @Setter
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "diary_id")
-    private PersonalExerciseDiary personalExerciseDiary;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private UserAccount userAccount;
 
 
-    public DiaryImage(){}
+    public ProfileImage(){}
 
     @Builder
-    public DiaryImage(String originalFileName, String savedFileName, String imageUrl){
+    public ProfileImage(String originalFileName, String savedFileName, String imageUrl){
         this.originalFileName = originalFileName;
         this.savedFileName = savedFileName;
         this.imageUrl = imageUrl;

@@ -2,66 +2,33 @@ package com.bodytok.healthdiary.service;
 
 import com.bodytok.healthdiary.domain.DiaryImage;
 import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
-import com.bodytok.healthdiary.dto.diaryImage.DiaryImageDto;
+import com.bodytok.healthdiary.dto.Image.DiaryImageDtoImpl;
 import com.bodytok.healthdiary.exepction.CustomBaseException;
-import com.bodytok.healthdiary.repository.DiaryImageRepository;
-import com.bodytok.healthdiary.util.FileNameConverter;
+import com.bodytok.healthdiary.repository.Image.DiaryImageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.bodytok.healthdiary.dto.Image.ImageDtoConverter.diaryImageDtoConverter;
 import static com.bodytok.healthdiary.exepction.CustomError.IMAGE_NOT_FOUND;
 
 @Slf4j
 @Transactional
 @Service
 @RequiredArgsConstructor
-public class ImageService {
+public class DiaryImageService {
 
     private final DiaryImageRepository diaryImageRepository;
     private final S3Service s3Service;
-    private final FileNameConverter fileNameConverter;
 
-
-    @Value("${file.uploadDir}")
-    private String uploadDir;
-
-    public DiaryImageDto storeImage(MultipartFile file) {
-        String originalFileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-        String savedFileName = fileNameConverter.convertFileName(file);
-
-        log.info("savedFileName : {}", savedFileName);
-
-        try {
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
-            Path filePath = uploadPath.resolve(savedFileName);
-            Files.copy(file.getInputStream(), filePath);
-
-            DiaryImage diaryImage = DiaryImage.of(originalFileName,savedFileName,filePath.toString());
-
-            DiaryImage savedImage = diaryImageRepository.save(diaryImage);
-
-            return DiaryImageDto.from(savedImage);
-        } catch (IOException ex) {
-            throw new RuntimeException("이미지 저장 실패 :" + originalFileName, ex);
-        }
+    public DiaryImageDtoImpl uploadDiaryImage(MultipartFile file) throws Exception {
+        return s3Service.uploadImage(file, diaryImageDtoConverter, DiaryImage.class, diaryImageRepository);
     }
 
     public PersonalExerciseDiary updateImages(PersonalExerciseDiary diary, Set<Long> requestImagesIds) {
