@@ -35,7 +35,7 @@ public record UserAccountDto(
                 .userPassword(entity.getUserPassword())
                 .profileImage(ProfileImageDtoImpl.from(
                         entity.getProfileImage() == null ?
-                        ProfileImage.builder().build() : entity.getProfileImage()
+                                new ProfileImage() : entity.getProfileImage()
                 ))
                 .createdAt(entity.getCreatedAt())
                 .modifiedAt(entity.getModifiedAt())

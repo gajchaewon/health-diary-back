@@ -1,6 +1,7 @@
 package com.bodytok.healthdiary.dto.userAccount.response;
 
 
+import com.bodytok.healthdiary.domain.ProfileImage;
 import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.domain.constant.FollowStatus;
 import com.bodytok.healthdiary.dto.Image.ImageResponse;
@@ -50,7 +51,9 @@ public record UserProfile(
                 .email(userAccount.getEmail())
                 .profileImage(
                         ImageResponse.from(
-                                ProfileImageDtoImpl.from(userAccount.getProfileImage()))
+                                ProfileImageDtoImpl.from(
+                                        userAccount.getProfileImage() == null ?
+                                        new ProfileImage() : userAccount.getProfileImage()))
                 )
                 .followerCount(userAccount.getFollowerList().size())
                 .followingCount(userAccount.getFollowingList().size())
