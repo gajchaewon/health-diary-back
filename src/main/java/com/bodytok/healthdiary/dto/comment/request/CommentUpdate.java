@@ -1,4 +1,4 @@
-package com.bodytok.healthdiary.dto.comment;
+package com.bodytok.healthdiary.dto.comment.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

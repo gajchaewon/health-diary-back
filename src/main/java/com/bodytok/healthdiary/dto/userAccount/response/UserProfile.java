@@ -3,6 +3,9 @@ package com.bodytok.healthdiary.dto.userAccount.response;
 
 import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.domain.constant.FollowStatus;
+import com.bodytok.healthdiary.dto.Image.ImageResponse;
+import com.bodytok.healthdiary.dto.Image.ProfileImageDtoImpl;
+import lombok.Builder;
 
 import java.util.Objects;
 
@@ -10,47 +13,50 @@ import java.util.Objects;
  * 유저 id, 닉네임, 이메일
  * 팔로워 / 팔로잉 count
  * 커뮤니티 일지 count
+ * 프로필 이미지
  * 나의 팔로잉 여부
  */
-
+@Builder
 public record UserProfile(
         Long id,
         String nickname,
         String email,
+        ImageResponse profileImage,
         Integer followerCount,
         Integer followingCount,
         Integer diaryCount,
         FollowStatus followStatus
 ) {
 
-    public static UserProfile of(Long id, String nickname, String email, Integer followerCount, Integer followingCount, Integer diaryCount, FollowStatus followStatus){
-        return new UserProfile(id, nickname, email, followerCount, followingCount, diaryCount, followStatus);
-    }
 
     public static UserProfile toProfileInfo(UserAccount userAccount, Integer diaryCount, Long myId){
         boolean isMyProfile = Objects.equals(userAccount.getId(), myId);
-        FollowStatus followStatus1 = null;
+        FollowStatus association = null;
         if(!isMyProfile){
             // 유저의 팔로워 리스트에 나의 아이디가 있다면
            if( userAccount.getFollowerList().stream()
                    .anyMatch(f -> Objects.equals(f.getFollower().getId(), myId))) {
-               followStatus1 = FollowStatus.FOLLOW;
+               association = FollowStatus.FOLLOW;
            }else {
-               followStatus1 = FollowStatus.NONE;
+               association = FollowStatus.NONE;
            }
         }else {
-            followStatus1 = FollowStatus.SELF;
+            association = FollowStatus.SELF;
         }
 
-        return of(
-                userAccount.getId(),
-                userAccount.getNickname(),
-                userAccount.getEmail(),
-                userAccount.getFollowerList().size(),
-                userAccount.getFollowingList().size(),
-                diaryCount,
-                followStatus1
-        );
+        return UserProfile.builder()
+                .id(userAccount.getId())
+                .nickname(userAccount.getNickname())
+                .email(userAccount.getEmail())
+                .profileImage(
+                        ImageResponse.from(
+                                ProfileImageDtoImpl.from(userAccount.getProfileImage()))
+                )
+                .followerCount(userAccount.getFollowerList().size())
+                .followingCount(userAccount.getFollowingList().size())
+                .diaryCount(diaryCount)
+                .followStatus(association)
+                .build();
     }
 
 }

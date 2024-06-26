@@ -32,11 +32,6 @@ public record DiaryResponse(
     }
 
     public static DiaryResponse from(DiaryDto dto) {
-        String nickname = dto.userAccountDto().nickname();
-        if (nickname == null || nickname.isBlank()) {
-            nickname = dto.userAccountDto().email();
-        }
-
         return new DiaryResponse(
                 dto.id(),
                 dto.title(),
@@ -46,7 +41,7 @@ public record DiaryResponse(
                 dto.createdAt(),
                 dto.userAccountDto().id(),
                 dto.userAccountDto().email(),
-                nickname,
+                dto.userAccountDto().nickname(),
                 dto.hashtagDtoSet(),
                 dto.likeInfo(),
                 dto.imageDtoSet().stream()
