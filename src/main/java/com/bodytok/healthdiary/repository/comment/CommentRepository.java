@@ -1,4 +1,4 @@
-package com.bodytok.healthdiary.repository;
+package com.bodytok.healthdiary.repository.comment;
 
 import com.bodytok.healthdiary.domain.Comment;
 import com.bodytok.healthdiary.domain.QComment;
@@ -16,12 +16,9 @@ import java.util.Optional;
 
 public interface CommentRepository extends
         JpaRepository<Comment, Long>,
+        CustomCommentRepository,
         QuerydslPredicateExecutor<Comment>,
         QuerydslBinderCustomizer<QComment> {
-
-    List<Comment> findByPersonalExerciseDiary_Id(Long diaryId);
-
-    Optional<List<Comment>> findByUserAccount_Id(Long userId);
 
     void deleteByIdAndUserAccount_Id(Long commentId, Long userId);
 

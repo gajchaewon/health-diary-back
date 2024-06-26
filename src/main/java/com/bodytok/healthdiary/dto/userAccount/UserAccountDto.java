@@ -23,16 +23,22 @@ public record UserAccountDto(
 ) {
 
     public static UserAccountDto from(UserAccount entity) {
-        return new UserAccountDto(
-                entity.getId(),
-                entity.getEmail(),
-                entity.getNickname(),
-                entity.getUserPassword(),
-                ProfileImageDtoImpl.from(entity.getProfileImage() == null ?
+        String nickname = entity.getNickname();
+        // 닉네임 null 이면 email 로 반환
+        if (nickname == null || nickname.isBlank()) {
+            nickname = entity.getEmail();
+        }
+        return UserAccountDto.builder()
+                .id(entity.getId())
+                .email(entity.getEmail())
+                .nickname(nickname)
+                .userPassword(entity.getUserPassword())
+                .profileImage(ProfileImageDtoImpl.from(
+                        entity.getProfileImage() == null ?
                         ProfileImage.builder().build() : entity.getProfileImage()
-                ),
-                entity.getCreatedAt(),
-                entity.getModifiedAt()
-        );
+                ))
+                .createdAt(entity.getCreatedAt())
+                .modifiedAt(entity.getModifiedAt())
+                .build();
     }
 }

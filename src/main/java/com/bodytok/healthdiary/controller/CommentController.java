@@ -4,8 +4,9 @@ package com.bodytok.healthdiary.controller;
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.dto.comment.*;
 import com.bodytok.healthdiary.dto.comment.request.CommentCreate;
-import com.bodytok.healthdiary.exepction.CustomBaseException;
-import com.bodytok.healthdiary.exepction.CustomError;
+import com.bodytok.healthdiary.dto.comment.request.CommentUpdate;
+import com.bodytok.healthdiary.dto.comment.response.CommentResponse;
+import com.bodytok.healthdiary.dto.comment.response.MyCommentsResponse;
 import com.bodytok.healthdiary.service.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,9 +17,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/comment")
@@ -28,20 +26,12 @@ public class CommentController {
     private final CommentService commentService;
 
 
-    @GetMapping("/all/{userId}")
+    @GetMapping("/all")
     @Operation(summary = "모든 댓글 조회")
-    public ResponseEntity<List<CommentWithDiaryResponse>> getAllComments(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable(name = "userId") Long userId
+    public ResponseEntity<MyCommentsResponse> getAllComments(
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        //내 댓글만 볼 수 있게 검증
-        if (!userDetails.getId().equals(userId)) {
-            throw new CustomBaseException(CustomError.COMMENT_NOT_OWNER);
-        }
-        List<CommentDto> commentDtoList = commentService.getAllCommentsByUserId(userId);
-        List<CommentWithDiaryResponse> response = commentDtoList.stream()
-                .map(commentMapper::toCommentWithDiaryResponse)
-                .collect(Collectors.toList());
+        var response = commentService.getAllCommentsByUserId(userDetails.getId());
         return ResponseEntity.ok().body(response);
     }
 

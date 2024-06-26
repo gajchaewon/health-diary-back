@@ -5,7 +5,7 @@ import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.domain.Routine;
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.exepction.CustomBaseException;
-import com.bodytok.healthdiary.repository.CommentRepository;
+import com.bodytok.healthdiary.repository.comment.CommentRepository;
 import com.bodytok.healthdiary.repository.PersonalExerciseDiaryRepository;
 import com.bodytok.healthdiary.repository.RoutineRepository;
 import lombok.RequiredArgsConstructor;

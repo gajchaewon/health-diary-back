@@ -1,10 +1,12 @@
 package com.bodytok.healthdiary.dto.comment;
 
 
+import com.bodytok.healthdiary.dto.auth.response.UserResponse;
+import com.bodytok.healthdiary.dto.comment.request.CommentUpdate;
+import com.bodytok.healthdiary.dto.comment.response.CommentResponse;
 import com.bodytok.healthdiary.dto.userAccount.UserAccountDto;
 import com.bodytok.healthdiary.dto.comment.request.CommentCreate;
 import com.bodytok.healthdiary.dto.diary.DiaryDto;
-import com.bodytok.healthdiary.dto.diary.response.DiaryResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -32,25 +34,10 @@ public interface CommentMapper {
     CommentDto toDtoFromUpdate(Long commentId, CommentUpdate update, UserAccountDto userAccountDto);
 
     //response
-    @Mapping(target = "userId", source = "userAccountDto.id")
-    @Mapping(target = "email",source = "userAccountDto.email")
-    @Mapping(target = "nickname", expression = "java(getNickname(commentDto))")
+    @Mapping(target = "userInfo", expression = "java(mapToUerInfo(commentDto))")
     CommentResponse toResponse(CommentDto commentDto);
-    default String getNickname(CommentDto dto) {
-        String nickname = dto.userAccountDto().nickname();
-        return (nickname == null || nickname.isBlank()) ? dto.userAccountDto().email() : nickname;
+    default UserResponse mapToUerInfo(CommentDto dto) {
+        return UserResponse.from(dto.userAccountDto());
     }
-
-
-    @Mapping( target = "userId", source = "userAccountDto.id")
-    @Mapping(target = "userEmail", source = "userAccountDto.email")
-    @Mapping(target = "diary", source = "diaryDto",  qualifiedByName = "mapDiaryResponse")
-    CommentWithDiaryResponse  toCommentWithDiaryResponse(CommentDto dto);
-
-    @Named("mapDiaryResponse")
-    default DiaryResponse mapDiaryResponse(DiaryDto diaryDto) {
-        return DiaryResponse.from(diaryDto);
-    }
-
 
 }

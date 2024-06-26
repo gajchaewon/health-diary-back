@@ -5,17 +5,15 @@ import com.bodytok.healthdiary.domain.Comment;
 import com.bodytok.healthdiary.domain.PersonalExerciseDiary;
 import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.dto.comment.CommentDto;
+import com.bodytok.healthdiary.dto.comment.response.MyCommentsResponse;
 import com.bodytok.healthdiary.exepction.CustomBaseException;
-import com.bodytok.healthdiary.repository.CommentRepository;
+import com.bodytok.healthdiary.repository.comment.CommentRepository;
 import com.bodytok.healthdiary.repository.PersonalExerciseDiaryRepository;
 import com.bodytok.healthdiary.repository.UserAccountRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.bodytok.healthdiary.exepction.CustomError.COMMENT_NOT_FOUND;
 import static com.bodytok.healthdiary.exepction.CustomError.COMMENT_NOT_OWNER;
@@ -33,11 +31,8 @@ public class CommentService {
 
 
     @Transactional(readOnly = true)
-    public List<CommentDto> getAllCommentsByUserId(Long userId) {
-        return commentRepository.findByUserAccount_Id(userId)
-                .orElseThrow(() -> new CustomBaseException(COMMENT_NOT_FOUND))
-                .stream().map(CommentDto::from)
-                .collect(Collectors.toList());
+    public MyCommentsResponse getAllCommentsByUserId(Long userId) {
+        return commentRepository.findCommentsByUserId(userId);
     }
 
 

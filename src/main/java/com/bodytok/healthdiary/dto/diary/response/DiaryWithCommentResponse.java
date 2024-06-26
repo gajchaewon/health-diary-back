@@ -1,6 +1,7 @@
 package com.bodytok.healthdiary.dto.diary.response;
 
-import com.bodytok.healthdiary.dto.comment.CommentResponse;
+import com.bodytok.healthdiary.dto.auth.response.UserResponse;
+import com.bodytok.healthdiary.dto.comment.response.CommentResponse;
 import com.bodytok.healthdiary.dto.Image.ImageResponse;
 import com.bodytok.healthdiary.dto.diaryLike.DiaryLikeInfo;
 import com.bodytok.healthdiary.dto.hashtag.HashtagDto;
@@ -18,9 +19,7 @@ public record DiaryWithCommentResponse(
         Boolean isPublic,
         Integer totalExTime,
         LocalDateTime createAt,
-        Long userId,
-        String email,
-        String nickname,
+        UserResponse userInfo,
         Set<HashtagDto> hashtags,
         Set<CommentResponse> comments,
 
@@ -29,16 +28,7 @@ public record DiaryWithCommentResponse(
         Set<ImageResponse> images
 ) {
 
-    public static DiaryWithCommentResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<HashtagDto> hashtags, Set<CommentResponse> comments){
-        return new DiaryWithCommentResponse(id, title, content, isPublic, totalExTime, createAt, userId, email, nickname, hashtags, comments, null, Set.of());
-    }
-
     public static DiaryWithCommentResponse from(DiaryWithCommentDto dto) {
-        String nickname = dto.userAccountDto().nickname();
-        if (nickname == null || nickname.isBlank()) {
-            nickname = dto.userAccountDto().email();
-        }
-
         return new DiaryWithCommentResponse(
                 dto.id(),
                 dto.title(),
@@ -46,9 +36,7 @@ public record DiaryWithCommentResponse(
                 dto.isPublic(),
                 dto.totalExTime(),
                 dto.createdAt(),
-                dto.userAccountDto().id(),
-                dto.userAccountDto().email(),
-                nickname,
+                UserResponse.from(dto.userAccountDto()),
                 dto.hashtagDtoSet().stream()
                         .collect(Collectors.toUnmodifiableSet()),
                 dto.commentDtoSet().stream()
