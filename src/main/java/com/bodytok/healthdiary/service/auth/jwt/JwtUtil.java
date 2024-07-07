@@ -1,6 +1,7 @@
 package com.bodytok.healthdiary.service.auth.jwt;
 
 
+import com.bodytok.healthdiary.exepction.CustomBaseException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -11,15 +12,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
+
+import static com.bodytok.healthdiary.exepction.CustomError.TOKEN_EXTRACT_FAILED;
 
 @RequiredArgsConstructor
 @Service
@@ -64,6 +65,8 @@ public class JwtUtil {
     public String buildToken(Map<String, Object> claims, UserDetails userDetails, long expiration) {
         return Jwts.builder().setClaims(claims)
                 .setSubject(userDetails.getUsername())
+                .claim("username",userDetails.getUsername())
+                .claim("expiration", String.valueOf(expiration))
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
@@ -84,18 +87,9 @@ public class JwtUtil {
     public UserDetails getUserDetailsFromToken(String token) {
         String username = extractUsername(token);
         if (username != null) {
-            try {
-                return userDetailsService.loadUserByUsername(username);
-            } catch (UsernameNotFoundException e) {
-                return null;
-            }
+            return userDetailsService.loadUserByUsername(username);
         }
-        return null;
-    }
-
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return Objects.equals(username, userDetails.getUsername()) && !isTokenExpired(token);
+        throw new CustomBaseException(TOKEN_EXTRACT_FAILED);
     }
 
     private Date extractExpiration(String token) {
@@ -105,7 +99,6 @@ public class JwtUtil {
     public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
-
     private Claims extractAllClaims(String token) {
         return jwtParser
                 .parseClaimsJws(token)

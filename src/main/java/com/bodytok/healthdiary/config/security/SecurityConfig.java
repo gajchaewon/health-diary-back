@@ -51,7 +51,6 @@ public class SecurityConfig {
                                 .requestMatchers("swagger-ui/**").permitAll()
                                 .requestMatchers("webjars/**").permitAll()
                                 .requestMatchers("swagger-ui.html").permitAll()
-
                 )
                 .authorizeHttpRequests(
                         auth -> auth

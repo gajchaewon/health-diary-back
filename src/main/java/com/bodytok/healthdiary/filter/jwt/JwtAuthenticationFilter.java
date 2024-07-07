@@ -1,7 +1,8 @@
 package com.bodytok.healthdiary.filter.jwt;
 
 import com.bodytok.healthdiary.domain.JwtToken;
-import com.bodytok.healthdiary.domain.constant.TokenType;
+import com.bodytok.healthdiary.exepction.CustomBaseException;
+import com.bodytok.healthdiary.exepction.CustomError;
 import com.bodytok.healthdiary.service.auth.jwt.JwtService;
 import com.bodytok.healthdiary.service.auth.jwt.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -43,6 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final AntPathRequestMatcher[] permitAllMatchers = {
             new AntPathRequestMatcher("/diaries", HttpMethod.GET.name()),
             new AntPathRequestMatcher("/community", HttpMethod.GET.name()),
+            new AntPathRequestMatcher("/auth/refresh-token", HttpMethod.GET.name()),
             new AntPathRequestMatcher("/swagger-ui/**"),
             new AntPathRequestMatcher("/v2/api-docs"),
             new AntPathRequestMatcher("/v3/api-docs"),
@@ -80,11 +82,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
             jwt = authHeader.substring(7);
             userEmail = jwtUtil.extractUsername(jwt);
-            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (userEmail != null) {
+                log.info(">>>> JWT필터 유저 로드, userEmail :{}", userEmail);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-                JwtToken tokenFromRedis = jwtService.getToken(jwt);
-                boolean isAccessToken = tokenFromRedis != null && tokenFromRedis.getTokenType() == TokenType.ACCESS;
-                if (jwtUtil.isTokenValid(jwt, userDetails) && isAccessToken) {
+                //레디스에 존재하지 않는 토큰이면 예외 반환
+                JwtToken accessToken =  jwtService.getToken(jwt);
+                if (accessToken != null && !jwtUtil.isTokenExpired(accessToken.getToken())) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
@@ -95,9 +98,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 } else {
-                    throw new SignatureException("Token is invalid");
+                    throw new CustomBaseException(CustomError.TOKEN_NOT_VALID);
                 }
             }
+
         } catch (SignatureException e) {
             log.info("SignatureException");
             throw new JwtException(WRONG_TYPE_TOKEN.getErrorCode());
@@ -110,6 +114,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (IllegalArgumentException e) {
             log.info("IllegalArgumentException");
             throw new JwtException(ILLEGAL_ARGUMENT.getErrorCode());
+        }catch( CustomBaseException e){
+            throw new JwtException(EXPIRED_TOKEN.getErrorCode());
         } catch(JwtException | UsernameNotFoundException exception){
             log.error("JwtAuthentication Authentication Exception Occurs! - {}",exception.getClass());
             throw new JwtException(UNKNOWN_ERROR.getErrorCode());
