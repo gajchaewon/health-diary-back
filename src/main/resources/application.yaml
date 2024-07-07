@@ -15,7 +15,7 @@ jwt:
   access-token:
     expiration: 3600000
   refresh-token:
-    expiration: 86400000
+    expiration: 18000000
 spring:
   profiles:
     include: aws
@@ -43,6 +43,10 @@ spring:
     init:
       mode: always
       encoding: UTF-8
+  data:
+    redis:
+      host: localhost
+      port: 6379
   devtools:
     livereload:
       enabled: false
@@ -56,14 +60,14 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
       resolve-lazily: true
-    redis:
-      host: localhost
-      port: 6379
 springdoc:
+  api-docs:
+    path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui
     display-request-duration: true
-
+    disable-swagger-default-url: true
+    url: /v3/api-docs
 #--- test ?? ???
 #
 #spring:

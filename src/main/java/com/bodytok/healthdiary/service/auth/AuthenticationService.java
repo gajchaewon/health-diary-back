@@ -4,13 +4,9 @@ import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.domain.constant.TokenType;
 import com.bodytok.healthdiary.domain.security.CustomUserDetails;
 import com.bodytok.healthdiary.domain.JwtToken;
+import com.bodytok.healthdiary.dto.auth.response.*;
 import com.bodytok.healthdiary.dto.userAccount.UserAccountDto;
-import com.bodytok.healthdiary.dto.auth.response.LoginResponse;
-import com.bodytok.healthdiary.dto.auth.response.RegisterResponse;
-import com.bodytok.healthdiary.dto.auth.response.TokenResponse;
-import com.bodytok.healthdiary.dto.auth.response.UserResponse;
 import com.bodytok.healthdiary.exepction.CustomBaseException;
-import com.bodytok.healthdiary.exepction.CustomError;
 import com.bodytok.healthdiary.repository.UserAccountRepository;
 import com.bodytok.healthdiary.service.auth.jwt.JwtService;
 import com.bodytok.healthdiary.service.auth.jwt.JwtUtil;
@@ -19,13 +15,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
-import java.util.Optional;
 
 import static com.bodytok.healthdiary.exepction.CustomError.*;
 
@@ -72,51 +68,62 @@ public class AuthenticationService {
 
         CustomUserDetails userDetails = CustomUserDetails.from(userAccountDto);
 
-        String jwtToken = jwtUtil.generateToken(userDetails);
+        String accessToken = jwtUtil.generateToken(userDetails);
         String refreshToken = jwtUtil.generateRefreshToken(userDetails);
 
-        //redis 저장
-        JwtToken access = JwtToken.of(jwtToken, TokenType.ACCESS);
+        //Access & Refresh Token redis 저장
+        JwtToken access = JwtToken.of(accessToken, TokenType.ACCESS);
         JwtToken refresh = JwtToken.of(refreshToken, TokenType.REFRESH);
-
         jwtService.saveToken(access);
         jwtService.saveToken(refresh);
 
 
-        TokenResponse tokenResponse = TokenResponse.of(jwtToken, refreshToken);
+        TokenResponse tokenResponse = TokenResponse.of(accessToken, refreshToken);
         UserResponse userResponse = UserResponse.from(userAccountDto);
-        return new LoginResponse(tokenResponse,userResponse);
+        return new LoginResponse(tokenResponse, userResponse);
     }
 
 
-    //TODO : accessToken 만료 전 refresh 요청 시 로그아웃 시키기, 현재 context 에 있는 유저와 비교하는 로직 추가
-    public String refreshToken(String refreshToken) {
-        JwtToken token = jwtService.getToken(refreshToken);
-        if (token != null){
-            if (token.getTokenType() == TokenType.REFRESH) {
-                UserDetails userDetails = jwtUtil.getUserDetailsFromToken(token.getToken());
-                if(userDetails != null){
-                    //새 엑세스 토큰 발급 & redis에 저장
-                    String jwt = jwtUtil.generateToken(userDetails);
-                    jwtService.saveToken(JwtToken.of(jwt, TokenType.ACCESS));
-
-                    //엑세스 토큰 반환
-                    return jwtUtil.generateToken(userDetails);
-                } else {
-                    return "REFRESH_TOKEN_FAILED";
-                }
+    public TokenResponse refreshToken(String accessToken, String refreshToken) {
+        try {
+            //accessToken 이 redis에 존재한다면 access, refresh 삭제하고 다시 로그인 시키기
+            if (accessToken != null && jwtService.getToken(accessToken) != null) {
+                jwtService.deleteToken(accessToken);
+                jwtService.deleteToken(refreshToken);
+                throw new RuntimeException();
             }
-        }
+            //Refresh redis 조회
+            JwtToken refresh = jwtService.getToken(refreshToken);
 
-        return "REFRESH_TOKEN_FAILED";
+            //토큰을 통해 유저 정보 추출
+            UserDetails userDetails = jwtUtil.getUserDetailsFromToken(refresh.getToken());
+
+            //기존 리프레시 토큰 삭제
+            jwtService.deleteToken(refreshToken);
+
+            //새 엑세스 토큰 발급 & redis에 저장
+            String newAccessToken = jwtUtil.generateToken(userDetails);
+            String newRefreshToken = jwtUtil.generateRefreshToken(userDetails);
+
+            jwtService.saveToken(JwtToken.of(newAccessToken, TokenType.ACCESS));
+            jwtService.saveToken(JwtToken.of(newRefreshToken, TokenType.REFRESH));
+
+            //엑세스 토큰 반환
+            return TokenResponse.of(newAccessToken, newRefreshToken);
+        } catch (RuntimeException e) {
+            throw new CustomBaseException(REFRESH_LOGOUT);
+        }
     }
 
-    public void logout(String token, String refreshToken, CustomUserDetails authUser) {
-        UserDetails userDetailsFromToken = jwtUtil.getUserDetailsFromToken(token);
+    public void logout(String accessToken, String refreshToken, CustomUserDetails authUser) {
+        UserDetails userDetailsFromToken = jwtUtil.getUserDetailsFromToken(accessToken);
         var userEmail = userDetailsFromToken.getUsername();
-        if (!Objects.equals(userEmail, authUser.getUsername())){
+        if (!Objects.equals(userEmail, authUser.getUsername())) {
             throw new AccessDeniedException("로그인된 유저 정보와 일치하지 않습니다.");
         }
-        jwtService.deleteToken(token, refreshToken);
+        jwtService.deleteToken(accessToken);
+        jwtService.deleteToken(refreshToken);
+
+        SecurityContextHolder.clearContext();
     }
 }

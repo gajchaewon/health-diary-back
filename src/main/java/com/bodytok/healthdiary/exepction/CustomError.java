@@ -8,6 +8,15 @@ import lombok.RequiredArgsConstructor;
 public enum CustomError {
 
     /**
+     * Auth
+     */
+    REFRESH_TOKEN_NULL(400, "AUTH_001", "요청에 리프레시 토큰이 없습니다."),
+    TOKEN_NOT_FOUND(404, "AUTH_002", "토큰을 찾을 수 없습니다."),
+    TOKEN_EXTRACT_FAILED(401, "AUTH_003", "사용할 수 없거나 잘못된 토큰입니다."),
+    TOKEN_NOT_VALID(400, "AUTH_004", "만료되거나 잘못된 토큰입니다."),
+    REFRESH_LOGOUT(400, "AUTH_005", "다시 로그인이 필요합니다."),
+    REFRESH_FAILED(500, "AUTH_006", "리프레시 요청이 실패했습니다."),
+    /**
      * User
      */
     USER_NOT_FOUND(404, "USER_001", "유저를 찾을 수 없습니다."),

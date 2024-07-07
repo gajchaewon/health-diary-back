@@ -7,7 +7,9 @@ import com.bodytok.healthdiary.dto.auth.request.UserRegister;
 import com.bodytok.healthdiary.dto.auth.response.LoginResponse;
 import com.bodytok.healthdiary.dto.auth.response.RefreshTokenResponse;
 import com.bodytok.healthdiary.dto.auth.response.RegisterResponse;
+import com.bodytok.healthdiary.dto.auth.response.TokenResponse;
 import com.bodytok.healthdiary.dto.userAccount.UserAccountMapper;
+import com.bodytok.healthdiary.exepction.CustomBaseException;
 import com.bodytok.healthdiary.service.UserAccountService;
 import com.bodytok.healthdiary.service.auth.AuthenticationService;
 import com.bodytok.healthdiary.service.auth.jwt.JwtUtil;
@@ -18,14 +20,14 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.util.Objects;
+import static com.bodytok.healthdiary.exepction.CustomError.REFRESH_TOKEN_NULL;
 
 
 @RequiredArgsConstructor
@@ -70,9 +72,8 @@ public class AuthController {
             @CookieValue(value = "refreshToken") String refreshToken,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String accessToken = authorizationHeader.substring(7);
+        String accessToken = parseTokenFromHeader(request);
+        if (accessToken != null) {
             authService.logout(accessToken, refreshToken, userDetails);
             return ResponseEntity.ok().build();
         } else {
@@ -83,17 +84,16 @@ public class AuthController {
 
     @GetMapping("/refresh-token")
     @Operation(summary = "리프레시 토큰 발급", description = "쿠키에 있는 리프레시 토큰을 통해 발급")
-    public ResponseEntity<RefreshTokenResponse> refreshToken(
+    public ResponseEntity<TokenResponse> refreshToken(
+            HttpServletRequest request,
             @CookieValue(value = "refreshToken") String refreshToken
-    ) throws IOException {
-        if (refreshToken == null)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(RefreshTokenResponse.of(null, "REFRESH_TOKEN_NULL"));
-
-        String newAccessToken = authService.refreshToken(refreshToken);
-        if (Objects.equals(newAccessToken, "REFRESH_TOKEN_FAILED")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(RefreshTokenResponse.of(null, "REFRESH_TOKEN_FAILED"));
+    ) {
+        if (refreshToken == null) {
+            throw new CustomBaseException(REFRESH_TOKEN_NULL);
         }
-        return ResponseEntity.ok(RefreshTokenResponse.of(newAccessToken, "REFRESH_TOKEN_SUCCESS"));
+        String accessToken = parseTokenFromHeader(request);
+        TokenResponse reIssueResponse = authService.refreshToken(accessToken, refreshToken);
+        return ResponseEntity.ok().body(reIssueResponse);
     }
 
     @GetMapping("/check-email")
@@ -112,4 +112,11 @@ public class AuthController {
         return ResponseEntity.ok(userAccountService.checkUserByNickname(nickname));
     }
 
+    private String parseTokenFromHeader(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            return authorizationHeader.substring(7);
+        }
+        return null;
+    }
 }

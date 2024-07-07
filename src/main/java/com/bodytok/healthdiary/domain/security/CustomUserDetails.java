@@ -2,6 +2,7 @@ package com.bodytok.healthdiary.domain.security;
 
 import com.bodytok.healthdiary.domain.UserAccount;
 import com.bodytok.healthdiary.dto.userAccount.UserAccountDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +23,7 @@ public class CustomUserDetails implements UserDetails {
     private String nickname;
     private String userPassword;
 
+    @JsonIgnore
     private Collection<? extends GrantedAuthority> authorities;
 
 

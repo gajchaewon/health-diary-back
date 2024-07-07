@@ -34,11 +34,6 @@ public class JwtToken {
         this.tokenType = tokenType;
         this.expiration = expiration;
     }
-    private JwtToken(String token, TokenType tokenType) {
-        this.token = token;
-        this.tokenType = tokenType;
-    }
-
     public static JwtToken of(String token, TokenType tokenType) {
         return new JwtToken(token, tokenType,null);
     }

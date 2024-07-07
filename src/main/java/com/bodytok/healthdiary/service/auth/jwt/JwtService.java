@@ -21,6 +21,7 @@ public class JwtService {
 
     @Value("${jwt.access-token.expiration}")
     long accessExpiration;
+
     @Value("${jwt.refresh-token.expiration}")
     long refreshExpiration;
     public JwtToken getToken(String token) {
@@ -28,19 +29,15 @@ public class JwtService {
     }
 
 
-    public JwtToken saveToken(JwtToken token) {
+    public void saveToken(JwtToken token) {
         //access 인지 refresh 인지 구분해서 expiration 저장
         long expirationTime = (token.getTokenType() == TokenType.ACCESS) ? accessExpiration : refreshExpiration;
 
-
-        // Set expiration time to JwtToken object
         token.setExpiration(expirationTime);
-
-        return jwtTokenRepository.save(token);
+        jwtTokenRepository.save(token);
     }
 
-    public void deleteToken(String token, String refreshToken) {
+    public void deleteToken(String token){
         jwtTokenRepository.deleteById(token);
-        jwtTokenRepository.deleteById(refreshToken);
     }
 }
