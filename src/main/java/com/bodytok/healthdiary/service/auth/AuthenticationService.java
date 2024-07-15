@@ -90,11 +90,13 @@ public class AuthenticationService {
             if (accessToken != null && jwtService.getToken(accessToken) != null) {
                 jwtService.deleteToken(accessToken);
                 jwtService.deleteToken(refreshToken);
-                throw new RuntimeException();
+                throw new CustomBaseException(REFRESH_LOGOUT);
             }
             //Refresh redis 조회
             JwtToken refresh = jwtService.getToken(refreshToken);
-
+            if (refresh == null) {
+                throw new CustomBaseException(REFRESH_LOGOUT);
+            }
             //토큰을 통해 유저 정보 추출
             UserDetails userDetails = jwtUtil.getUserDetailsFromToken(refresh.getToken());
 
@@ -111,7 +113,8 @@ public class AuthenticationService {
             //엑세스 토큰 반환
             return TokenResponse.of(newAccessToken, newRefreshToken);
         } catch (RuntimeException e) {
-            throw new CustomBaseException(REFRESH_LOGOUT);
+            log.error(">>> 리프레시 토큰 에러 : {}",e.getMessage());
+            throw e;
         }
     }
 
@@ -122,7 +125,9 @@ public class AuthenticationService {
             throw new AccessDeniedException("로그인된 유저 정보와 일치하지 않습니다.");
         }
         jwtService.deleteToken(accessToken);
-        jwtService.deleteToken(refreshToken);
+        if (refreshToken != null){
+            jwtService.deleteToken(refreshToken);
+        }
 
         SecurityContextHolder.clearContext();
     }

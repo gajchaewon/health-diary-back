@@ -69,7 +69,7 @@ public class AuthController {
     @Operation(summary = "로그아웃")
     public ResponseEntity<Void> logout(
             HttpServletRequest request,
-            @CookieValue(value = "refreshToken") String refreshToken,
+            @CookieValue(value = "refreshToken", required = false) String refreshToken,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         String accessToken = parseTokenFromHeader(request);

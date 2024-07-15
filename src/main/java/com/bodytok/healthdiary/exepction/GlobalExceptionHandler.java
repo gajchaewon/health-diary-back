@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({RuntimeException.class})
+    @ExceptionHandler({RuntimeException.class, Exception.class})
     public ResponseEntity<?> handleException(
             Exception ex,
             HttpServletRequest request) {
@@ -46,7 +46,6 @@ public class GlobalExceptionHandler {
             message = ex.getMessage();
             status = HttpStatus.BAD_REQUEST;
         } else if (ex instanceof MethodArgumentNotValidException) {
-
             ApiErrorResponse errorResponse = ApiErrorResponse.builder()
                     .statusCode(HttpStatus.BAD_REQUEST.value())
                     .message(ex.getMessage())
