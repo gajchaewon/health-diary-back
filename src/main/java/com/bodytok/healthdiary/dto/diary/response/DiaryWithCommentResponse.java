@@ -18,7 +18,7 @@ public record DiaryWithCommentResponse(
         String content,
         Boolean isPublic,
         Integer totalExTime,
-        LocalDateTime createAt,
+        LocalDateTime createdAt,
         UserResponse userInfo,
         Set<HashtagDto> hashtags,
         Set<CommentResponse> comments,
