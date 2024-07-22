@@ -206,7 +206,9 @@ public class PersonalExerciseDiaryService {
         }
         // 다이어리의 like set 을 읽어 유저가 저장돼 있는지(눌렀던 것인지) 확인
         Optional<DiaryLike> diaryLike = diary.getLikes().stream()
-                .filter(like -> like.getUserAccount().equals(userAccount)).findFirst();
+                .filter(like -> {
+                    return like.getUserAccount().getId().equals(userAccount.getId());
+                }).findFirst();
         if (diaryLike.isPresent()) {
             //좋아요 취소
             diary.removeLike(diaryLike.get());

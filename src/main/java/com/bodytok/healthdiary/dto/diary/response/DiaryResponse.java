@@ -16,7 +16,7 @@ public record DiaryResponse(
         String content,
         Boolean isPublic,
         Integer totalExTime,
-        LocalDateTime createAt,
+        LocalDateTime createdAt,
         Long userId,
         String email,
         String nickname,
@@ -26,8 +26,8 @@ public record DiaryResponse(
 
 ) {
 
-    public static DiaryResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createAt,Long userId, String email, String nickname, Set<HashtagDto> hashtags, DiaryLikeInfo likeInfo, Set<ImageResponse> images){
-        return new DiaryResponse(id, title, content, isPublic, totalExTime, createAt,userId, email, nickname, hashtags,likeInfo ,images);
+    public static DiaryResponse of(Long id, String title, String content, Boolean isPublic, Integer totalExTime, LocalDateTime createdAt,Long userId, String email, String nickname, Set<HashtagDto> hashtags, DiaryLikeInfo likeInfo, Set<ImageResponse> images){
+        return new DiaryResponse(id, title, content, isPublic, totalExTime, createdAt,userId, email, nickname, hashtags,likeInfo ,images);
 
     }
 

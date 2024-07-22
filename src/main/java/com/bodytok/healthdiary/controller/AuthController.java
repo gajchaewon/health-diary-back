@@ -86,6 +86,7 @@ public class AuthController {
     @Operation(summary = "리프레시 토큰 발급", description = "쿠키에 있는 리프레시 토큰을 통해 발급")
     public ResponseEntity<TokenResponse> refreshToken(
             HttpServletRequest request,
+            HttpServletResponse response,
             @CookieValue(value = "refreshToken") String refreshToken
     ) {
         if (refreshToken == null) {
@@ -93,6 +94,8 @@ public class AuthController {
         }
         String accessToken = parseTokenFromHeader(request);
         TokenResponse reIssueResponse = authService.refreshToken(accessToken, refreshToken);
+        Cookie refreshTokenCookie = jwtUtil.createCookie(reIssueResponse.refreshToken());
+        response.addCookie(refreshTokenCookie);
         return ResponseEntity.ok().body(reIssueResponse);
     }
 
